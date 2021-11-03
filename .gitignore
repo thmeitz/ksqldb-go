@@ -1,0 +1,6 @@
+.env
+coverage.out
+bin
+!bin/.keep
+TODO.md
+.antlr
