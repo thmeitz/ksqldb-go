@@ -45,8 +45,6 @@ type Options struct {
 	Credentials Credentials
 	// AllowHTTP
 	AllowHTTP bool
-	// InsecureSkipVerify should be set to true if you get X509 errors; but its not recommended! Fix your certificate issues!
-	InsecureSkipVerify bool
 	// DisableKeepAlives see https://golang.org/pkg/net/http/#Transport.DisableKeepAlives
 	DisableKeepAlives bool
 	// DisableCompression see https://golang.org/pkg/net/http/#Transport.DisableCompression
@@ -146,7 +144,6 @@ func NewTransport(options Options) *Transport {
 		TLSHandshakeTimeout:    options.TLSHandshakeTimeout,
 		IdleConnTimeout:        options.IdleConnTimeout,
 		ExpectContinueTimeout:  options.ExpectContinueTimeout,
-		TLSClientConfig:        &tls.Config{InsecureSkipVerify: options.InsecureSkipVerify},
 	}
 	var htransport2 = &http2.Transport{}
 	if options.AllowHTTP {
