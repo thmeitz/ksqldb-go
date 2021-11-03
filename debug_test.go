@@ -3,8 +3,8 @@ package ksqldb_test
 import (
 	"testing"
 
-	"github.com/rmoff/ksqldb-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/thmeitz/ksqldb-go"
 )
 
 func TestClientDebugModeAfterClientInit(t *testing.T) {

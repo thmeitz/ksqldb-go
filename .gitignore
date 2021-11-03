@@ -1,5 +1,6 @@
 .env
 coverage.out
+coverage.txt
 bin
 !bin/.keep
 TODO.md

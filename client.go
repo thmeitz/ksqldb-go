@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/log-go"
-	"github.com/rmoff/ksqldb-go/internal"
+	"github.com/thmeitz/ksqldb-go/internal"
 )
 
 // NewClient creates new ksqldb client with log.Println default logging.

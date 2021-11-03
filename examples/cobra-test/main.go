@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/rmoff/ksqldb-go/examples/cobra-test/cmd"
+import "github.com/thmeitz/ksqldb-go/examples/cobra-test/cmd"
 
 func main() {
 	cmd.Execute()
