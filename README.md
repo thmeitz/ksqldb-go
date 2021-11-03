@@ -1,9 +1,10 @@
 # ksqlDB Go library
 
-Robin Moffatt <robin@moffatt.me><br>
-v0.04, 8 October 2020
-
 [![Go Reference](https://pkg.go.dev/badge/github.com/thmeitz/ksqldb-go.svg)](https://pkg.go.dev/github.com/thmeitz/ksqldb-go)
+
+This is a unconnected fork from [Robin Moffatt](https://github.com/rmoff/ksqldb-go) and will be devloped on it's own.
+
+Thank you Robin and all other contributors for their work!
 
 ## Attention - WIP
 
@@ -201,18 +202,7 @@ return fmt.Errorf("error creating the dogs stream.\n%v", err)
 
 ## TODO
 
-See https://github.com/rmoff/ksqldb-go/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22
-
-And this, if we want to provide a full blown ksqlDB client.
 See https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-clients/contributing/
-
-## Contributors
-
-<a href="https://github.com/rmoff/ksqldb-go/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=rmoff/ksqldb-go" />
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks).
 
 ## License
 
