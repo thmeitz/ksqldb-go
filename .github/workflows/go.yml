@@ -32,7 +32,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
-          args: --verbose --no-config --out-format checkstyle > golangci-lint.out
+          args: --out-format checkstyle > golangci-lint.out
           only-new-issues: true
 
       - name: Scan
