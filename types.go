@@ -5,12 +5,16 @@ import (
 )
 
 const (
-	QUERY_STREAM_ENDPOINT = "/query-stream"
-	INSERTS_ENDPOINT      = "/inserts-stream"
-	CLOSE_QUERY_ENDPOINT  = "/close-query"
-	KSQL_ENDPOINT         = "/ksql"
-	INFO_ENDPOINT         = "/info"
-	HEALTHCHECK_ENDPOINT  = "/healthcheck"
+	QUERY_STREAM_ENDPOINT   = "/query-stream"
+	QUERY_ENDPOINT          = "/query"
+	INSERTS_ENDPOINT        = "/inserts-stream"
+	CLOSE_QUERY_ENDPOINT    = "/close-query"
+	KSQL_ENDPOINT           = "/ksql"
+	INFO_ENDPOINT           = "/info"
+	STATUS_ENDPOINT         = "/status"
+	HEALTHCHECK_ENDPOINT    = "/healthcheck"
+	CLUSTER_STATUS_ENDPOINT = "/clusterStatus"
+	PROP_VALIDITY_ENPOINT   = "/is_valid_property"
 )
 
 // Row represents a row returned from a query
