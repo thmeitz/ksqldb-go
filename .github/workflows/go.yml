@@ -38,3 +38,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # projectBaseDir: my-custom-directory
+          args: >
+            -Dsonar.organization=thmeitz
+            -Dsonar.projectKey=thmeitz_ksqldb-go
+            -Dsonar.projectName=ksqldb-go
+            -Dsonar.projectVersion=v0.0.2
+            -Dsonar.sources=.
+            -Dsonar.test.exclusions=**/*_test.go,**/mocks/*.go,**/examples/*.go
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=**/*_test.go
+            -Dsonar.go.coverage.reportPaths=test.out
+            -Dsonar.go.tests.reportPaths=report.json
+            -Dsonar.go.golangci-lint.reportPaths=golangci-lint.out
+            -Dsonar.externalIssuesReportPaths=secreport.json
+            -Dsonar.verbose=true
