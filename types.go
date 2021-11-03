@@ -6,6 +6,7 @@ import (
 
 const (
 	QUERY_STREAM_ENDPOINT = "/query-stream"
+	QUERY_ENDPOINT        = "/query"
 	INSERTS_ENDPOINT      = "/inserts-stream"
 	CLOSE_QUERY_ENDPOINT  = "/close-query"
 	KSQL_ENDPOINT         = "/ksql"
