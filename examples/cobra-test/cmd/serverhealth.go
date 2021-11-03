@@ -45,9 +45,17 @@ func serverhealth(cmd *cobra.Command, args []string) {
 
 	log.Current = logrus.NewStandard()
 
-	client := ksqldb.NewClient(host, user, password, log.Current)
+	options := ksqldb.Options{
+		Credentials: ksqldb.Credentials{Username: user, Password: password},
+		BaseUrl:     host,
+	}
 
-	health, err := client.Healthcheck()
+	client, err := ksqldb.NewClient(options, log.Current)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	health, err := ksqldb.Healthcheck(client)
 	if err != nil {
 		log.Fatal(err)
 	}

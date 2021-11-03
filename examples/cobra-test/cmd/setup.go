@@ -43,7 +43,15 @@ func setup(cmd *cobra.Command, args []string) {
 	user := viper.GetString("username")
 	password := viper.GetString("password")
 
-	client := ksqldb.NewClient(host, user, password, log.Current)
+	options := ksqldb.Options{
+		Credentials: ksqldb.Credentials{Username: user, Password: password},
+		BaseUrl:     host,
+	}
+
+	client, err := ksqldb.NewClient(options, log.Current)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if err := client.Execute(`
 		CREATE SOURCE CONNECTOR DOGS WITH (

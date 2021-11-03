@@ -48,7 +48,28 @@ func dogstats(cmd *cobra.Command, args []string) {
 	password := viper.GetString("password")
 	s := viper.GetString("dogsize")
 
-	client := ksqldb.NewClient(host, user, password, log.Current)
+	options := ksqldb.Options{
+		Credentials:       ksqldb.Credentials{Username: user, Password: password},
+		BaseUrl:           host,
+		ForceAttemptHTTP2: true,
+		AllowHTTP:         true,
+	}
+
+	/**
+	Transport: &http2.Transport{
+				AllowHTTP: true,
+				// Pretend we are dialing a TLS endpoint.
+				// Note, we ignore the passed tls.Config
+				DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
+					return net.Dial(network, addr)
+				},
+			},
+	*/
+
+	client, err := ksqldb.NewClient(options, log.Current)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
 
