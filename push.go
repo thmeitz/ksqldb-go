@@ -1,19 +1,39 @@
+/*
+Copyright © 2021 Robin Moffat & Contributors
+Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Parts of this apiclient are borrowed from Zalando Skipper
+https://github.com/zalando/skipper/blob/master/net/httpclient.go
+
+Zalando licence: MIT
+https://github.com/zalando/skipper/blob/master/LICENSE
+*/
+
 package ksqldb
 
 import (
 	"bufio"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/Masterminds/log-go"
-	"golang.org/x/net/http2"
 )
 
 const (
@@ -45,7 +65,7 @@ const (
 // 			if row != nil {
 //				DATA_TS = row[0].(float64)
 // 				ID = row[1].(string)
-func (cl *Client) Push(ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
+func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
 
 	// first sanitize the query
 	query := cl.SanitizeQuery(q)
@@ -63,31 +83,17 @@ func (cl *Client) Push(ctx context.Context, q string, rc chan<- Row, hc chan<- H
 		return fmt.Errorf("error creating new request with context: %w", err)
 	}
 
-	// If we've got creds to pass, let's pass them
-	if cl.username != "" {
-		req.SetBasicAuth(cl.username, cl.password)
-	}
+	// TODO If we've got creds to pass, let's pass them
+	// if cl.username != "" {
+	// 	req.SetBasicAuth(cl.username, cl.password)
+	// }
 
-	client := &http.Client{}
-	if cl.IsHttpRequest() {
-		// ksqlDB uses HTTP2 and if the server is on HTTP then Golang will not
-		// use HTTP2 unless we force it to, thus.
-		// Without this you get the error `http2: unsupported scheme`
-		client.Transport = &http2.Transport{
-			AllowHTTP: true,
-			// Pretend we are dialing a TLS endpoint.
-			// Note, we ignore the passed tls.Config
-			DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
-				return net.Dial(network, addr)
-			},
-		}
-	}
-
-	go cl.heartbeat(client, &ctx)
+	// don't know if we are needing this stuff in the new client
+	go cl.heartbeat(&cl.client, &ctx)
 
 	//  make the request
 	cl.logger.Debugf("sending ksqlDB request:\n\t%v", q)
-	res, err := client.Do(req)
+	res, err := (&cl.client).Do(req)
 
 	if err != nil {
 		return fmt.Errorf("failed to send request: %v", err)
@@ -117,7 +123,7 @@ func (cl *Client) Push(ctx context.Context, q string, rc chan<- Row, hc chan<- H
 				return fmt.Errorf("failed to construct http request to cancel query\n%w", err)
 			}
 
-			res, err := client.Do(req)
+			res, err := cl.client.Do(req)
 			if err != nil {
 				return fmt.Errorf("failed to execute http request to cancel query\n%w", err)
 			}

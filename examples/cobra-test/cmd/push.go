@@ -42,7 +42,16 @@ func push(cmd *cobra.Command, args []string) {
 	user := viper.GetString("username")
 	password := viper.GetString("password")
 
-	client := ksqldb.NewClient(host, user, password, log.Current)
+	options := ksqldb.Options{
+		Credentials: ksqldb.Credentials{Username: user, Password: password},
+		BaseUrl:     host,
+		AllowHTTP:   true,
+	}
+
+	client, err := ksqldb.NewClient(options, log.Current)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// You don't need to parse your ksql statement; Client.Pull parses it for you
 	k := "SELECT ROWTIME, ID, NAME, DOGSIZE, AGE FROM DOGS EMIT CHANGES;"
@@ -80,8 +89,9 @@ func push(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	e := client.Push(ctx, k, rc, hc)
+	e := ksqldb.Push(client, ctx, k, rc, hc)
 
+	client.Close()
 	if e != nil {
 		// handle the error better here, e.g. check for no rows returned
 		log.Fatalf("error running push request against ksqlDB:\n%v", e)

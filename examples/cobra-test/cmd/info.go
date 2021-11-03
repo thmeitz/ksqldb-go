@@ -41,9 +41,17 @@ func info(cmd *cobra.Command, args []string) {
 	user := viper.GetString("username")
 	password := viper.GetString("password")
 
-	client := ksqldb.NewClient(host, user, password, log.Current)
+	options := ksqldb.Options{
+		Credentials: ksqldb.Credentials{Username: user, Password: password},
+		BaseUrl:     host,
+	}
 
-	info, err := client.ServerInfo()
+	client, err := ksqldb.NewClient(options, log.Current)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	info, err := ksqldb.GetServerInfo(client)
 	if err != nil {
 		log.Fatal(err)
 	}

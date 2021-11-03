@@ -48,13 +48,22 @@ func dogstats(cmd *cobra.Command, args []string) {
 	password := viper.GetString("password")
 	s := viper.GetString("dogsize")
 
-	client := ksqldb.NewClient(host, user, password, log.Current)
+	options := ksqldb.Options{
+		Credentials: ksqldb.Credentials{Username: user, Password: password},
+		BaseUrl:     host,
+		AllowHTTP:   true,
+	}
+
+	client, err := ksqldb.NewClient(options, log.Current)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, err := client.Pull(ctx, k, true)
+	_, r, err := ksqldb.Pull(client, ctx, k, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,5 +83,8 @@ func dogstats(cmd *cobra.Command, args []string) {
 			log.Infof("🐶 There are %v dogs size %v between %v and %v", DOGS_CT, DOG_SIZE, WINDOW_START, WINDOW_END)
 		}
 	}
+
+	// close transport
+	client.Close()
 
 }
