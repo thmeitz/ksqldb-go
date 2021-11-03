@@ -39,8 +39,6 @@ import (
 //
 // Ref: https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint/
 //
-// TODO Add support for commandSequenceNumber and streamsProperties
-// TODO Add better support for responses to CREATE/DROP/TERMINATE (e.g. commandID, commandStatus.status, etc).
 func Execute(api *Client, q string) (err error) {
 
 	// first sanitize the query

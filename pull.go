@@ -70,11 +70,6 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 	}
 	req.Header.Add("Accept", "application/json; charset=utf-8")
 
-	// TODO: If we've got creds to pass, let's pass them
-	// if cl.username != "" {
-	// 	req.SetBasicAuth(cl.username, cl.password)
-	// }
-
 	res, err := (&api.client).Do(req)
 	if err != nil {
 		return h, r, fmt.Errorf("can't do request:\n%w", err)

@@ -10634,7 +10634,7 @@ func (p *KSqlParser) booleanExpression(_p int) (localctx IBooleanExpressionConte
 	_parentState := p.GetState()
 	localctx = NewBooleanExpressionContext(p, p.GetParserRuleContext(), _parentState)
 	var _prevctx IBooleanExpressionContext = localctx
-	var _ antlr.ParserRuleContext = _prevctx // TODO: To prevent unused variable warning.
+	var _ antlr.ParserRuleContext = _prevctx // To prevent unused variable warning.
 	_startState := 78
 	p.EnterRecursionRule(localctx, 78, KSqlParserRULE_booleanExpression, _p)
 
@@ -11908,7 +11908,7 @@ func (p *KSqlParser) valueExpression(_p int) (localctx IValueExpressionContext) 
 	_parentState := p.GetState()
 	localctx = NewValueExpressionContext(p, p.GetParserRuleContext(), _parentState)
 	var _prevctx IValueExpressionContext = localctx
-	var _ antlr.ParserRuleContext = _prevctx // TODO: To prevent unused variable warning.
+	var _ antlr.ParserRuleContext = _prevctx // To prevent unused variable warning.
 	_startState := 84
 	p.EnterRecursionRule(localctx, 84, KSqlParserRULE_valueExpression, _p)
 	var _la int
@@ -13037,7 +13037,7 @@ func (p *KSqlParser) primaryExpression(_p int) (localctx IPrimaryExpressionConte
 	_parentState := p.GetState()
 	localctx = NewPrimaryExpressionContext(p, p.GetParserRuleContext(), _parentState)
 	var _prevctx IPrimaryExpressionContext = localctx
-	var _ antlr.ParserRuleContext = _prevctx // TODO: To prevent unused variable warning.
+	var _ antlr.ParserRuleContext = _prevctx // To prevent unused variable warning.
 	_startState := 86
 	p.EnterRecursionRule(localctx, 86, KSqlParserRULE_primaryExpression, _p)
 	var _la int
@@ -14241,7 +14241,7 @@ func (p *KSqlParser) sqltype(_p int) (localctx ISqltypeContext) {
 	_parentState := p.GetState()
 	localctx = NewSqltypeContext(p, p.GetParserRuleContext(), _parentState)
 	var _prevctx ISqltypeContext = localctx
-	var _ antlr.ParserRuleContext = _prevctx // TODO: To prevent unused variable warning.
+	var _ antlr.ParserRuleContext = _prevctx // To prevent unused variable warning.
 	_startState := 96
 	p.EnterRecursionRule(localctx, 96, KSqlParserRULE_sqltype, _p)
 	var _la int

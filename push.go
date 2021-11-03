@@ -83,11 +83,6 @@ func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- He
 		return fmt.Errorf("error creating new request with context: %w", err)
 	}
 
-	// TODO If we've got creds to pass, let's pass them
-	// if cl.username != "" {
-	// 	req.SetBasicAuth(cl.username, cl.password)
-	// }
-
 	// don't know if we are needing this stuff in the new client
 	go cl.heartbeat(&cl.client, &ctx)
 
@@ -200,9 +195,6 @@ func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- He
 //
 // This fixes issuue #17 by adding a gorountine which lists the streams every minute to keep the connection alive.
 // If we miss 9 heartbeats (9 minutes), then close the connection since KSQL Server only keeps it alive for 10 minutes by default.
-//
-// TODO: we have introduced a healthcheck endpoint, we should refactor this if the http.Client lives in the ksqldb.Client{}
-// and reusing http connections
 func (cl *Client) heartbeat(client *http.Client, ctx *context.Context) {
 	missedHeartbeat := 0
 	heartbeatThreshold := HEARTBEAT_TRESHOLD // Default for KSQL Server is close connection after 10 minutes of no activity

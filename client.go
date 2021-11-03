@@ -86,7 +86,6 @@ func (c *Client) Close() {
 
 func (cl *Client) newQueryStreamRequest(ctx context.Context, payload io.Reader) (*http.Request, error) {
 	req, err := cl.newPostRequest(ctx, QUERY_STREAM_ENDPOINT, payload)
-	//req.Header.Add("Accept", "application/vnd.ksql.v1+json; q=0.9, application/json; q=0.5")
 	return req, err
 }
 
@@ -99,23 +98,16 @@ func (cl *Client) newKsqlRequest(payload io.Reader) (*http.Request, error) {
 }
 
 func (cl *Client) newPostRequest(ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {
-	// TODO
 	req, err := http.NewRequestWithContext(ctx, "POST", cl.options.BaseUrl+endpoint, payload)
 	if err != nil {
 		return req, fmt.Errorf("can't create new request with context:\n%w", err)
 	}
-	// TODO: unclear which request needs which header
-	// req.Header.Add("Content-Type", "application/vnd.ksql.v1+json; charset=utf-8")
-	//  req.Header.Add("Accept", "application/json; charset=utf-8")
-	// This is described in the api, but it does'nt works!
-	// https://docs.confluent.io/5.2.0/ksql/docs/developer-guide/api.html#content-types
-	// req.Header.Add("Accept", "application/vnd.ksql.v1+json; q=0.9, application/json; q=0.5")
 
 	return req, nil
 }
 
 // SanitizeQuery sanitizes the given content
-// TODO: eventually we can use the KSqlParser to rewrite the query, so its automatically sanitized
+// eventually we can use the KSqlParser to rewrite the query, so its automatically sanitized
 // whitespaces will be eaten by the KSqlParser
 func (cl *Client) SanitizeQuery(content string) string {
 	content = strings.ReplaceAll(content, "\t", "")

@@ -773,7 +773,7 @@ type KSqlLexer struct {
 	*antlr.BaseLexer
 	channelNames []string
 	modeNames    []string
-	// TODO: EOF string
+	// EOF string
 }
 
 var lexerDecisionToDFA = make([]*antlr.DFA, len(lexerAtn.DecisionToState))
@@ -797,7 +797,7 @@ func NewKSqlLexer(input antlr.CharStream) *KSqlLexer {
 	l.LiteralNames = lexerLiteralNames
 	l.SymbolicNames = lexerSymbolicNames
 	l.GrammarFileName = "KSql.g4"
-	// TODO: l.EOF = antlr.TokenEOF
+	// l.EOF = antlr.TokenEOF
 
 	return l
 }
