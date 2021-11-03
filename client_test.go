@@ -17,6 +17,7 @@ limitations under the License.
 package ksqldb_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Masterminds/log-go/impl/logrus"
@@ -39,7 +40,10 @@ func TestClientPanic(t *testing.T) {
 			t.Errorf("The Client did not panic")
 		}
 	}()
-	ksqldb.NewClient(ksqldb.Options{BaseUrl: "sf"}, logger)
+	_, err := ksqldb.NewClient(ksqldb.Options{BaseUrl: "sf"}, logger)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func TestClientSanitizeQuery(t *testing.T) {
