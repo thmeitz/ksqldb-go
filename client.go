@@ -35,7 +35,7 @@ import (
 
 const (
 	DefaultIdleConnTimeout = 10 * time.Second
-	DefaultBaseUrl         = "http://localhost:8082"
+	DefaultBaseUrl         = "http://localhost:8088"
 )
 
 // The ksqlDB client
