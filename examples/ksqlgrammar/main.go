@@ -11,8 +11,7 @@ import (
 
 func main() {
 	//----------| this is the error
-	k := `
-	SELECT1 TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, 
+	k := `SELECT1 TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, 
 				  TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, 
 					DOG_SIZE, DOGS_CT 
 	FROM DOGS_BY_SIZE 
