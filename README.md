@@ -124,8 +124,24 @@ var (
 )
 // than later in your code...
 func main {
-  // this creates a client
-  client := ksqldb.NewClient("http://ksqldb:8088","username","password", logger)
+  options := ksqldb.Options{
+    // if you need a login, do this; if not its not necessary
+		Credentials: ksqldb.Credentials{Username: "myuser", Password: "mypassword"},
+    // defaults to http://localhost:8082
+		BaseUrl:     "http://my-super-shiny-ksqldbserver:8082",
+    // this is needed, because the ksql api communicates with http2 only
+		AllowHTTP:   true,
+	}
+
+	client, err := ksqldb.NewClient(options, log.Current)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+  // then make a pull, push, execute request
+
+  // if you finished your work, you **MUST** close the http.Transport!!!
+  client.Close()
 }
 ```
 
@@ -134,13 +150,16 @@ For no authentication just use blank username and password values.
 ### Pull query
 
 ```golang
+
+// we are using the client, we are created
+
 ctx, ctxCancel := context.WithTimeout(context.Background(), 10 \* time.Second)
 defer ctxCancel()
 
 k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW*START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
 
 // your select statement will be checked with integrated KSqlParser
-_, r, e := client.Pull(ctx, k, false)
+_, r, e := ksqldb.Pull(client, ctx, k, false)
 if e != nil {
   // handle the error better here, e.g. check for no rows returned
   return fmt.Errorf("error running pull request against ksqlDB:\n%v", e)
@@ -184,7 +203,7 @@ for row := range rc {
 ctx, ctxCancel := context.WithTimeout(context.Background(), 10 \* time.Second)
 defer ctxCancel()
 
-e := client.Push(ctx, k, rc, hc)
+e := ksqldb.Push(client, ctx, k, rc, hc)
 
 if e != nil {
 // handle the error better here, e.g. check for no rows returned
@@ -195,7 +214,7 @@ return fmt.Errorf("error running push request against ksqlDB:\n%v", e)
 ### Execute a command
 
 ```golang
-if err := client.Execute(ctx, ksqlDBServer, ` CREATE STREAM DOGS (ID STRING KEY, NAME STRING, DOGSIZE STRING, AGE STRING) WITH (KAFKA_TOPIC='dogs', VALUE_FORMAT='JSON');`); err != nil {
+if err := ksqldb.Execute(client, ctx, ksqlDBServer, ` CREATE STREAM DOGS (ID STRING KEY, NAME STRING, DOGSIZE STRING, AGE STRING) WITH (KAFKA_TOPIC='dogs', VALUE_FORMAT='JSON');`); err != nil {
 return fmt.Errorf("error creating the dogs stream.\n%v", err)
 }
 
