@@ -3,8 +3,8 @@ package internal_test
 import (
 	"testing"
 
-	"github.com/rmoff/ksqldb-go/internal"
 	"github.com/stretchr/testify/assert"
+	"github.com/thmeitz/ksqldb-go/internal"
 )
 
 var tests = []struct {

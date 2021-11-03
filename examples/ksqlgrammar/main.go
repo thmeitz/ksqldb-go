@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/rmoff/ksqldb-go/parser"
+	"github.com/thmeitz/ksqldb-go/parser"
 )
 
 func main() {

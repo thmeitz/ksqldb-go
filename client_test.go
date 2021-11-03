@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/Masterminds/log-go/impl/logrus"
-	"github.com/rmoff/ksqldb-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/thmeitz/ksqldb-go"
 )
 
 var (

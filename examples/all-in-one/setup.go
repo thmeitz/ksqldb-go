@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rmoff/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go"
 )
 
 func setup() (*ksqldb.Client, error) {

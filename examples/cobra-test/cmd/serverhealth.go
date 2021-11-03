@@ -20,9 +20,9 @@ import (
 
 	"github.com/Masterminds/log-go"
 	"github.com/Masterminds/log-go/impl/logrus"
-	"github.com/rmoff/ksqldb-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thmeitz/ksqldb-go"
 )
 
 // serverhealthCmd represents the serverhealth command
