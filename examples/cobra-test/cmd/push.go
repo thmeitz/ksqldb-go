@@ -89,8 +89,9 @@ func push(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	e := client.Push(ctx, k, rc, hc)
+	e := ksqldb.Push(client, ctx, k, rc, hc)
 
+	client.Close()
 	if e != nil {
 		// handle the error better here, e.g. check for no rows returned
 		log.Fatalf("error running push request against ksqlDB:\n%v", e)

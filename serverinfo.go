@@ -50,8 +50,6 @@ func GetServerInfo(api *Client) (*ServerInfo, error) {
 	}
 	defer res.Body.Close()
 
-	api.Close()
-
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
 		return nil, fmt.Errorf("could not read response body: %v", readErr)

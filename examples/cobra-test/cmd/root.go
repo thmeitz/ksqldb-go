@@ -55,7 +55,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra-test.yaml)")
 
 	rootCmd.PersistentFlags().String("logformat", "text", "set log format [text|json]")
-	rootCmd.PersistentFlags().String("loglevel", "info", "set log level [info|debug|error|trace]")
+	rootCmd.PersistentFlags().String("loglevel", "debug", "set log level [info|debug|error|trace]")
 	rootCmd.PersistentFlags().String("host", "http://localhost:8088", "set the ksqldb host")
 	rootCmd.PersistentFlags().String("username", "", "set the ksqldb user name")
 	rootCmd.PersistentFlags().String("password", "", "set the ksqldb user password")

@@ -49,22 +49,10 @@ func dogstats(cmd *cobra.Command, args []string) {
 	s := viper.GetString("dogsize")
 
 	options := ksqldb.Options{
-		Credentials:       ksqldb.Credentials{Username: user, Password: password},
-		BaseUrl:           host,
-		ForceAttemptHTTP2: true,
-		AllowHTTP:         true,
+		Credentials: ksqldb.Credentials{Username: user, Password: password},
+		BaseUrl:     host,
+		AllowHTTP:   true,
 	}
-
-	/**
-	Transport: &http2.Transport{
-				AllowHTTP: true,
-				// Pretend we are dialing a TLS endpoint.
-				// Note, we ignore the passed tls.Config
-				DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
-					return net.Dial(network, addr)
-				},
-			},
-	*/
 
 	client, err := ksqldb.NewClient(options, log.Current)
 	if err != nil {
@@ -75,7 +63,7 @@ func dogstats(cmd *cobra.Command, args []string) {
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, err := client.Pull(ctx, k, true)
+	_, r, err := ksqldb.Pull(client, ctx, k, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,5 +83,8 @@ func dogstats(cmd *cobra.Command, args []string) {
 			log.Infof("🐶 There are %v dogs size %v between %v and %v", DOGS_CT, DOG_SIZE, WINDOW_START, WINDOW_END)
 		}
 	}
+
+	// close transport
+	client.Close()
 
 }

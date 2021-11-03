@@ -30,7 +30,7 @@ func getDogStats(client *ksqldb.Client, s string) (e error) {
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, e := client.Pull(ctx, k, true)
+	_, r, e := ksqldb.Pull(client, ctx, k, true)
 
 	if e != nil {
 		// handle the error better here, e.g. check for no rows returned

@@ -150,8 +150,12 @@ func NewTransport(options Options) *Transport {
 	}
 	var htransport2 = &http2.Transport{}
 	if options.AllowHTTP {
-		// we are needing a HTTP2
+		// ksqlDB uses HTTP2 and if the server is on HTTP then Golang will not
+		// use HTTP2 unless we force it to, thus.
+		// Without this you get the error `http2: unsupported scheme`
 		htransport2.AllowHTTP = options.AllowHTTP
+		// Pretend we are dialing a TLS endpoint.
+		// Note, we ignore the passed tls.Config
 		htransport2.DialTLS = func(network, addr string, cfg *tls.Config) (net.Conn, error) {
 			return net.Dial(network, addr)
 		}
@@ -160,11 +164,19 @@ func NewTransport(options Options) *Transport {
 			tr2:    htransport2,
 			tracer: options.Tracer,
 		}
+		if t2.tracer != nil {
+			if options.OpentracingComponentTag != "" {
+				t2 = WithComponentTag(t2, options.OpentracingComponentTag)
+			}
+			if options.OpentracingSpanName != "" {
+				t2 = WithSpanName(t2, options.OpentracingSpanName)
+			}
+		}
 		go func() {
 			for {
 				select {
 				case <-time.After(options.IdleConnTimeout):
-					htransport.CloseIdleConnections()
+					htransport2.CloseIdleConnections()
 				case <-t2.quit:
 					return
 				}
@@ -214,9 +226,9 @@ func (t *Transport) Close() {
 }
 
 // CloseIdleConnection closes idle connections
-func (t *Transport) CloseIdleConnections() {
-	t.tr.CloseIdleConnections()
-}
+// func (t *Transport) CloseIdleConnections() {
+// 	t.tr.CloseIdleConnections()
+// }
 
 // RoundTrip the request with tracing and add client
 // tracing: DNS, TCP/IP, TLS handshake, connection pool access. Client

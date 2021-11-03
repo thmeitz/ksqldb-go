@@ -51,12 +51,12 @@ import (
 // 			// Do other stuff with the data here
 // 			}
 // 		}
-func (cl *Client) Pull(ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
+func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
 
 	// first sanitize the query
-	query := cl.SanitizeQuery(q)
+	query := api.SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
-	ksqlerr := cl.ParseKSQL(query)
+	ksqlerr := api.ParseKSQL(query)
 	if ksqlerr != nil {
 		return h, r, ksqlerr
 	}
@@ -64,7 +64,7 @@ func (cl *Client) Pull(ctx context.Context, q string, s bool) (h Header, r Paylo
 	// Create the request
 	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(s) + `},"sql":"` + query + `"}`)
 
-	req, err := cl.newQueryStreamRequest(ctx, payload)
+	req, err := api.newQueryStreamRequest(ctx, payload)
 	if err != nil {
 		return h, r, fmt.Errorf("can't create new request with context:\n%w", err)
 	}
@@ -75,7 +75,7 @@ func (cl *Client) Pull(ctx context.Context, q string, s bool) (h Header, r Paylo
 	// 	req.SetBasicAuth(cl.username, cl.password)
 	// }
 
-	res, err := (&cl.client).Do(req)
+	res, err := (&api.client).Do(req)
 	if err != nil {
 		return h, r, fmt.Errorf("can't do request:\n%w", err)
 	}
@@ -117,7 +117,7 @@ func (cl *Client) Pull(ctx context.Context, q string, s bool) (h Header, r Paylo
 				} else {
 					// it is a hard fact, so we should throw an error?
 					// log interface needs a format and a interface{}
-					cl.logger.Info("(query id not found - this is expected for a pull query)")
+					api.logger.Info("(query id not found - this is expected for a pull query)")
 				}
 
 				names, okn := zz["columnNames"].([]interface{})
@@ -130,14 +130,14 @@ func (cl *Client) Pull(ctx context.Context, q string, s bool) (h Header, r Paylo
 								h.columns = append(h.columns, a)
 
 							} else {
-								cl.logger.Infof("nil type found for column %v", col)
+								api.logger.Infof("nil type found for column %v", col)
 							}
 						} else {
-							cl.logger.Infof("nil name found for column %v", col)
+							api.logger.Infof("nil name found for column %v", col)
 						}
 					}
 				} else {
-					cl.logger.Infof("column names/types not found in header:\n%v", zz)
+					api.logger.Infof("column names/types not found in header:\n%v", zz)
 				}
 
 			case []interface{}:

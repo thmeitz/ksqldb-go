@@ -46,14 +46,15 @@ func setup(cmd *cobra.Command, args []string) {
 	options := ksqldb.Options{
 		Credentials: ksqldb.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
+		AllowHTTP:   true,
 	}
 
 	client, err := ksqldb.NewClient(options, log.Current)
 	if err != nil {
-		log.Fatal(err)
+		log.Current.Fatal(err)
 	}
 
-	if err := client.Execute(`
+	if err := ksqldb.Execute(client, `
 		CREATE SOURCE CONNECTOR DOGS WITH (
 		'connector.class'               = 'io.mdrogalis.voluble.VolubleSourceConnector',
 		'key.converter'                 = 'org.apache.kafka.connect.storage.StringConverter',
@@ -66,7 +67,7 @@ func setup(cmd *cobra.Command, args []string) {
 		'topic.dogs.throttle.ms'        = 1000 
 		);
 		`); err != nil {
-		log.Error("create source connector dogs failed")
+		log.Current.Error("create source connector dogs failed")
 		os.Exit(-1)
 	}
 
@@ -75,15 +76,16 @@ func setup(cmd *cobra.Command, args []string) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS stream
-	if err := client.Execute(`
-	CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
-						NAME STRING, 
-						DOGSIZE STRING, 
-						AGE STRING) 
-				  WITH (KAFKA_TOPIC='dogs', 
-				  VALUE_FORMAT='JSON', PARTITIONS=1);
+	if err := ksqldb.Execute(client,
+		`
+		CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
+			NAME STRING, 
+			DOGSIZE STRING, 
+			AGE STRING) 
+		WITH (KAFKA_TOPIC='dogs', 
+		VALUE_FORMAT='JSON', PARTITIONS=1);
 	`); err != nil {
-		log.Error(err)
+		log.Current.Error(err)
 		os.Exit(-1)
 	}
 
@@ -92,13 +94,15 @@ func setup(cmd *cobra.Command, args []string) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS_BY_SIZE table
-	if err := client.Execute(`
-	CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
-		SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
-		FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 
-		GROUP BY DOGSIZE;
+	if err := ksqldb.Execute(client,
+		`
+			CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
+				SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
+				FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 
+				GROUP BY DOGSIZE;
 	`); err != nil {
-		log.Error(err)
+		log.Current.Error(err)
 		os.Exit(-1)
 	}
+	client.Close()
 }

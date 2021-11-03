@@ -40,13 +40,9 @@ func Healthcheck(api *Client) (*ServerHealth, error) {
 	info := ServerHealth{}
 	res, err := api.client.Get(api.options.BaseUrl + HEALTHCHECK_ENDPOINT)
 	if err != nil {
-		api.Close()
 		return nil, fmt.Errorf("can't get healthcheck informations: %v", err)
 	}
 	defer res.Body.Close()
-
-	// close transport layer
-	api.Close()
 
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {

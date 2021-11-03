@@ -41,22 +41,26 @@ import (
 //
 // TODO Add support for commandSequenceNumber and streamsProperties
 // TODO Add better support for responses to CREATE/DROP/TERMINATE (e.g. commandID, commandStatus.status, etc).
-func (cl *Client) Execute(q string) (err error) {
-	// Create the client
-	// TODO: this should be refactored, since we can't mockup the cient
-	// should this client in our Client?
-	client := &http.Client{}
+func Execute(api *Client, q string) (err error) {
 
+	// first sanitize the query
+	query := api.SanitizeQuery(q)
+	// we're kick in our ksqlparser to check the query string
+	ksqlerr := api.ParseKSQL(query)
+	if ksqlerr != nil {
+		return ksqlerr
+	}
 	//  make the request
-	payload := strings.NewReader(`{"ksql":"` + cl.SanitizeQuery(q) + `"}`)
+	payload := strings.NewReader(`{"ksql":"` + query + `"}`)
 
-	req, err := cl.newKsqlRequest(payload)
-	cl.logger.Debug("sending ksqlDB request:%v", q)
+	req, err := api.newKsqlRequest(payload)
+	api.logger.Debugf("sending ksqlDB request:%v", q)
 	if err != nil {
+		api.logger.Tracef("can't create new request: %w", err)
 		return fmt.Errorf("can't create new request: %w", err)
 	}
 
-	res, err := client.Do(req)
+	res, err := (&api.client).Do(req)
 	if err != nil {
 		return fmt.Errorf("can't do request: %w", err)
 	}
@@ -66,6 +70,7 @@ func (cl *Client) Execute(q string) (err error) {
 	if err != nil {
 		return fmt.Errorf("can't read response body: %w", err)
 	}
+	api.logger.Debugf("response body: %v", string(body))
 
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("the http request did not return a success code: %v / %v", res.StatusCode, string(body))

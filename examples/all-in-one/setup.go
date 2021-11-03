@@ -37,7 +37,8 @@ func setup() (*ksqldb.Client, error) {
 	}
 	// create the dummy data connector
 	// IF NOT EXISTS didnt works - it throws an error - this is a bug in the ksql-rest-api
-	if err := client.Execute(`
+	if err := ksqldb.Execute(client,
+		`
 		CREATE SOURCE CONNECTOR DOGS WITH (
 		'connector.class'               = 'io.mdrogalis.voluble.VolubleSourceConnector',
 		'key.converter'                 = 'org.apache.kafka.connect.storage.StringConverter',
@@ -58,13 +59,14 @@ func setup() (*ksqldb.Client, error) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS stream
-	if err := client.Execute(`
-	CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
-						NAME STRING, 
-						DOGSIZE STRING, 
-						AGE STRING) 
-				  WITH (KAFKA_TOPIC='dogs', 
-				  VALUE_FORMAT='JSON', PARTITIONS=1);
+	if err := ksqldb.Execute(client,
+		`
+		CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
+			NAME STRING, 
+			DOGSIZE STRING, 
+			AGE STRING) 
+		WITH (KAFKA_TOPIC='dogs', 
+		VALUE_FORMAT='JSON', PARTITIONS=1);
 	`); err != nil {
 		return nil, fmt.Errorf("error creating the dogs stream.\n%v", err)
 	}
@@ -74,11 +76,12 @@ func setup() (*ksqldb.Client, error) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS_BY_SIZE table
-	if err := client.Execute(`
-	CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
-		SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
-		FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 
-		GROUP BY DOGSIZE;
+	if err := ksqldb.Execute(client,
+		`
+		CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
+			SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
+			FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 
+			GROUP BY DOGSIZE;
 	`); err != nil {
 		return nil, fmt.Errorf("error creating the dogs stream.\n%v", err)
 	}

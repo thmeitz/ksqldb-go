@@ -84,7 +84,7 @@ func (cl *Client) newCloseQueryRequest(ctx context.Context, payload io.Reader) (
 }
 
 func (cl *Client) newKsqlRequest(payload io.Reader) (*http.Request, error) {
-	return nil, nil // TODO: http.NewRequest("POST", cl.url+KSQL_ENDPOINT, payload)
+	return http.NewRequest("POST", cl.options.BaseUrl+KSQL_ENDPOINT, payload)
 }
 
 func (cl *Client) newPostRequest(ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {
@@ -103,12 +103,9 @@ func (cl *Client) newPostRequest(ctx context.Context, endpoint string, payload i
 	return req, nil
 }
 
-// IsHttpRequest checks if it's a http request or not
-// func (cl *Client) IsHttpRequest() bool {
-// 	return cl.urlScheme == "http"
-// }
-
 // SanitizeQuery sanitizes the given content
+// TODO: eventually we can use the KSqlParser to rewrite the query, so its automatically sanitized
+// whitespaces will be eaten by the KSqlParser
 func (cl *Client) SanitizeQuery(content string) string {
 	content = strings.ReplaceAll(content, "\t", "")
 	content = strings.ReplaceAll(content, "\n", "")
