@@ -7,6 +7,7 @@ require (
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211031164439-7373e892b017
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989 // indirect
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0

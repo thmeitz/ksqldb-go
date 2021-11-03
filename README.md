@@ -1,8 +1,11 @@
 # ksqlDB Go library
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/thmeitz/ksqldb-go.svg)](https://pkg.go.dev/github.com/thmeitz/ksqldb-go)
-[![codecov](https://codecov.io/gh/thmeitz/ksqldb-go/branch/main/graph/badge.svg?token=PCC6RIY34C)](https://codecov.io/gh/thmeitz/ksqldb-go)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=coverage)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
 
 This is a unconnected fork from [Robin Moffatt](https://github.com/rmoff/ksqldb-go) and will be developed on its own.
 
