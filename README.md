@@ -1,6 +1,7 @@
 # ksqlDB Go library
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/thmeitz/ksqldb-go.svg)](https://pkg.go.dev/github.com/thmeitz/ksqldb-go)
+[![codecov](https://codecov.io/gh/thmeitz/ksqldb-go/branch/main/graph/badge.svg?token=PCC6RIY34C)](https://codecov.io/gh/thmeitz/ksqldb-go)
 
 This is a unconnected fork from [Robin Moffatt](https://github.com/thmeitz/ksqldb-go) and will be devloped on it's own.
 
