@@ -27,10 +27,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/Masterminds/log-go"
+	"github.com/thmeitz/ksqldb-go/internal"
 )
 
 const (
@@ -41,6 +43,7 @@ const (
 // The ksqlDB client
 type Client struct {
 	options Options
+	uri     *url.URL
 	client  http.Client
 	tr      *Transport
 	logger  log.Logger
@@ -53,8 +56,15 @@ type Credentials struct {
 }
 
 func NewClient(options Options, logger log.Logger) (*Client, error) {
+	var uri *url.URL
+	var err error
+
 	if options.BaseUrl == "" {
 		options.BaseUrl = DefaultBaseUrl
+	}
+
+	if uri, err = internal.GetUrl(options.BaseUrl); err != nil {
+		logger.Panic(err)
 	}
 
 	tr := NewTransport(options)
@@ -66,6 +76,7 @@ func NewClient(options Options, logger log.Logger) (*Client, error) {
 		},
 		options: options,
 		tr:      tr,
+		uri:     uri,
 	}, nil
 }
 
