@@ -18,8 +18,8 @@ jobs:
           go-version: 1.17
 
       - name: Test
-        # run: go test -gcflags=-l -v  -coverprofile=coverage.txt -covermode=atomic ./...
-        run: go test ./... -coverprofile=test.out -covermode=count -json > report.json
+        run: |
+          go test ./... -short -coverprofile=test.out -covermode=count -json > report.json
 
       - name: Run Gosec Security Scanner
         run: |
@@ -28,10 +28,10 @@ jobs:
 
       #- name: Codecov
       #  uses: codecov/codecov-action@v2.1.0
-      - name: lin
-        run: |
-          go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
-          golangci-lint run ./... --verbose --no-config --out-format checkstyle > golangci-lint.out
+      #- name: lint
+      #  run: |
+      #    go get github.com/golangci/golangci-lint/cmd/golangci-lint
+      #    golangci-lint run ./... --verbose --no-config --out-format checkstyle > golangci-lint.out
 
       - name: Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -39,7 +39,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          # projectBaseDir: my-custom-directory
           args: >
             -Dsonar.organization=thmeitz
             -Dsonar.projectKey=thmeitz_ksqldb-go
@@ -51,6 +50,7 @@ jobs:
             -Dsonar.test.inclusions=**/*_test.go
             -Dsonar.go.coverage.reportPaths=test.out
             -Dsonar.go.tests.reportPaths=report.json
-            -Dsonar.go.golangci-lint.reportPaths=golangci-lint.out
             -Dsonar.externalIssuesReportPaths=secreport.json
-            -Dsonar.verbose=true
+
+#            -Dsonar.verbose=true
+#            -Dsonar.go.golangci-lint.reportPaths=golangci-lint.out
