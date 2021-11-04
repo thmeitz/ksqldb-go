@@ -22,6 +22,7 @@ build-ksqlgrammar:
 
 test:
 	$(GOTEST) -v ./... -short
+	gosec -no-fail -fmt=sonarqube -out coverage/secreport.json ./...
 
 test-cover:
 	$(GOTEST) ./... -coverprofile=coverage/coverage.out

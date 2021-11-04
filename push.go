@@ -222,7 +222,7 @@ func (cl *Client) heartbeat(client *http.Client, ctx *context.Context) {
 					missedHeartbeat += 1
 					cl.logger.Errorw("failed to read heartbeat body", log.Fields{"status": res.StatusCode})
 				} else {
-					res.Body.Close()
+					defer res.Body.Close()
 
 					body := string(bodyBytes)
 
