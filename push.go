@@ -222,7 +222,9 @@ func (cl *Client) heartbeat(client *http.Client, ctx *context.Context) {
 					missedHeartbeat += 1
 					cl.logger.Errorw("failed to read heartbeat body", log.Fields{"status": res.StatusCode})
 				} else {
-					defer res.Body.Close()
+					// SA9001: defers in this range loop won't run unless the channel gets closed (staticcheck)
+					// defer res.Body.Close()
+					res.Body.Close()
 
 					body := string(bodyBytes)
 

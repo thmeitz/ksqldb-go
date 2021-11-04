@@ -160,7 +160,7 @@ For no authentication just use blank username and password values.
 ctx, ctxCancel := context.WithTimeout(context.Background(), 10 \* time.Second)
 defer ctxCancel()
 
-k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW*START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
+k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
 
 // your select statement will be checked with integrated KSqlParser
 _, r, e := ksqldb.Pull(client, ctx, k, false)
@@ -169,14 +169,14 @@ if e != nil {
   return fmt.Errorf("error running pull request against ksqlDB:\n%v", e)
 }
 
-var DOG*SIZE string
-var DOGS_CT float64
+var dogSize string
+var dogsCt float64
 for *, row := range r {
   if row != nil {
     // Should do some type assertions here
-    DOG_SIZE = row[2].(string)
-    DOGS_CT = row[3].(float64)
-    fmt.Printf("🐶 There are %v dogs size %v\n", DOGS_CT, DOG_SIZE)
+    dogSize = row[2].(string)
+    dogsCt = row[3].(float64)
+    fmt.Printf("🐶 There are %v dogs size %v\n", dogsCt, dogSize)
   }
 }
 ```
@@ -192,14 +192,14 @@ k := "SELECT ROWTIME, ID, NAME, DOGSIZE, AGE FROM DOGS EMIT CHANGES;"
 // This Go routine will handle rows as and when they
 // are sent to the channel
 go func() {
-var NAME string
-var DOG_SIZE string
+var name string
+var dogSize string
 for row := range rc {
   if row != nil {
       // Should do some type assertions here
-      NAME = row[2].(string)
-      DOG_SIZE = row[3].(string)
-      fmt.Printf("🐾%v: %v\n",  NAME, DOG_SIZE)
+      name = row[2].(string)
+      dogSize = row[3].(string)
+      fmt.Printf("🐾%v: %v\n",  name, dogSize)
     }
   }
 }()
@@ -219,7 +219,7 @@ return fmt.Errorf("error running push request against ksqlDB:\n%v", e)
 
 ```golang
 if err := ksqldb.Execute(client, ctx, ksqlDBServer, ` CREATE STREAM DOGS (ID STRING KEY, NAME STRING, DOGSIZE STRING, AGE STRING) WITH (KAFKA_TOPIC='dogs', VALUE_FORMAT='JSON');`); err != nil {
-return fmt.Errorf("error creating the dogs stream.\n%v", err)
+  return fmt.Errorf("error creating the dogs stream.\n%v", err)
 }
 
 ```

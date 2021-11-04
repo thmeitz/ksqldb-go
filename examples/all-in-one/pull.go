@@ -37,18 +37,18 @@ func getDogStats(client *ksqldb.Client, s string) (e error) {
 		return fmt.Errorf("error running pull request against ksqlDB:\n%w", e)
 	}
 
-	var WINDOW_START string
-	var WINDOW_END string
-	var DOG_SIZE string
-	var DOGS_CT float64
+	var windowStart string
+	var windowEnd string
+	var dogSize string
+	var dogsCt float64
 	for _, row := range r {
 		if row != nil {
 			// Should do some type assertions here
-			WINDOW_START = row[0].(string)
-			WINDOW_END = row[1].(string)
-			DOG_SIZE = row[2].(string)
-			DOGS_CT = row[3].(float64)
-			fmt.Printf("🐶 There are %v dogs size %v between %v and %v\n", DOGS_CT, DOG_SIZE, WINDOW_START, WINDOW_END)
+			windowStart = row[0].(string)
+			windowEnd = row[1].(string)
+			dogSize = row[2].(string)
+			dogsCt = row[3].(float64)
+			fmt.Printf("🐶 There are %v dogs size %v between %v and %v\n", dogsCt, dogSize, windowStart, windowEnd)
 		}
 	}
 	return nil

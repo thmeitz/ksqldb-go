@@ -34,25 +34,25 @@ func getDogUpdates(client *ksqldb.Client) (err error) {
 	// This Go routine will handle rows as and when they
 	// are sent to the channel
 	go func() {
-		var DATA_TS float64
-		var ID string
-		var NAME string
-		var DOG_SIZE string
-		var AGE string
+		var dataTs float64
+		var id string
+		var name string
+		var dogSize string
+		var age string
 		for row := range rc {
 			if row != nil {
 				// Should do some type assertions here
-				DATA_TS = row[0].(float64)
-				ID = row[1].(string)
-				NAME = row[2].(string)
-				DOG_SIZE = row[3].(string)
-				AGE = row[4].(string)
+				dataTs = row[0].(float64)
+				id = row[1].(string)
+				name = row[2].(string)
+				dogSize = row[3].(string)
+				age = row[4].(string)
 
 				// Handle the timestamp
-				t := int64(DATA_TS)
+				t := int64(dataTs)
 				ts := time.Unix(t/1000, 0).Format(time.RFC822)
 
-				fmt.Printf("🐾New dog at %v: '%v' is %v and %v (id %v)\n", ts, NAME, DOG_SIZE, AGE, ID)
+				fmt.Printf("🐾 New dog at %v: '%v' is %v and %v (id %v)\n", ts, name, dogSize, age, id)
 			}
 		}
 
