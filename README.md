@@ -44,30 +44,21 @@ go get -u github.com/thmeitz/ksqldb-go
 
 You can find the examples in the [examples directory](examples).
 
-- [all in one example](examples/all-in-one)
 - [cobra example](examples/cobra-test)
 - [KSqlGrammar example](examples/ksqlgrammar)
 
-See the [test environment here](examples/all-in-one/environment.adoc)
-and [this sample code](examples/all-in-one/main.go) which you can run with
-
-### All in one example
-
-The All in one example shows basic usage of the `ksqldb-go` package. To run it, you need a `Kafka` runtime environment. You can start it, with `docker-compose up -d`.
-
-Then
-
-```bash
-go run ./examples/all-in-one
-```
+See the [test environment here](examples/cobra-test/environment.adoc)
 
 ### Cobra example
 
-The [Cobra](https://github.com/spf13/cobra) example splits the different use cases into `Cobra` commands.
+The All in one example shows basic usage of the `ksqldb-go` package. To run it, you need a `Kafka` runtime environment.
 
-Start [docker-compose](examples/all-in-one/docker-compose.yml) from the `all-in-one` example as shown above and then:
+The [Cobra](https://github.com/spf13/cobra) example shows basic usage of the `ksqldb-go` package and splits the different use cases into `Cobra` commands.
+
+Start [docker-compose](examples/cobra/docker-compose.yml).
 
 ```bash
+docker-compose up -d
 go run ./examples/cobra-test
 ```
 
