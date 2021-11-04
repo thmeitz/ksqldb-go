@@ -28,12 +28,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/Masterminds/log-go"
 )
 
 const (
@@ -84,7 +80,7 @@ func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- He
 	}
 
 	// don't know if we are needing this stuff in the new client
-	go cl.heartbeat(&cl.client, &ctx)
+	// go cl.heartbeat(&cl.client, &ctx)
 
 	//  make the request
 	cl.logger.Debugf("sending ksqlDB request:\n\t%v", q)
@@ -195,6 +191,8 @@ func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- He
 //
 // This fixes issuue #17 by adding a gorountine which lists the streams every minute to keep the connection alive.
 // If we miss 9 heartbeats (9 minutes), then close the connection since KSQL Server only keeps it alive for 10 minutes by default.
+
+/**
 func (cl *Client) heartbeat(client *http.Client, ctx *context.Context) {
 	missedHeartbeat := 0
 	heartbeatThreshold := HEARTBEAT_TRESHOLD // Default for KSQL Server is close connection after 10 minutes of no activity
@@ -247,3 +245,4 @@ func (cl *Client) heartbeat(client *http.Client, ctx *context.Context) {
 		}
 	}
 }
+*/
