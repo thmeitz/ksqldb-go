@@ -51,7 +51,7 @@ See the [test environment here](examples/cobra-test/environment.adoc)
 
 ### Cobra example
 
-The All in one example shows basic usage of the `ksqldb-go` package. To run it, you need a `Kafka` runtime environment.
+The `cobra` example shows basic usage of the `ksqldb-go` package. To run it, you need a `Kafka` runtime environment.
 
 The [Cobra](https://github.com/spf13/cobra) example shows basic usage of the `ksqldb-go` package and splits the different use cases into `Cobra` commands.
 
