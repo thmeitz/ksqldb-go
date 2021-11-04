@@ -24,9 +24,10 @@ test:
 	$(GOTEST) -v ./... -short
 
 test-cover:
-	$(GOTEST) ./... -coverprofile=coverage.out
-	$(GOCOVER) -func=coverage.out
-	$(GOCOVER) -html=coverage.out
+	$(GOTEST) ./... -coverprofile=coverage/coverage.out
+	$(GOCOVER) -func=coverage/coverage.out 
+	$(GOCOVER) -html=coverage/coverage.out
+	golangci-lint run ./... --verbose --no-config --out-format checkstyle > coverage/golangci-lint.out
 
 vet:	## run go vet on the source files
 	$(GO) vet ./...

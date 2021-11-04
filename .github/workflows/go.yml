@@ -30,7 +30,7 @@ jobs:
       #  uses: codecov/codecov-action@v2.1.0
       - name: lin
         run: |
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
+          go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
           golangci-lint run ./... --verbose --no-config --out-format checkstyle > golangci-lint.out
 
       - name: Scan
