@@ -64,7 +64,7 @@ func NewClient(options Options, logger log.Logger) (*Client, error) {
 	}
 
 	if uri, err = internal.GetUrl(options.BaseUrl); err != nil {
-		logger.Panic(err)
+		return nil, fmt.Errorf("%+w", err)
 	}
 
 	tr := NewTransport(options)

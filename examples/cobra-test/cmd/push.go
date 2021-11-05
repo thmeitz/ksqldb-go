@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/Masterminds/log-go"
@@ -50,7 +51,7 @@ func push(cmd *cobra.Command, args []string) {
 
 	client, err := ksqldb.NewClient(options, log.Current)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Unwrap(err))
 	}
 
 	// You don't need to parse your ksql statement; Client.Pull parses it for you
@@ -89,11 +90,11 @@ func push(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	e := ksqldb.Push(client, ctx, k, rc, hc)
+	e := client.Push(ctx, k, rc, hc)
 
 	client.Close()
+
 	if e != nil {
-		// handle the error better here, e.g. check for no rows returned
-		log.Fatalf("error running push request against ksqlDB:\n%v", e)
+		log.Fatal(e)
 	}
 }

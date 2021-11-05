@@ -39,7 +39,7 @@ import (
 //
 // Ref: https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint/
 //
-func Execute(api *Client, q string) (err error) {
+func (api *Client) Execute(q string) (err error) {
 
 	// first sanitize the query
 	query := api.SanitizeQuery(q)

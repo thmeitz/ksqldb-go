@@ -11,7 +11,7 @@ dev:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
 	go install mvdan.cc/gofumpt@latest
 
-build-cobra:  
+build:  
 	cd examples/cobra-test && go build . && mv cobra-test ../../bin
 
 build-ksqlgrammar:  

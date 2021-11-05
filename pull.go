@@ -51,7 +51,7 @@ import (
 // 			// Do other stuff with the data here
 // 			}
 // 		}
-func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
+func (api *Client) Pull(ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
 
 	// first sanitize the query
 	query := api.SanitizeQuery(q)
@@ -66,13 +66,13 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 
 	req, err := api.newQueryStreamRequest(ctx, payload)
 	if err != nil {
-		return h, r, fmt.Errorf("can't create new request with context:\n%w", err)
+		return h, r, fmt.Errorf("can't create new request with context: %w", err)
 	}
 	req.Header.Add("Accept", "application/json; charset=utf-8")
 
 	res, err := (&api.client).Do(req)
 	if err != nil {
-		return h, r, fmt.Errorf("can't do request:\n%w", err)
+		return h, r, fmt.Errorf("can't do request: %+w", err)
 	}
 	defer res.Body.Close()
 
@@ -82,7 +82,7 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return h, r, fmt.Errorf("the http request did not return a success code:\n%v / %v", res.StatusCode, string(body))
+		return h, r, api.handleRequestError(res.StatusCode, body)
 	}
 
 	var x []interface{}

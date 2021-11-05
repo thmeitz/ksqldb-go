@@ -41,7 +41,7 @@ import (
 type Options struct {
 	// BaseUrl is the URL to your ksqldb server
 	BaseUrl string
-	// Credentials for ISPConfig remote user
+	// Credentials for BaseAuth remote user
 	Credentials Credentials
 	// AllowHTTP
 	AllowHTTP bool
