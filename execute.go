@@ -54,7 +54,6 @@ func Execute(api *Client, q string) (err error) {
 	req, err := api.newKsqlRequest(payload)
 	api.logger.Debugf("sending ksqlDB request:%v", q)
 	if err != nil {
-		api.logger.Tracef("can't create new request: %w", err)
 		return fmt.Errorf("can't create new request: %w", err)
 	}
 
@@ -71,7 +70,7 @@ func Execute(api *Client, q string) (err error) {
 	api.logger.Debugf("response body: %v", string(body))
 
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("the http request did not return a success code: %v / %v", res.StatusCode, string(body))
+		return api.handleRequestError(res.StatusCode, body)
 	}
 
 	return nil
