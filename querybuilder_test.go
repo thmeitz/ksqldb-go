@@ -20,7 +20,7 @@ var qbtests = []struct {
 	value   interface{}
 	message string
 }{
-	{"string", select1Param, "Lara", "select * from bla where column=\"Lara\""},
+	{"string", select1Param, "Lara", "select * from bla where column='Lara'"},
 	{"nil", select1Param, nil, "select * from bla where column=NULL"},
 	{"int", select1Param, 15235, "select * from bla where column=15235"},
 	{"hex int", select1Param, 0xff, "select * from bla where column=255"},
@@ -35,6 +35,7 @@ var qbtests = []struct {
 	{"uint64", select1Param, uint64(123), "select * from bla where column=123"},
 	{"float32", select1Param, float32(123.99998999998888), "select * from bla where column=123.99999"},
 	{"float64", select1Param, float64(123.99998999998888), "select * from bla where column=123.99998999998888"},
+	{"bool", select1Param, true, "select * from bla where column=true"},
 }
 
 func TestQueryBuilderTypes(t *testing.T) {
@@ -130,5 +131,5 @@ func TestQueryBuilder_Bind_MultiParams(t *testing.T) {
 	stmnt, err := builder.Bind(1, "rainer", 1.98, true, nil)
 	assert.Nil(t, err)
 	assert.NotNil(t, stmnt)
-	assert.Equal(t, "insert into bla values(null,1,\"rainer\",1.98,true,NULL)", *stmnt)
+	assert.Equal(t, "insert into bla values(null,1,'rainer',1.98,true,NULL)", *stmnt)
 }

@@ -67,8 +67,7 @@ func (qb *QueryBuilder) Bind(params ...interface{}) (*string, error) {
 		return nil, fmt.Errorf("%v: %v", QBErr, "to many params")
 	}
 
-	for idx, param := range params {
-		fmt.Println(idx, ":", param)
+	for _, param := range params {
 		replace, err := getReplacement(param)
 		if err != nil {
 			return nil, fmt.Errorf("%v", err)
@@ -79,51 +78,48 @@ func (qb *QueryBuilder) Bind(params ...interface{}) (*string, error) {
 }
 
 func getReplacement(param interface{}) (*string, error) {
-	// strconv.FormatInt(int64(param.(int)), 10)
-	switch t := param.(type) {
+	switch param := param.(type) {
 	case int:
-		fmt.Println("int", t, param)
-		n := fmt.Sprintf("%v", int(param.(int)))
+		n := fmt.Sprintf("%v", int(param))
 		return &n, nil
 	case int8:
-		n := fmt.Sprintf("%v", int8(param.(int8)))
+		n := fmt.Sprintf("%v", int8(param))
 		return &n, nil
 	case int16:
-		n := fmt.Sprintf("%v", int16(param.(int16)))
+		n := fmt.Sprintf("%v", int16(param))
 		return &n, nil
 	case int32:
-		n := fmt.Sprintf("%v", int32(param.(int32)))
+		n := fmt.Sprintf("%v", int32(param))
 		return &n, nil
 	case int64:
-		n := fmt.Sprintf("%v", int64(param.(int64)))
+		n := fmt.Sprintf("%v", int64(param))
 		return &n, nil
 	case uint:
-		n := fmt.Sprintf("%v", uint(param.(uint)))
+		n := fmt.Sprintf("%v", uint(param))
 		return &n, nil
 	case uint8:
-		n := fmt.Sprintf("%v", uint8(param.(uint8)))
+		n := fmt.Sprintf("%v", uint8(param))
 		return &n, nil
 	case uint16:
-		n := fmt.Sprintf("%v", uint16(param.(uint16)))
+		n := fmt.Sprintf("%v", uint16(param))
 		return &n, nil
 	case uint32:
-		n := fmt.Sprintf("%v", uint32(param.(uint32)))
+		n := fmt.Sprintf("%v", uint32(param))
 		return &n, nil
 	case uint64:
-		val := param.(uint64)
-		n := fmt.Sprintf("%v", uint64(val))
+		n := fmt.Sprintf("%v", uint64(param))
 		return &n, nil
 	case float32:
-		n := fmt.Sprintf("%v", float32(param.(float32)))
+		n := fmt.Sprintf("%v", float32(param))
 		return &n, nil
 	case float64:
-		n := fmt.Sprintf("%v", float64(param.(float64)))
+		n := fmt.Sprintf("%v", float64(param))
 		return &n, nil
 	case nil:
 		n := "NULL"
 		return &n, nil
 	case string:
-		n := fmt.Sprintf("\"%v\"", param)
+		n := fmt.Sprintf("'%v'", param)
 		return &n, nil
 	case bool:
 		n := fmt.Sprintf("%v", param)

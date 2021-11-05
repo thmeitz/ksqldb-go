@@ -59,11 +59,24 @@ func dogstats(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
+	k := `SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, 
+	TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, 
+	DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE 
+	WHERE DOG_SIZE=?;`
+
+	builder, err := ksqldb.DefaultQueryBuilder(k)
+	if err != nil {
+		log.Fatal(err)
+	}
+	stmnt, err := builder.Bind(s)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, err := ksqldb.Pull(client, ctx, k, true)
+	_, r, err := ksqldb.Pull(client, ctx, *stmnt, true)
 	if err != nil {
 		log.Fatal(err)
 	}
