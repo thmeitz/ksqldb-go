@@ -183,10 +183,10 @@ k := "SELECT ROWTIME, ID, NAME, DOGSIZE, AGE FROM DOGS EMIT CHANGES;"
 // This Go routine will handle rows as and when they
 // are sent to the channel
 go func() {
-var name string
-var dogSize string
-for row := range rc {
-  if row != nil {
+  var name string
+  var dogSize string
+  for row := range rc {
+    if row != nil {
       // Should do some type assertions here
       name = row[2].(string)
       dogSize = row[3].(string)
@@ -201,8 +201,8 @@ defer ctxCancel()
 e := ksqldb.Push(client, ctx, k, rc, hc)
 
 if e != nil {
-// handle the error better here, e.g. check for no rows returned
-return fmt.Errorf("ksqldbPushError:\n%v", e)
+  // handle the error better here, e.g. check for no rows returned
+  return fmt.Errorf("ksqldbPushError:\n%v", e)
 }
 ```
 
