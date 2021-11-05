@@ -125,7 +125,7 @@ func getReplacement(param interface{}) (*string, error) {
 		n := fmt.Sprintf("%v", param)
 		return &n, nil
 	default:
-		return nil, fmt.Errorf("%v", param)
+		return nil, fmt.Errorf("%v: %v :%v", QBErr, QBUnsupportedType, param)
 	}
 }
 

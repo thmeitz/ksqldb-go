@@ -68,8 +68,8 @@ func dogstats(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	stmnt, err := builder.Bind(s)
 
+	stmnt, err := builder.Bind(s)
 	if err != nil {
 		log.Fatal(err)
 	}

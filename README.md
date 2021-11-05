@@ -142,6 +142,42 @@ func main {
 
 For no authentication just use blank username and password values.
 
+### QueryBuilder (since v0.0.3)
+
+SQL strings should be build by a QueryBuilder. Otherwise the system is open for SQL injections (see [go-webapp-scp.pdf](https://github.com/OWASP/Go-SCP/blob/master/dist/go-webapp-scp.pdf) ).
+
+You can add multiple parameters `Bind(nil, 1, 2.5686, "string", true)`.
+
+`nil` will be converted to `NULL`.
+
+The number of parameters must match the parameters in the SQL statement. If not, an error is thrown.
+
+```golang
+//see file: examples/cobra-test/cmd/pull.go
+
+k := `SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START,
+TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END,
+DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE
+WHERE DOG_SIZE=?;`
+
+builder, err := ksqldb.DefaultQueryBuilder(k)
+if err != nil {
+	log.Fatal(err)
+}
+
+stmnt, err := builder.Bind("middle")
+if err != nil {
+	log.Fatal(err)
+}
+
+ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+defer cancel()
+_, r, err := ksqldb.Pull(client, ctx, *stmnt, true)
+if err != nil {
+	log.Fatal(err)
+}
+```
+
 ### Pull query
 
 ```golang
