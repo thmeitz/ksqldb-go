@@ -121,17 +121,17 @@ var (
 func main {
   options := ksqldb.Options{
     // if you need a login, do this; if not its not necessary
-		Credentials: ksqldb.Credentials{Username: "myuser", Password: "mypassword"},
+    Credentials: ksqldb.Credentials{Username: "myuser", Password: "mypassword"},
     // defaults to http://localhost:8088
-		BaseUrl:     "http://my-super-shiny-ksqldbserver:8082",
+    BaseUrl:     "http://my-super-shiny-ksqldbserver:8082",
     // this is needed, because the ksql api communicates with http2 only
-		AllowHTTP:   true,
-	}
+    AllowHTTP:   true,
+  }
 
-	client, err := ksqldb.NewClient(options, log.Current)
-	if err != nil {
-		log.Fatal(err)
-	}
+  client, err := ksqldb.NewClient(options, log.Current)
+  if err != nil {
+     log.Fatal(err)
+  }
 
   // then make a pull, push, execute request
 
