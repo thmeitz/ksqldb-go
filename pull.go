@@ -51,7 +51,7 @@ import (
 // 			// Do other stuff with the data here
 // 			}
 // 		}
-func (api *Client) Pull(ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
+func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
 
 	// first sanitize the query
 	query := api.SanitizeQuery(q)

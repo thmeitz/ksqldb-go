@@ -54,7 +54,7 @@ func setup(cmd *cobra.Command, args []string) {
 		log.Current.Fatal(err)
 	}
 
-	if err := client.Execute(`
+	if err := ksqldb.Execute(client, `
 		CREATE SOURCE CONNECTOR DOGS WITH (
 		'connector.class'               = 'io.mdrogalis.voluble.VolubleSourceConnector',
 		'key.converter'                 = 'org.apache.kafka.connect.storage.StringConverter',
@@ -76,7 +76,7 @@ func setup(cmd *cobra.Command, args []string) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS stream
-	if err := client.Execute(
+	if err := ksqldb.Execute(client,
 		`
 		CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
 			NAME STRING, 
@@ -94,7 +94,7 @@ func setup(cmd *cobra.Command, args []string) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS_BY_SIZE table
-	if err := client.Execute(
+	if err := ksqldb.Execute(client,
 		`
 			CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
 				SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 

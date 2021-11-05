@@ -40,7 +40,7 @@ type ServerInfoResponse struct {
 }
 
 // ServerInfo gets the info for your server
-func (api *Client) GetServerInfo() (*ServerInfo, error) {
+func GetServerInfo(api *Client) (*ServerInfo, error) {
 	info := ServerInfoResponse{}
 	res, err := api.client.Get(api.options.BaseUrl + INFO_ENDPOINT)
 

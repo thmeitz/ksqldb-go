@@ -63,7 +63,7 @@ const (
 // 			if row != nil {
 //				DATA_TS = row[0].(float64)
 // 				ID = row[1].(string)
-func (cl *Client) Push(ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
+func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
 
 	// first sanitize the query
 	query := cl.SanitizeQuery(q)

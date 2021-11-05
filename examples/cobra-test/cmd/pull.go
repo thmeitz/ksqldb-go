@@ -63,7 +63,7 @@ func dogstats(cmd *cobra.Command, args []string) {
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, err := client.Pull(ctx, k, true)
+	_, r, err := ksqldb.Pull(client, ctx, k, true)
 	if err != nil {
 		log.Fatal(err)
 	}

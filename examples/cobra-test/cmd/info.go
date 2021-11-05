@@ -51,7 +51,7 @@ func info(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	info, err := client.GetServerInfo()
+	info, err := ksqldb.GetServerInfo(client)
 	if err != nil {
 		log.Fatal(err)
 	}
