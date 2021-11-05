@@ -55,7 +55,7 @@ func serverhealth(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	health, err := ksqldb.Healthcheck(client)
+	health, err := client.Healthcheck()
 	if err != nil {
 		log.Fatal(err)
 	}

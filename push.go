@@ -30,6 +30,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/Masterminds/log-go"
 )
 
 const (
@@ -76,18 +78,18 @@ func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- He
 
 	req, err := cl.newQueryStreamRequest(ctx, payload)
 	if err != nil {
-		return fmt.Errorf("error creating new request with context: %w", err)
+		return fmt.Errorf("error creating new request with context: %v", err)
 	}
 
 	// don't know if we are needing this stuff in the new client
 	// go cl.heartbeat(&cl.client, &ctx)
 
 	//  make the request
-	cl.logger.Debugf("sending ksqlDB request:\n\t%v", q)
+	cl.logger.Debugw("sending ksqlDB request", log.Fields{"query": query})
 	res, err := (&cl.client).Do(req)
 
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		return fmt.Errorf("%v", err)
 	}
 	defer res.Body.Close()
 
@@ -109,7 +111,7 @@ func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- He
 			// cl.log("payload: %v", *payload)
 			req, err := cl.newCloseQueryRequest(ctx, payload)
 
-			cl.logger.Debugf("closing ksqlDB query\t%v", header.queryId)
+			cl.logger.Debugw("closing ksqlDB query", log.Fields{"queryId": header.queryId})
 			if err != nil {
 				return fmt.Errorf("failed to construct http request to cancel query\n%w", err)
 			}
@@ -132,7 +134,7 @@ func Push(cl *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- He
 				doThis = false
 			}
 			if res.StatusCode != http.StatusOK {
-				return fmt.Errorf("the http request did not return a success code:\n%v / %v", res.StatusCode, string(body))
+				return cl.handleRequestError(res.StatusCode, body)
 			}
 
 			if len(body) > 0 {

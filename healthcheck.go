@@ -36,7 +36,7 @@ type ServerHealth struct {
 }
 
 // ServerInfo provides information about your server
-func Healthcheck(api *Client) (*ServerHealth, error) {
+func (api *Client) Healthcheck() (*ServerHealth, error) {
 	info := ServerHealth{}
 	res, err := api.client.Get(api.options.BaseUrl + HEALTHCHECK_ENDPOINT)
 	if err != nil {

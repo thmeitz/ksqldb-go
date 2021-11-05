@@ -202,7 +202,7 @@ e := ksqldb.Push(client, ctx, k, rc, hc)
 
 if e != nil {
 // handle the error better here, e.g. check for no rows returned
-return fmt.Errorf("error running push request against ksqlDB:\n%v", e)
+return fmt.Errorf("ksqldbPushError:\n%v", e)
 }
 ```
 
