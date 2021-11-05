@@ -42,10 +42,7 @@ func (e Error) Error() string {
 
 func (e *Error) Is(target error) bool {
 	_, ok := target.(*Error)
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }
 
 func (api *Client) handleRequestError(code int, buf []byte) error {

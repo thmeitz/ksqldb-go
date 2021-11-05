@@ -3,19 +3,18 @@ package ksqldb
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
 const (
-	QBErr           = "qbErr"
-	EMPTY_STATEMENT = "empty ksql statement"
+	QBErr             = "qbErr"
+	QBUnsupportedType = "unsupported param type"
+	EMPTY_STATEMENT   = "empty ksql statement"
 )
 
 type QueryBuilder struct {
 	stmt      string
 	origStmnt string
-	lastErr   error
 	options   *QueryBuilderOptions
 	ctx       context.Context
 }
@@ -70,9 +69,68 @@ func (qb *QueryBuilder) Bind(params ...interface{}) (*string, error) {
 
 	for idx, param := range params {
 		fmt.Println(idx, ":", param)
-		qb.stmt = strings.Replace(qb.stmt, "?", strconv.FormatInt(int64(param.(int)), 10), 1)
+		replace, err := getReplacement(param)
+		if err != nil {
+			return nil, fmt.Errorf("%v", err)
+		}
+		qb.stmt = strings.Replace(qb.stmt, "?", *replace, 1)
 	}
 	return &qb.stmt, nil
+}
+
+func getReplacement(param interface{}) (*string, error) {
+	// strconv.FormatInt(int64(param.(int)), 10)
+	switch t := param.(type) {
+	case int:
+		fmt.Println("int", t, param)
+		n := fmt.Sprintf("%v", int(param.(int)))
+		return &n, nil
+	case int8:
+		n := fmt.Sprintf("%v", int8(param.(int8)))
+		return &n, nil
+	case int16:
+		n := fmt.Sprintf("%v", int16(param.(int16)))
+		return &n, nil
+	case int32:
+		n := fmt.Sprintf("%v", int32(param.(int32)))
+		return &n, nil
+	case int64:
+		n := fmt.Sprintf("%v", int64(param.(int64)))
+		return &n, nil
+	case uint:
+		n := fmt.Sprintf("%v", uint(param.(uint)))
+		return &n, nil
+	case uint8:
+		n := fmt.Sprintf("%v", uint8(param.(uint8)))
+		return &n, nil
+	case uint16:
+		n := fmt.Sprintf("%v", uint16(param.(uint16)))
+		return &n, nil
+	case uint32:
+		n := fmt.Sprintf("%v", uint32(param.(uint32)))
+		return &n, nil
+	case uint64:
+		val := param.(uint64)
+		n := fmt.Sprintf("%v", uint64(val))
+		return &n, nil
+	case float32:
+		n := fmt.Sprintf("%v", float32(param.(float32)))
+		return &n, nil
+	case float64:
+		n := fmt.Sprintf("%v", float64(param.(float64)))
+		return &n, nil
+	case nil:
+		n := "NULL"
+		return &n, nil
+	case string:
+		n := fmt.Sprintf("\"%v\"", param)
+		return &n, nil
+	case bool:
+		n := fmt.Sprintf("%v", param)
+		return &n, nil
+	default:
+		return nil, fmt.Errorf("%v", param)
+	}
 }
 
 // checkEmptyStatement to keep the Factories dry
