@@ -44,3 +44,6 @@ clean-compose-all-in-one:
 
 fmt: 
 	$(GO) fmt ./...
+
+changelog:
+	git-chglog --output CHANGELOG.md
