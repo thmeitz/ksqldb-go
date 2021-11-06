@@ -18,6 +18,10 @@ This client is `not production ready`!!!
 
 ⚠️ Disclaimer #1: This is a personal project and not supported or endorsed by Confluent.
 
+## Migration?
+
+Checkout [ksqldb-migrate](https://github.com/thmeitz/ksqldb-migrate), a tool that uses this package.
+
 ## Description
 
 This is a Go client for [ksqlDB](https://ksqldb.io/).
