@@ -139,7 +139,7 @@ if err != nil {
 
 // we are using the client, we are created
 
-ctx, ctxCancel := context.WithTimeout(context.Background(), 10 \* time.Second)
+ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer ctxCancel()
 
 k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
