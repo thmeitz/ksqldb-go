@@ -16,11 +16,24 @@ Thank you Robin and all other contributors for their work!
 If you use this library, be warned as the client will be completely overhauled!
 This client is `not production ready`!!!
 
+⚠️ Disclaimer #1: This is a personal project and not supported or endorsed by Confluent.
+
 ## Description
 
-This is a Go client for [ksqlDB](https://ksqldb.io/). It supports both pull and push queries, as well as command execution. Furthermore you can get the server-infos, -health and parse your ksql-statements with the provided `KSqlParser`.
+This is a Go client for [ksqlDB](https://ksqldb.io/).
 
-⚠️ Disclaimer #1: This is a personal project and not supported or endorsed by Confluent.
+- [x] Execute a statement (/ksql endpoint)
+- [ ] Run a query (/query endpoint)
+- [x] Run push and pull queries (/query-stream endpoint)
+- [ ] Terminate a cluster (/ksql/terminate endpoint)
+- [ ] Introspect query status (/status endpoint)
+- [x] Introspect server status (/info endpoint)
+- [ ] Introspect cluster status (/clusterStatus endpoint)
+- [ ] Get the validity of a property (/is_valid_property)
+
+### KSqlParser
+
+- parse your ksql-statements with the provided `KSqlParser`.
 
 ## Installation
 
@@ -40,69 +53,11 @@ Manual install:
 go get -u github.com/thmeitz/ksqldb-go
 ```
 
-## Examples
-
-You can find the examples in the [examples directory](examples).
-
-- [cobra example](examples/cobra-test)
-- [KSqlGrammar example](examples/ksqlgrammar)
-
-See the [test environment here](examples/cobra-test/environment.adoc)
-
-### Cobra example
-
-The `cobra` example shows basic usage of the `ksqldb-go` package. To run it, you need a `Kafka` runtime environment.
-
-The [Cobra](https://github.com/spf13/cobra) example shows basic usage of the `ksqldb-go` package and splits the different use cases into `Cobra` commands.
-
-Start [docker-compose](examples/cobra/docker-compose.yml).
+or use the client and and run
 
 ```bash
-docker-compose up -d
-go run ./examples/cobra-test
+go mod tidy
 ```
-
-It outputs:
-
-```bash
-ksqldb-go example with cobra
-
-Usage:
-  cobra-test [command]
-
-Available Commands:
-  completion   generate the autocompletion script for the specified shell
-  help         Help about any command
-  info         Displays your server infos
-  pull         print the dog stats
-  push         push dogs example like all-in-one example, but with ParseKSQL
-  serverhealth display the server state of your servers
-  setup        setup a dummy connector like in all-in-one example
-
-Flags:
-      --config string      config file (default is $HOME/.cobra-test.yaml)
-  -h, --help               help for cobra-test
-      --host string        set the ksqldb host (default "http://localhost:8088")
-      --logformat string   set log format [text|json] (default "text")
-      --loglevel string    set log level [info|debug|error|trace] (default "info")
-      --password string    set the ksqldb user password
-      --username string    set the ksqldb user name
-
-Use "cobra-test [command] --help" for more information about a command.
-```
-
-### KSql Grammar example
-
-This example was written to test and fix the `Antlr4` generation problems for Golang. We changed the `Antlr4` file because there are some type issues. The `Antlr4` code generation introduced some bugs that we had to fix manually. So be careful when you use our `Makefile` to generate the `KSqlParser`. It will break the code!
-
-We had copied the `Antlr4` file from the original sources of [confluent](https://github.com/confluentinc/ksql/blob/master/ksqldb-parser/src/main/antlr4/io/confluent/ksql/parser/SqlBase.g4).
-It seems that some errors are not found by the parser because the terminal symbols are not present in the grammar.
-
-The parser is used to check the `KSql syntax`. If there are syntax errors, we collect the errors and you get a notification about it.
-
-The example has an error in the `Select` statement to output the errors.
-
-Feel free to play around :)
 
 ## How to use the ksqldb-go package?
 
@@ -245,11 +200,129 @@ if e != nil {
 ### Execute a command
 
 ```golang
-if err := ksqldb.Execute(client, ctx, ksqlDBServer, ` CREATE STREAM DOGS (ID STRING KEY, NAME STRING, DOGSIZE STRING, AGE STRING) WITH (KAFKA_TOPIC='dogs', VALUE_FORMAT='JSON');`); err != nil {
+if err := ksqldb.Execute(client, ctx, ksqlDBServer, `CREATE STREAM DOGS (ID STRING KEY, NAME STRING, DOGSIZE STRING, AGE STRING) WITH (KAFKA_TOPIC='dogs', VALUE_FORMAT='JSON');`); err != nil {
   return fmt.Errorf("error creating the dogs stream.\n%v", err)
 }
+```
+
+## Examples
+
+You can find the examples in the [examples directory](examples).
+
+- [cobra example](examples/cobra-test)
+- [KSqlGrammar example](examples/ksqlgrammar)
+
+See the [test environment here](examples/cobra-test/environment.adoc)
+
+### Cobra example
+
+The [Cobra](https://github.com/spf13/cobra) `cobra-test` example shows basic usage of the `ksqldb-go` package. To run it, you need a `Kafka` runtime environment.
+
+The example splits the different use cases into `Cobra` commands.
+
+Start [docker-compose](examples/cobra/docker-compose.yml).
+
+```bash
+docker-compose up -d
+go run ./examples/cobra-test
+```
+
+It outputs:
+
+```bash
+ksqldb-go example with cobra
+
+Usage:
+  cobra-test [command]
+
+Available Commands:
+  completion   generate the autocompletion script for the specified shell
+  help         Help about any command
+  info         Displays your server infos
+  pull         print the dog stats
+  push         push dogs example like all-in-one example, but with ParseKSQL
+  serverhealth display the server state of your servers
+  setup        setup a dummy connector like in all-in-one example
+
+Flags:
+      --config string      config file (default is $HOME/.cobra-test.yaml)
+  -h, --help               help for cobra-test
+      --host string        set the ksqldb host (default "http://localhost:8088")
+      --logformat string   set log format [text|json] (default "text")
+      --loglevel string    set log level [info|debug|error|trace] (default "debug")
+      --password string    set the ksqldb user password
+      --username string    set the ksqldb user name
+
+Use "cobra-test [command] --help" for more information about a command.
+```
+
+The `cobra-test setup` command sets up all needed stuff for `cobra-test pull|push` commands.
+
+So run it first.
+
+### KSql Grammar example
+
+This example was written to test and fix the `Antlr4` generation problems for Golang. We changed the `Antlr4` file because there are some type issues. The `Antlr4` code generation introduced some bugs that we had to fix manually. So be careful when you use our `Makefile` to generate the `KSqlParser`. It will break the code!
+
+We had copied the `Antlr4` file from the original sources of [confluent](https://github.com/confluentinc/ksql/blob/master/ksqldb-parser/src/main/antlr4/io/confluent/ksql/parser/SqlBase.g4).
+It seems that some errors are not found by the parser because the terminal symbols are not present in the grammar.
+
+The parser is used to check the `KSql syntax`. If there are syntax errors, we collect the errors and you get a notification about it.
+
+The example has an error in the `Select` statement to output the errors.
+
+Feel free to play around :)
+
+## Docker compose
+
+It contains the lateste versions of all products.
+
+- zookeeper (6.2.1)
+- schema-registry (6.2.1)
+- ksqldb server (0.21.0)
+- kafka-connect (6.2.1)
+- ksqldb-cli (0.21.0)
+- kafdrop (latest)
+
+### ksqldb-cli
+
+For testing purposes I've added `ksqldb-cli` to the `docker-compose.yml` file.
+
+```bash
+docker exec -it ksqldb-cli ksql http://ksqldb:8088
+```
+
+This starts the interctive ksqldb console.
 
 ```
+OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
+
+                  ===========================================
+                  =       _              _ ____  ____       =
+                  =      | | _____  __ _| |  _ \| __ )      =
+                  =      | |/ / __|/ _` | | | | |  _ \      =
+                  =      |   <\__ \ (_| | | |_| | |_) |     =
+                  =      |_|\_\___/\__, |_|____/|____/      =
+                  =                   |_|                   =
+                  =        The Database purpose-built       =
+                  =        for stream processing apps       =
+                  ===========================================
+
+Copyright 2017-2021 Confluent Inc.
+
+CLI v0.21.0, Server v0.21.0 located at http://ksqldb:8088
+Server Status: RUNNING
+
+Having trouble? Type 'help' (case-insensitive) for a rundown of how things work!
+
+ksql>
+```
+
+## [Kafdrop](https://github.com/obsidiandynamics/kafdrop)
+
+Kafdrop is a web UI for viewing Kafka topics and browsing consumer groups. The tool displays information such as brokers, topics, partitions, consumers, and lets you view messages.
+
+![](https://raw.githubusercontent.com/obsidiandynamics/kafdrop/master/docs/images/overview.png)
 
 ## TODO
 
