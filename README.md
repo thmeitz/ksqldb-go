@@ -275,7 +275,7 @@ Feel free to play around :)
 
 ## Docker compose
 
-It contains the lateste versions of all products.
+It contains the latest versions of all products.
 
 - zookeeper (6.2.1)
 - schema-registry (6.2.1)
