@@ -96,6 +96,16 @@ services:
         /etc/confluent/docker/run &
         #
         sleep infinity
+
+  ksqldb-cli:
+    image: confluentinc/ksqldb-cli:0.21.0
+    container_name: ksqldb-cli
+    depends_on:
+      - broker
+      - ksqldb
+    entrypoint: /bin/sh
+    tty: true
+
   kafdrop:
     image: obsidiandynamics/kafdrop
     restart: "no"

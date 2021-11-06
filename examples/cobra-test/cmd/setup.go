@@ -28,7 +28,7 @@ import (
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
 	Use:   "setup",
-	Short: "setup a dummy connector like in all-in-one example",
+	Short: "setup a dummy connector",
 }
 
 func init() {

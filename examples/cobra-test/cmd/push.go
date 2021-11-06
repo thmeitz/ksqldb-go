@@ -29,7 +29,7 @@ import (
 // pushCmd represents the push command
 var pushCmd = &cobra.Command{
 	Use:   "push",
-	Short: "push dogs example like all-in-one example, but with ParseKSQL",
+	Short: "push dogs example",
 }
 
 func init() {
