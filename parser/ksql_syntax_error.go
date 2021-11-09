@@ -18,7 +18,7 @@ func (kse *KSqlSyntaxError) Error() string {
 type KSqlSyntaxErrorList []KSqlSyntaxError
 
 func (ksl *KSqlSyntaxErrorList) Error() string {
-	return fmt.Sprintf("%v sql syntax errors found", len(*ksl))
+	return fmt.Sprintf("%v sql syntax error(s) found", len(*ksl))
 }
 
 type KSqlErrorListener struct {
