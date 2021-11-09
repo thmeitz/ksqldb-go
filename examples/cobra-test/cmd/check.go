@@ -18,6 +18,8 @@ package cmd
 import (
 	"io/ioutil"
 
+	"path/filepath"
+
 	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -39,7 +41,9 @@ func init() {
 		log.Fatal(err)
 	}
 
-	checkCmd.MarkFlagRequired("file")
+	if err := checkCmd.MarkFlagRequired("file"); err != nil {
+		log.Fatal(err)
+	}
 
 }
 
@@ -47,9 +51,8 @@ func checksqlfile(cmd *cobra.Command, args []string) {
 	setLogger()
 
 	fname := viper.GetString("file")
-	log.Infow("filename to check", log.Fields{"file": fname})
 
-	fbytes, err := ioutil.ReadFile(fname)
+	fbytes, err := ioutil.ReadFile(filepath.Clean(fname))
 	if err != nil {
 		log.Fatalf("%v %w", fname, err)
 	}
