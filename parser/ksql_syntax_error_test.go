@@ -3,7 +3,9 @@ package parser_test
 import (
 	"testing"
 
+	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/stretchr/testify/assert"
+	"github.com/thmeitz/ksqldb-go/mocks"
 	"github.com/thmeitz/ksqldb-go/parser"
 )
 
@@ -38,8 +40,9 @@ func TestKSqlErrorListener_HSyntaxError(t *testing.T) {
 	assert.False(t, listener.HasErrors())
 	assert.Equal(t, 0, listener.ErrorCount())
 
-	//recognizer := antlr.NewBaseRecognizer()
-
-	//listener.SyntaxError(*recognizer, nil, 1, 10, "some error", nil)
+	var r antlr.Recognizer
+	recognizer := mocks.Recognizer{}
+	r = &recognizer
+	listener.SyntaxError(r, nil, 1, 10, "some error", nil)
 
 }

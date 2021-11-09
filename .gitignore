@@ -11,3 +11,4 @@ coverage.out
 coverage/*
 !coverage/.keep
 
+vendor
