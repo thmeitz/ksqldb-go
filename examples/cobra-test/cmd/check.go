@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"io/ioutil"
-
 	"path/filepath"
 
 	"github.com/Masterminds/log-go"
