@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // pullCmd represents the pull command
@@ -48,13 +49,13 @@ func dogstats(cmd *cobra.Command, args []string) {
 	password := viper.GetString("password")
 	s := viper.GetString("dogsize")
 
-	options := ksqldb.Options{
-		Credentials: ksqldb.Credentials{Username: user, Password: password},
+	options := net.Options{
+		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
 		AllowHTTP:   true,
 	}
 
-	client, err := ksqldb.NewClient(options, log.Current)
+	client, err := net.NewClient(options, log.Current)
 	if err != nil {
 		log.Fatal(err)
 	}

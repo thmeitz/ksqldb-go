@@ -31,6 +31,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // Pull queries are like "traditional" RDBMS queries in which
@@ -51,10 +53,10 @@ import (
 // 			// Do other stuff with the data here
 // 			}
 // 		}
-func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
+func Pull(api net.KSqlDBClient, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
 
 	// first sanitize the query
-	query := api.SanitizeQuery(q)
+	query := SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
 	ksqlerr := ParseKSQL(query)
 	if ksqlerr != nil {
@@ -64,13 +66,13 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 	// Create the request
 	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(s) + `},"sql":"` + query + `"}`)
 
-	req, err := api.NewQueryStreamRequest(ctx, payload)
+	req, err := NewQueryStreamRequest(api, ctx, payload)
 	if err != nil {
 		return h, r, fmt.Errorf("can't create new request with context: %w", err)
 	}
 	req.Header.Add("Accept", "application/json; charset=utf-8")
 
-	res, err := (&api.client).Do(req)
+	res, err := api.Do(req)
 	if err != nil {
 		return h, r, fmt.Errorf("can't do request: %+w", err)
 	}
@@ -82,7 +84,7 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return h, r, api.handleRequestError(res.StatusCode, body)
+		return h, r, handleRequestError(res.StatusCode, body)
 	}
 
 	var x []interface{}
@@ -110,9 +112,8 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 				if _, ok := zz["queryId"].(string); ok {
 					h.queryId = zz["queryId"].(string)
 				} else {
-					// it is a hard fact, so we should throw an error?
-					// log interface needs a format and a interface{}
-					api.logger.Info("(query id not found - this is expected for a pull query)")
+					// api.logger.Info("(query id not found - this is expected for a pull query)")
+					// TODO: why should we log this???? - check facts in java source code
 				}
 
 				names, okn := zz["columnNames"].([]interface{})
@@ -125,14 +126,14 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 								h.columns = append(h.columns, a)
 
 							} else {
-								api.logger.Infof("nil type found for column %v", col)
+								// api.logger.Infof("nil type found for column %v", col)
 							}
 						} else {
-							api.logger.Infof("nil name found for column %v", col)
+							// api.logger.Infof("nil name found for column %v", col)
 						}
 					}
 				} else {
-					api.logger.Infof("column names/types not found in header:\n%v", zz)
+					// api.logger.Infof("column names/types not found in header:\n%v", zz)
 				}
 
 			case []interface{}:

@@ -20,15 +20,13 @@ Zalando licence: MIT
 https://github.com/zalando/skipper/blob/master/LICENSE
 */
 
-package ksqldb
+package net
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/Masterminds/log-go"
@@ -39,6 +37,17 @@ const (
 	DefaultIdleConnTimeout = 10 * time.Second
 	DefaultBaseUrl         = "http://localhost:8088"
 )
+
+type KSqlDBClient interface {
+	GetUrl(endpoint string) string
+	// NewClient(Options, log.Logger) (*Client, error)
+	Do(*http.Request) (*http.Response, error)
+	Get(url string) (*http.Response, error)
+}
+
+type KSqlDBClientCloser interface {
+	Close()
+}
 
 // The ksqlDB client
 type Client struct {
@@ -80,37 +89,36 @@ func NewClient(options Options, logger log.Logger) (*Client, error) {
 	}, nil
 }
 
+func (c *Client) Get(url string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return c.Do(req)
+}
+
+func (c *Client) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+
+	return c.Do(req)
+}
+
+// Do delegates the given http.Request to the underlying http.Client
+// and adds a Bearer token to the authorization header, if Client has
+// a secrets.SecretsReader and the request does not contain an
+// Authorization header.
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
+	return c.client.Do(req)
+}
+
 func (c *Client) Close() {
 	c.tr.Close()
 }
 
-func (cl *Client) NewQueryStreamRequest(ctx context.Context, payload io.Reader) (*http.Request, error) {
-	req, err := cl.newPostRequest(ctx, QUERY_STREAM_ENDPOINT, payload)
-	return req, err
-}
-
-func (cl *Client) NewCloseQueryRequest(ctx context.Context, payload io.Reader) (*http.Request, error) {
-	return cl.newPostRequest(ctx, CLOSE_QUERY_ENDPOINT, payload)
-}
-
-func (cl *Client) NewKsqlRequest(payload io.Reader) (*http.Request, error) {
-	return http.NewRequest("POST", cl.options.BaseUrl+KSQL_ENDPOINT, payload)
-}
-
-func (cl *Client) newPostRequest(ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {
-	req, err := http.NewRequestWithContext(ctx, "POST", cl.options.BaseUrl+endpoint, payload)
-	if err != nil {
-		return req, fmt.Errorf("can't create new request with context:\n%w", err)
-	}
-
-	return req, nil
-}
-
-// SanitizeQuery sanitizes the given content
-// eventually we can use the KSqlParser to rewrite the query, so its automatically sanitized
-// whitespaces will be eaten by the KSqlParser
-func (cl *Client) SanitizeQuery(content string) string {
-	content = strings.ReplaceAll(content, "\t", "")
-	content = strings.ReplaceAll(content, "\n", "")
-	return content
+func (c *Client) GetUrl(endpoint string) string {
+	return c.options.BaseUrl + endpoint
 }

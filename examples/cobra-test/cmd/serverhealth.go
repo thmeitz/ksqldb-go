@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // serverhealthCmd represents the serverhealth command
@@ -45,12 +46,12 @@ func serverhealth(cmd *cobra.Command, args []string) {
 
 	log.Current = logrus.NewStandard()
 
-	options := ksqldb.Options{
-		Credentials: ksqldb.Credentials{Username: user, Password: password},
+	options := net.Options{
+		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
 	}
 
-	client, err := ksqldb.NewClient(options, log.Current)
+	client, err := net.NewClient(options, log.Current)
 	if err != nil {
 		log.Fatal(err)
 	}

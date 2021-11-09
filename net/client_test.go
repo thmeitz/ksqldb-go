@@ -1,5 +1,4 @@
 /*
-Copyright © 2021 Robin Moffat & Contributors
 Copyright © 2021 Thomas Meitz <thme219@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ksqldb
+package net_test
 
-const (
-	QUERY_STREAM_ENDPOINT   = "/query-stream"
-	QUERY_ENDPOINT          = "/query"
-	INSERTS_ENDPOINT        = "/inserts-stream"
-	CLOSE_QUERY_ENDPOINT    = "/close-query"
-	KSQL_ENDPOINT           = "/ksql"
-	INFO_ENDPOINT           = "/info"
-	STATUS_ENDPOINT         = "/status"
-	HEALTHCHECK_ENDPOINT    = "/healthcheck"
-	CLUSTER_STATUS_ENDPOINT = "/clusterStatus"
-	PROP_VALIDITY_ENPOINT   = "/is_valid_property"
+import (
+	"testing"
+
+	"github.com/Masterminds/log-go/impl/logrus"
+	"github.com/stretchr/testify/assert"
+	"github.com/thmeitz/ksqldb-go/net"
 )
+
+var (
+	logger = logrus.NewStandard()
+)
+
+func TestClientNotNil(t *testing.T) {
+	client, _ := net.NewClient(net.Options{}, logger)
+	assert.NotNil(t, client)
+}
+
+// we don't panic anymore
+func TestClientNil(t *testing.T) {
+	client, err := net.NewClient(net.Options{BaseUrl: "sf"}, logger)
+	assert.NotNil(t, err)
+	assert.Nil(t, client)
+}

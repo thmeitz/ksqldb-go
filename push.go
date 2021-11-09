@@ -13,12 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Parts of this apiclient are borrowed from Zalando Skipper
-https://github.com/zalando/skipper/blob/master/net/httpclient.go
-
-Zalando licence: MIT
-https://github.com/zalando/skipper/blob/master/LICENSE
 */
 
 package ksqldb
@@ -31,7 +25,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Masterminds/log-go"
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 const (
@@ -63,10 +57,10 @@ const (
 // 			if row != nil {
 //				DATA_TS = row[0].(float64)
 // 				ID = row[1].(string)
-func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
+func Push(api net.KSqlDBClient, ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
 
 	// first sanitize the query
-	query := api.SanitizeQuery(q)
+	query := SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
 	ksqlerr := ParseKSQL(query)
 	if ksqlerr != nil {
@@ -76,7 +70,7 @@ func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- H
 	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset
 	payload := strings.NewReader(`{"properties":{"ksql.streams.auto.offset.reset": "latest"},"sql":"` + query + `"}`)
 
-	req, err := api.NewQueryStreamRequest(ctx, payload)
+	req, err := NewQueryStreamRequest(api, ctx, payload)
 	if err != nil {
 		return fmt.Errorf("error creating new request with context: %v", err)
 	}
@@ -85,8 +79,7 @@ func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- H
 	// go cl.heartbeat(&cl.client, &ctx)
 
 	//  make the request
-	api.logger.Debugw("sending ksqlDB request", log.Fields{"query": query})
-	res, err := (&api.client).Do(req)
+	res, err := api.Do(req)
 
 	if err != nil {
 		return fmt.Errorf("%v", err)
@@ -109,14 +102,14 @@ func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- H
 			// Try to close the query
 			payload := strings.NewReader(`{"queryId":"` + header.queryId + `"}`)
 			// cl.log("payload: %v", *payload)
-			req, err := api.NewCloseQueryRequest(ctx, payload)
+			req, err := NewCloseQueryRequest(api, ctx, payload)
 
-			api.logger.Debugw("closing ksqlDB query", log.Fields{"queryId": header.queryId})
+			// api.logger.Debugw("closing ksqlDB query", log.Fields{"queryId": header.queryId})
 			if err != nil {
 				return fmt.Errorf("failed to construct http request to cancel query\n%w", err)
 			}
 
-			res, err := api.client.Do(req)
+			res, err := api.Do(req)
 			if err != nil {
 				return fmt.Errorf("failed to execute http request to cancel query\n%w", err)
 			}
@@ -125,7 +118,7 @@ func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- H
 			if res.StatusCode != http.StatusOK {
 				return fmt.Errorf("close query failed:\n%v", res)
 			}
-			api.logger.Info("query closed.")
+			// api.logger.Info("query closed.")
 		default:
 
 			// Read the next chunk
@@ -134,7 +127,7 @@ func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- H
 				doThis = false
 			}
 			if res.StatusCode != http.StatusOK {
-				return api.handleRequestError(res.StatusCode, body)
+				return handleRequestError(res.StatusCode, body)
 			}
 
 			if len(body) > 0 {
@@ -150,7 +143,7 @@ func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- H
 					if _, ok := zz["queryId"].(string); ok {
 						header.queryId = zz["queryId"].(string)
 					} else {
-						api.logger.Debug("query id not found - this is expected for a pull query")
+						// api.logger.Debug("query id not found - this is expected for a pull query")
 					}
 
 					names, okn := zz["columnNames"].([]interface{})
@@ -163,21 +156,21 @@ func Push(api *Client, ctx context.Context, q string, rc chan<- Row, hc chan<- H
 									header.columns = append(header.columns, a)
 
 								} else {
-									api.logger.Infof("nil type found for column %v", col)
+									// api.logger.Infof("nil type found for column %v", col)
 								}
 							} else {
-								api.logger.Infof("Nil name found for column %v", col)
+								// api.logger.Infof("Nil name found for column %v", col)
 							}
 						}
 					} else {
-						api.logger.Infof("Column names/types not found in header:\n%v", zz)
+						// api.logger.Infof("Column names/types not found in header:\n%v", zz)
 					}
-					api.logger.Debugf("Header: %v", header)
+					// api.logger.Debugf("Header: %v", header)
 					hc <- header
 
 				case []interface{}:
 					// It's a row of data
-					api.logger.Debugf("Row: %v", zz)
+					// api.logger.Debugf("Row: %v", zz)
 					rc <- zz
 				}
 			}

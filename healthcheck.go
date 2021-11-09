@@ -20,25 +20,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
-type ServerHealth struct {
-	IsHealthy *bool `json:"isHealthy"`
-	Details   struct {
-		Metastore struct {
-			IsHealthy *bool `json:"isHealthy"`
-		} `json:"metastore"`
-		Kafka struct {
-			IsHealthy *bool `json:"isHealthy"`
-		} `json:"kafka"`
-	} `json:"details"`
-	KSQLServiceID string `json:"ksqlServiceId"`
-}
-
 // ServerInfo provides information about your server
-func Healthcheck(api *Client) (*ServerHealth, error) {
-	info := ServerHealth{}
-	res, err := api.client.Get(api.options.BaseUrl + HEALTHCHECK_ENDPOINT)
+func Healthcheck(api net.KSqlDBClient) (*ServerHealthResponse, error) {
+	info := ServerHealthResponse{}
+	res, err := api.Get(api.GetUrl(HEALTHCHECK_ENDPOINT))
 	if err != nil {
 		return nil, fmt.Errorf("can't get healthcheck informations: %v", err)
 	}

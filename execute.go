@@ -28,6 +28,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // Execute will execute a ksqlDB statement, such as creating
@@ -39,10 +41,10 @@ import (
 //
 // Ref: https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint/
 //
-func Execute(api *Client, q string) (err error) {
+func Execute(api net.KSqlDBClient, q string) (err error) {
 
 	// first sanitize the query
-	query := api.SanitizeQuery(q)
+	query := SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
 	ksqlerr := ParseKSQL(query)
 	if ksqlerr != nil {
@@ -51,13 +53,13 @@ func Execute(api *Client, q string) (err error) {
 	//  make the request
 	payload := strings.NewReader(`{"ksql":"` + query + `"}`)
 
-	req, err := api.NewKsqlRequest(payload)
-	api.logger.Debugf("sending ksqlDB request:%v", q)
+	req, err := NewKsqlRequest(api, payload)
+	// api.logger.Debugf("sending ksqlDB request:%v", q)
 	if err != nil {
 		return fmt.Errorf("can't create new request: %w", err)
 	}
 
-	res, err := (&api.client).Do(req)
+	res, err := api.Do(req)
 	if err != nil {
 		return fmt.Errorf("can't do request: %w", err)
 	}
@@ -67,10 +69,9 @@ func Execute(api *Client, q string) (err error) {
 	if err != nil {
 		return fmt.Errorf("can't read response body: %w", err)
 	}
-	api.logger.Debugf("response body: %v", string(body))
 
 	if res.StatusCode != http.StatusOK {
-		return api.handleRequestError(res.StatusCode, body)
+		return handleRequestError(res.StatusCode, body)
 	}
 
 	return nil

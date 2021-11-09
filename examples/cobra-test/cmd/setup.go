@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // setupCmd represents the setup command
@@ -43,13 +44,13 @@ func setup(cmd *cobra.Command, args []string) {
 	user := viper.GetString("username")
 	password := viper.GetString("password")
 
-	options := ksqldb.Options{
-		Credentials: ksqldb.Credentials{Username: user, Password: password},
+	options := net.Options{
+		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
 		AllowHTTP:   true,
 	}
 
-	client, err := ksqldb.NewClient(options, log.Current)
+	client, err := net.NewClient(options, log.Current)
 	if err != nil {
 		log.Current.Fatal(err)
 	}

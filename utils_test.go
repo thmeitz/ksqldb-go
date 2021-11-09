@@ -28,21 +28,8 @@ var (
 	logger = logrus.NewStandard()
 )
 
-func TestClientNotNil(t *testing.T) {
-	client, _ := ksqldb.NewClient(ksqldb.Options{}, logger)
-	assert.NotNil(t, client)
-}
-
-// we don't panic anymore
-func TestClientNil(t *testing.T) {
-	client, err := ksqldb.NewClient(ksqldb.Options{BaseUrl: "sf"}, logger)
-	assert.NotNil(t, err)
-	assert.Nil(t, client)
-}
-
 func TestClientSanitizeQuery(t *testing.T) {
-	client, _ := ksqldb.NewClient(ksqldb.Options{}, logger)
-	sanitizedString := client.SanitizeQuery(`
+	sanitizedString := ksqldb.SanitizeQuery(`
 	
 		This is the 	house of Nicolas
 	

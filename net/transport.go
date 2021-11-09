@@ -20,10 +20,9 @@ Zalando licence: MIT
 https://github.com/zalando/skipper/blob/master/LICENSE
 
 Next: change opentracing-go to opentelemetry if stable version is released
-
 */
 
-package ksqldb
+package net
 
 import (
 	"crypto/tls"
