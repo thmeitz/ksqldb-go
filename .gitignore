@@ -12,3 +12,6 @@ coverage/*
 !coverage/.keep
 
 vendor
+text.out
+report.json
+secreport.json

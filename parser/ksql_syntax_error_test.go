@@ -35,7 +35,7 @@ func TestKSqlErrorListener_HasErrors_ErrorCount(t *testing.T) {
 	assert.Equal(t, 0, listener.ErrorCount())
 }
 
-func TestKSqlErrorListener_HSyntaxError(t *testing.T) {
+func TestKSqlErrorListener_SyntaxError(t *testing.T) {
 	listener := parser.KSqlErrorListener{}
 	assert.False(t, listener.HasErrors())
 	assert.Equal(t, 0, listener.ErrorCount())
@@ -45,4 +45,9 @@ func TestKSqlErrorListener_HSyntaxError(t *testing.T) {
 	r = &recognizer
 	listener.SyntaxError(r, nil, 1, 10, "some error", nil)
 
+	assert.True(t, listener.HasErrors())
+	assert.Equal(t, 1, listener.ErrorCount())
+
+	listener.SyntaxError(r, nil, 1, 10, "some more error", nil)
+	assert.Equal(t, 2, listener.ErrorCount())
 }
