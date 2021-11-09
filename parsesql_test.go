@@ -8,10 +8,15 @@ import (
 )
 
 func TestParseKSQL_Error(t *testing.T) {
-	sql := "select * from dogs"
+	sql := "SELECT * FROM DOGS"
 	err := ksqldb.ParseKSQL(sql)
 	assert.NotNil(t, err)
 	assert.Equal(t, "1 sql syntax error(s) found", err.Error())
+	if err != nil {
+		for _, e := range *err {
+			assert.Equal(t, "error on line(1):column(18): missing ';' at '<EOF>'", e.Error())
+		}
+	}
 }
 
 func TestParseKSQL_NoError(t *testing.T) {
