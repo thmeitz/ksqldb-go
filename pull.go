@@ -56,7 +56,7 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 	// first sanitize the query
 	query := api.SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
-	ksqlerr := api.ParseKSQL(query)
+	ksqlerr := ParseKSQL(query)
 	if ksqlerr != nil {
 		return h, r, ksqlerr
 	}
@@ -64,7 +64,7 @@ func Pull(api *Client, ctx context.Context, q string, s bool) (h Header, r Paylo
 	// Create the request
 	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(s) + `},"sql":"` + query + `"}`)
 
-	req, err := api.newQueryStreamRequest(ctx, payload)
+	req, err := api.NewQueryStreamRequest(ctx, payload)
 	if err != nil {
 		return h, r, fmt.Errorf("can't create new request with context: %w", err)
 	}

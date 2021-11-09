@@ -1,9 +1,13 @@
-.env
+# output directory for make build
 bin/*
 !bin/.keep
 TODO.md
+
+# parser
 .antlr
+
+# coverage
+coverage.out
 coverage/*
 !coverage/.keep
 
-coverage.out

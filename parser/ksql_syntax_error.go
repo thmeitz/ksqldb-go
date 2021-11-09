@@ -7,12 +7,12 @@ import (
 )
 
 type KSqlSyntaxError struct {
-	line, column int
-	msg          string
+	Line, Column int
+	Msg          string
 }
 
 func (kse *KSqlSyntaxError) Error() string {
-	return fmt.Sprintf("error on line(%v):column(%v): %v", kse.line, kse.column, kse.msg)
+	return fmt.Sprintf("error on line(%v):column(%v): %v", kse.Line, kse.Column, kse.Msg)
 }
 
 type KSqlSyntaxErrorList []KSqlSyntaxError
@@ -28,9 +28,9 @@ type KSqlErrorListener struct {
 
 func (c *KSqlErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
 	c.Errors = append(c.Errors, KSqlSyntaxError{
-		line:   line,
-		column: column,
-		msg:    msg,
+		Line:   line,
+		Column: column,
+		Msg:    msg,
 	})
 }
 

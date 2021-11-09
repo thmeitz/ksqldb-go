@@ -44,14 +44,14 @@ func Execute(api *Client, q string) (err error) {
 	// first sanitize the query
 	query := api.SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
-	ksqlerr := api.ParseKSQL(query)
+	ksqlerr := ParseKSQL(query)
 	if ksqlerr != nil {
 		return ksqlerr
 	}
 	//  make the request
 	payload := strings.NewReader(`{"ksql":"` + query + `"}`)
 
-	req, err := api.newKsqlRequest(payload)
+	req, err := api.NewKsqlRequest(payload)
 	api.logger.Debugf("sending ksqlDB request:%v", q)
 	if err != nil {
 		return fmt.Errorf("can't create new request: %w", err)

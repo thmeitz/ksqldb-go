@@ -11,8 +11,8 @@ dev:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
 
 
-build:  
-	cd examples/cobra-test && go build . && mv cobra-test ../../bin
+build:
+	[ -e bin/cobra-test ] && rm bin/cobra-test && cd examples/cobra-test && go build . && mv cobra-test ../../bin
 
 build-ksqlgrammar:  
 	cd examples/ksqlgrammar && go build . && mv ksqlgrammar ../../bin

@@ -84,16 +84,16 @@ func (c *Client) Close() {
 	c.tr.Close()
 }
 
-func (cl *Client) newQueryStreamRequest(ctx context.Context, payload io.Reader) (*http.Request, error) {
+func (cl *Client) NewQueryStreamRequest(ctx context.Context, payload io.Reader) (*http.Request, error) {
 	req, err := cl.newPostRequest(ctx, QUERY_STREAM_ENDPOINT, payload)
 	return req, err
 }
 
-func (cl *Client) newCloseQueryRequest(ctx context.Context, payload io.Reader) (*http.Request, error) {
+func (cl *Client) NewCloseQueryRequest(ctx context.Context, payload io.Reader) (*http.Request, error) {
 	return cl.newPostRequest(ctx, CLOSE_QUERY_ENDPOINT, payload)
 }
 
-func (cl *Client) newKsqlRequest(payload io.Reader) (*http.Request, error) {
+func (cl *Client) NewKsqlRequest(payload io.Reader) (*http.Request, error) {
 	return http.NewRequest("POST", cl.options.BaseUrl+KSQL_ENDPOINT, payload)
 }
 
