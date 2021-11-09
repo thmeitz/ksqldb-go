@@ -43,7 +43,7 @@ jobs:
             -Dsonar.organization=thmeitz
             -Dsonar.projectKey=thmeitz_ksqldb-go
             -Dsonar.projectName=ksqldb-go
-            -Dsonar.projectVersion=v0.0.3
+            -Dsonar.projectVersion=v0.0.4
             -Dsonar.sources=.
             -Dsonar.test.exclusions=**/*_test.go,**/mocks/*.go,**/examples/**,**/parser/ksql_base_listener.go,**/parser/ksql_lexer.go,**/parser/ksql_listener.go,**/parser/ksql_parser.go
             -Dsonar.tests=.
@@ -51,6 +51,6 @@ jobs:
             -Dsonar.go.coverage.reportPaths=test.out
             -Dsonar.go.tests.reportPaths=report.json
             -Dsonar.externalIssuesReportPaths=secreport.json
+            -Dsonar.verbose=true
 
-#            -Dsonar.verbose=true
 #            -Dsonar.go.golangci-lint.reportPaths=golangci-lint.out
