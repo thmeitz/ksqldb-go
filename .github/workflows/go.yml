@@ -45,12 +45,13 @@ jobs:
             -Dsonar.projectName=ksqldb-go
             -Dsonar.projectVersion=v0.0.4
             -Dsonar.sources=.
-            -Dsonar.test.exclusions=**/*_test.go,**/mocks/*.go,**/examples/**,**/parser/ksql_base_listener.go,**/parser/ksql_lexer.go,**/parser/ksql_listener.go,**/parser/ksql_parser.go
+            -Dsonar.exclusions=**/mocks/**,**/examples/**,**/parser/ksql_base_listener.go,**/parser/ksql_lexer.go,**/parser/ksql_listener.go,**/parser/ksql_parser.go
             -Dsonar.tests=.
-            -Dsonar.test.inclusions=**/*_test.go
+            -Dsonar.test.inclusions=**/**_test.go
             -Dsonar.go.coverage.reportPaths=test.out
             -Dsonar.go.tests.reportPaths=report.json
             -Dsonar.externalIssuesReportPaths=secreport.json
             -Dsonar.verbose=true
 
+#            -Dsonar.test.exclusions=**/**_test**
 #            -Dsonar.go.golangci-lint.reportPaths=golangci-lint.out
