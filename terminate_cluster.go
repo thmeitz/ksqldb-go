@@ -14,28 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package net_test
+package ksqldb
 
-import (
-	"testing"
-
-	"github.com/Masterminds/log-go/impl/logrus"
-	"github.com/stretchr/testify/assert"
-	"github.com/thmeitz/ksqldb-go/net"
-)
-
-var (
-	logger = logrus.NewStandard()
-)
-
-func TestClientNotNil(t *testing.T) {
-	client, _ := net.NewHTTPClient(net.Options{}, nil)
-	assert.NotNil(t, client)
-}
-
-// we don't panic anymore
-func TestClientNil(t *testing.T) {
-	client, err := net.NewHTTPClient(net.Options{BaseUrl: "sf"}, nil)
-	assert.NotNil(t, err)
-	assert.Nil(t, client)
-}
+// Todo

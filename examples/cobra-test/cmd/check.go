@@ -56,7 +56,7 @@ func checksqlfile(cmd *cobra.Command, args []string) {
 		log.Fatalf("%v %w", fname, err)
 	}
 
-	ksqlerr := ksqldb.ParseKSQL(string(fbytes))
+	ksqlerr := ksqldb.ParseSql(string(fbytes))
 	if ksqlerr != nil {
 		log.Errorw("sql parser error", log.Fields{"error": ksqlerr})
 		for _, e := range *ksqlerr {

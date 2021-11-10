@@ -25,11 +25,11 @@ package net
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/Masterminds/log-go"
 	"github.com/thmeitz/ksqldb-go/internal"
 )
 
@@ -38,14 +38,12 @@ const (
 	DefaultBaseUrl         = "http://localhost:8088"
 )
 
-type KSqlDBClient interface {
+// NewClient(Options, log.Logger) (*Client, error)
+
+type HTTPClient interface {
 	GetUrl(endpoint string) string
-	// NewClient(Options, log.Logger) (*Client, error)
 	Do(*http.Request) (*http.Response, error)
 	Get(url string) (*http.Response, error)
-}
-
-type KSqlDBClientCloser interface {
 	Close()
 }
 
@@ -64,7 +62,7 @@ type Credentials struct {
 	Password string `json:"password" mapstructure:"password"`
 }
 
-func NewClient(options Options, logger log.Logger) (*Client, error) {
+func NewHTTPClient(options Options, logger *log.Logger) (*Client, error) {
 	var uri *url.URL
 	var err error
 
@@ -78,8 +76,12 @@ func NewClient(options Options, logger log.Logger) (*Client, error) {
 
 	tr := NewTransport(options)
 
+	if logger == nil {
+		logger = log.Default()
+	}
+
 	return &Client{
-		logger: logger,
+		logger: *logger,
 		client: http.Client{
 			Transport: tr,
 		},
@@ -87,6 +89,15 @@ func NewClient(options Options, logger log.Logger) (*Client, error) {
 		tr:      tr,
 		uri:     uri,
 	}, nil
+}
+
+func (c *Client) Close() {
+	c.tr.Close()
+}
+
+// Do delegates the given http.Request to the underlying http.Client
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
+	return c.client.Do(req)
 }
 
 func (c *Client) Get(url string) (*http.Response, error) {
@@ -97,6 +108,10 @@ func (c *Client) Get(url string) (*http.Response, error) {
 	return c.Do(req)
 }
 
+func (c *Client) GetUrl(endpoint string) string {
+	return c.options.BaseUrl + endpoint
+}
+
 func (c *Client) Post(url, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
@@ -105,20 +120,4 @@ func (c *Client) Post(url, contentType string, body io.Reader) (*http.Response, 
 	req.Header.Set("Content-Type", contentType)
 
 	return c.Do(req)
-}
-
-// Do delegates the given http.Request to the underlying http.Client
-// and adds a Bearer token to the authorization header, if Client has
-// a secrets.SecretsReader and the request does not contain an
-// Authorization header.
-func (c *Client) Do(req *http.Request) (*http.Response, error) {
-	return c.client.Do(req)
-}
-
-func (c *Client) Close() {
-	c.tr.Close()
-}
-
-func (c *Client) GetUrl(endpoint string) string {
-	return c.options.BaseUrl + endpoint
 }

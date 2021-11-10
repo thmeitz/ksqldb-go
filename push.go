@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/thmeitz/ksqldb-go/internal"
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
@@ -57,12 +58,12 @@ const (
 // 			if row != nil {
 //				DATA_TS = row[0].(float64)
 // 				ID = row[1].(string)
-func Push(api net.KSqlDBClient, ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
+func Push(api net.HTTPClient, ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
 
 	// first sanitize the query
-	query := SanitizeQuery(q)
+	query := internal.SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
-	ksqlerr := ParseKSQL(query)
+	ksqlerr := ParseSql(query)
 	if ksqlerr != nil {
 		return ksqlerr
 	}
@@ -70,7 +71,7 @@ func Push(api net.KSqlDBClient, ctx context.Context, q string, rc chan<- Row, hc
 	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset
 	payload := strings.NewReader(`{"properties":{"ksql.streams.auto.offset.reset": "latest"},"sql":"` + query + `"}`)
 
-	req, err := NewQueryStreamRequest(api, ctx, payload)
+	req, err := newQueryStreamRequest(api, ctx, payload)
 	if err != nil {
 		return fmt.Errorf("error creating new request with context: %v", err)
 	}
@@ -102,7 +103,7 @@ func Push(api net.KSqlDBClient, ctx context.Context, q string, rc chan<- Row, hc
 			// Try to close the query
 			payload := strings.NewReader(`{"queryId":"` + header.queryId + `"}`)
 			// cl.log("payload: %v", *payload)
-			req, err := NewCloseQueryRequest(api, ctx, payload)
+			req, err := newCloseQueryRequest(api, ctx, payload)
 
 			// api.logger.Debugw("closing ksqlDB query", log.Fields{"queryId": header.queryId})
 			if err != nil {

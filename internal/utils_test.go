@@ -49,3 +49,12 @@ func TestGetUrlValid(t *testing.T) {
 		})
 	}
 }
+
+func TestClientSanitizeQuery(t *testing.T) {
+	sanitizedString := internal.SanitizeQuery(`
+	
+		This is the 	house of Nicolas
+	
+	`)
+	assert.Equal(t, "This is the house of Nicolas", sanitizedString)
+}

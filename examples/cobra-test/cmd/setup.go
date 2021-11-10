@@ -50,7 +50,7 @@ func setup(cmd *cobra.Command, args []string) {
 		AllowHTTP:   true,
 	}
 
-	client, err := net.NewClient(options, log.Current)
+	client, err := net.NewHTTPClient(options, nil)
 	if err != nil {
 		log.Current.Fatal(err)
 	}

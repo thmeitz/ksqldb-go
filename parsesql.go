@@ -21,8 +21,8 @@ import (
 	"github.com/thmeitz/ksqldb-go/parser"
 )
 
-func ParseKSQL(sql string) *parser.KSqlSyntaxErrorList {
-	errors := parser.KSqlSyntaxErrorList{}
+func ParseSql(sql string) *parser.SqlSyntaxErrorList {
+	errors := parser.SqlSyntaxErrorList{}
 
 	input := antlr.NewInputStream(sql)
 	lexerErrorListener := &parser.KSqlErrorListener{}

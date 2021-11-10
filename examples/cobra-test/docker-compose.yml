@@ -54,6 +54,7 @@ services:
       KSQL_KSQL_CONNECT_URL: http://kafka-connect:8083
       KSQL_KSQL_SERVICE_ID: confluent_rmoff_01
       KSQL_KSQL_HIDDEN_TOPICS: "^_.*,default_ksql_processing_log"
+      KSQL_OPTS: "-Dksql.heartbeat.enable=true -Dksql.lag.reporting.enable=true"
 
   kafka-connect:
     image: confluentinc/cp-kafka-connect-base:6.2.1

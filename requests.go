@@ -29,21 +29,21 @@ import (
 type RequestParams map[string]interface{}
 type Response map[string]interface{}
 
-func NewKsqlRequest(api net.KSqlDBClient, payload io.Reader) (*http.Request, error) {
+func newKsqlRequest(api net.HTTPClient, payload io.Reader) (*http.Request, error) {
 	return http.NewRequest("POST", api.GetUrl(KSQL_ENDPOINT), payload)
 }
 
-func NewQueryStreamRequest(api net.KSqlDBClient, ctx context.Context, payload io.Reader) (*http.Request, error) {
+func newQueryStreamRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error) {
 	req, err := newPostRequest(api, ctx, QUERY_STREAM_ENDPOINT, payload)
 	return req, err
 }
 
-func NewCloseQueryRequest(api net.KSqlDBClient, ctx context.Context, payload io.Reader) (*http.Request, error) {
+func newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error) {
 	return newPostRequest(api, ctx, CLOSE_QUERY_ENDPOINT, payload)
 }
 
 func handleRequestError(code int, buf []byte) error {
-	ksqlError := Error{}
+	ksqlError := ResponseError{}
 	if err := json.Unmarshal(buf, &ksqlError); err != nil {
 		return fmt.Errorf("could not parse ksqldb error: %w", err)
 	}
@@ -51,7 +51,7 @@ func handleRequestError(code int, buf []byte) error {
 	return ksqlError
 }
 
-func newPostRequest(api net.KSqlDBClient, ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {
+func newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, "POST", api.GetUrl(endpoint), payload)
 	if err != nil {
 		return req, fmt.Errorf("can't create new request with context: %w", err)

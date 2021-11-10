@@ -16,23 +16,4 @@ limitations under the License.
 
 package ksqldb_test
 
-import (
-	"testing"
-
-	"github.com/Masterminds/log-go/impl/logrus"
-	"github.com/stretchr/testify/assert"
-	"github.com/thmeitz/ksqldb-go"
-)
-
-var (
-	logger = logrus.NewStandard()
-)
-
-func TestClientSanitizeQuery(t *testing.T) {
-	sanitizedString := ksqldb.SanitizeQuery(`
-	
-		This is the 	house of Nicolas
-	
-	`)
-	assert.Equal(t, "This is the house of Nicolas", sanitizedString)
-}
+// Todo

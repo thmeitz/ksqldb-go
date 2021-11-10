@@ -20,14 +20,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	"github.com/thmeitz/ksqldb-go/net"
 )
 
+// ServerStatusResponse
+type ServerStatusResponse struct {
+	IsHealthy *bool `json:"isHealthy"`
+	Details   struct {
+		Metastore struct {
+			IsHealthy *bool `json:"isHealthy"`
+		} `json:"metastore"`
+		Kafka struct {
+			IsHealthy *bool `json:"isHealthy"`
+		} `json:"kafka"`
+	} `json:"details"`
+	KsqlServiceID string `json:"ksqlServiceId"`
+}
+
 // ServerInfo provides information about your server
-func Healthcheck(api net.KSqlDBClient) (*ServerHealthResponse, error) {
-	info := ServerHealthResponse{}
-	res, err := api.Get(api.GetUrl(HEALTHCHECK_ENDPOINT))
+func (c *KsqldbClient) GetServerStatus() (*ServerStatusResponse, error) {
+	info := ServerStatusResponse{}
+	url := (*c.http).GetUrl(HEALTHCHECK_ENDPOINT)
+
+	res, err := (*c.http).Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("can't get healthcheck informations: %v", err)
 	}
@@ -39,7 +53,7 @@ func Healthcheck(api net.KSqlDBClient) (*ServerHealthResponse, error) {
 	}
 
 	if err := json.Unmarshal(body, &info); err != nil {
-		return nil, fmt.Errorf("could not parse the response as JSON:\n%w\n%v", err, string(body))
+		return nil, fmt.Errorf("could not parse the response as JSON: %w", err)
 	}
 
 	return &info, nil

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Parts of this apiclient are borrowed from Zalando Skipper
+Parts of the net.client are borrowed from Zalando Skipper
 https://github.com/zalando/skipper/blob/master/net/httpclient.go
 
 Zalando licence: MIT

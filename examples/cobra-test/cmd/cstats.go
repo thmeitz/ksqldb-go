@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 NAME HERE <EMAIL ADDRESS>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,18 +26,18 @@ import (
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
-// serverhealthCmd represents the serverhealth command
-var serverhealthCmd = &cobra.Command{
-	Use:   "serverhealth",
-	Short: "display the server state of your servers",
+// cstatsCmd represents the cstats command
+var cstatsCmd = &cobra.Command{
+	Use:   "cstats",
+	Short: "get cluster status",
 }
 
 func init() {
-	serverhealthCmd.Run = serverhealth
-	rootCmd.AddCommand(serverhealthCmd)
+	cstatsCmd.Run = cstats
+	rootCmd.AddCommand(cstatsCmd)
 }
 
-func serverhealth(cmd *cobra.Command, args []string) {
+func cstats(cmd *cobra.Command, args []string) {
 	setLogger()
 
 	host := viper.GetString("host")
@@ -51,24 +51,19 @@ func serverhealth(cmd *cobra.Command, args []string) {
 		BaseUrl:     host,
 	}
 
-	client, err := net.NewClient(options, log.Current)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	health, err := ksqldb.Healthcheck(client)
+	clusterStatus, err := kcl.GetClusterStatus()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(fmt.Sprintf("Overall healthiness   : %v", GoodOrBad(*health.IsHealthy)))
-	fmt.Println(fmt.Sprintf("Kafka healthiness     : %v", GoodOrBad(*health.Details.Kafka.IsHealthy)))
-	fmt.Println(fmt.Sprintf("Metastore healthiness : %v", GoodOrBad(*health.Details.Metastore.IsHealthy)))
-}
+	fmt.Println(clusterStatus)
 
-func GoodOrBad(healthiness bool) string {
-	if healthiness {
-		return "healthy"
-	}
-	return "unhealthy"
+	//fmt.Println(fmt.Sprintf("Overall healthiness   : %v", GoodOrBad(*health.IsHealthy)))
+	//fmt.Println(fmt.Sprintf("Kafka healthiness     : %v", GoodOrBad(*health.Details.Kafka.IsHealthy)))
+	//fmt.Println(fmt.Sprintf("Metastore healthiness : %v", GoodOrBad(*health.Details.Metastore.IsHealthy)))
 }

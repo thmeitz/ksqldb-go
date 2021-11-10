@@ -20,16 +20,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
-
-	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // ServerInfo gets the info for your server
-// url = api.options.BaseUrl +
-func GetServerInfo(api net.KSqlDBClient) (*ServerInfo, error) {
-	info := ServerInfoResponse{}
-	res, err := http.Get(api.GetUrl(INFO_ENDPOINT))
+// api net.KsqlHTTPClient
+func (c *KsqldbClient) GetServerInfo() (*KsqlServerInfo, error) {
+	info := KsqlServerInfoResponse{}
+	res, err := (*c.http).Get((*c.http).GetUrl(INFO_ENDPOINT))
 
 	if err != nil {
 		// TODO: we have to close the transport api.Close()
@@ -46,5 +43,5 @@ func GetServerInfo(api net.KSqlDBClient) (*ServerInfo, error) {
 		return nil, fmt.Errorf("could not parse the response as JSON: %w", err)
 	}
 
-	return &info.KSQLServerInfo, nil
+	return &info.KsqlServerInfo, nil
 }

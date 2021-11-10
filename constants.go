@@ -1,5 +1,4 @@
 /*
-Copyright © 2021 Robin Moffat & Contributors
 Copyright © 2021 Thomas Meitz <thme219@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -13,12 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Parts of this apiclient are borrowed from Zalando Skipper
-https://github.com/zalando/skipper/blob/master/net/httpclient.go
-
-Zalando licence: MIT
-https://github.com/zalando/skipper/blob/master/LICENSE
 */
 
 package ksqldb
@@ -32,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/thmeitz/ksqldb-go/internal"
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
@@ -53,12 +48,12 @@ import (
 // 			// Do other stuff with the data here
 // 			}
 // 		}
-func Pull(api net.KSqlDBClient, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
+func Pull(api net.HTTPClient, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
 
 	// first sanitize the query
-	query := SanitizeQuery(q)
+	query := internal.SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
-	ksqlerr := ParseKSQL(query)
+	ksqlerr := ParseSql(query)
 	if ksqlerr != nil {
 		return h, r, ksqlerr
 	}
@@ -66,7 +61,7 @@ func Pull(api net.KSqlDBClient, ctx context.Context, q string, s bool) (h Header
 	// Create the request
 	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(s) + `},"sql":"` + query + `"}`)
 
-	req, err := NewQueryStreamRequest(api, ctx, payload)
+	req, err := newQueryStreamRequest(api, ctx, payload)
 	if err != nil {
 		return h, r, fmt.Errorf("can't create new request with context: %w", err)
 	}

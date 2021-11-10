@@ -19,15 +19,15 @@ type KSqlDB struct {
 }
 
 // GetServerInfo provides a mock function with given fields: _a0
-func (_m *KSqlDB) GetServerInfo(_a0 http.Client) (*ksqldb.ServerInfo, error) {
+func (_m *KSqlDB) GetServerInfo(_a0 http.Client) (*ksqldb.KsqlServerInfo, error) {
 	ret := _m.Called(_a0)
 
-	var r0 *ksqldb.ServerInfo
-	if rf, ok := ret.Get(0).(func(http.Client) *ksqldb.ServerInfo); ok {
+	var r0 *ksqldb.KsqlServerInfo
+	if rf, ok := ret.Get(0).(func(http.Client) *ksqldb.KsqlServerInfo); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ksqldb.ServerInfo)
+			r0 = ret.Get(0).(*ksqldb.KsqlServerInfo)
 		}
 	}
 
@@ -42,15 +42,15 @@ func (_m *KSqlDB) GetServerInfo(_a0 http.Client) (*ksqldb.ServerInfo, error) {
 }
 
 // Healthcheck provides a mock function with given fields: _a0, _a1
-func (_m *KSqlDB) Healthcheck(_a0 http.Client, _a1 string) (*ksqldb.ServerHealthResponse, error) {
+func (_m *KSqlDB) Healthcheck(_a0 http.Client, _a1 string) (*ksqldb.ServerStatusResponse, error) {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 *ksqldb.ServerHealthResponse
-	if rf, ok := ret.Get(0).(func(http.Client, string) *ksqldb.ServerHealthResponse); ok {
+	var r0 *ksqldb.ServerStatusResponse
+	if rf, ok := ret.Get(0).(func(http.Client, string) *ksqldb.ServerStatusResponse); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ksqldb.ServerHealthResponse)
+			r0 = ret.Get(0).(*ksqldb.ServerStatusResponse)
 		}
 	}
 

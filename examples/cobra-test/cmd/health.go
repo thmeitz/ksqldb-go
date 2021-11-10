@@ -19,53 +19,56 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/log-go"
+	"github.com/Masterminds/log-go/impl/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
-// infoCmd represents the info command
-var infoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Displays your server infos",
+// healthCmd represents the serverhealth command
+var healthCmd = &cobra.Command{
+	Use:   "health",
+	Short: "display the server state of your servers",
 }
 
 func init() {
-	infoCmd.Run = info
-	rootCmd.AddCommand(infoCmd)
+	healthCmd.Run = health
+	rootCmd.AddCommand(healthCmd)
 }
 
-func info(cmd *cobra.Command, args []string) {
+func health(cmd *cobra.Command, args []string) {
 	setLogger()
+
 	host := viper.GetString("host")
 	user := viper.GetString("username")
 	password := viper.GetString("password")
+
+	log.Current = logrus.NewStandard()
 
 	options := net.Options{
 		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
 	}
 
-	client, err := net.NewHTTPClient(options, nil)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	kcl, err := ksqldb.NewClient(client)
+	health, err := kcl.GetServerStatus()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	info, err := kcl.GetServerInfo()
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println(fmt.Sprintf("Overall healthiness   : %v", GoodOrBad(*health.IsHealthy)))
+	fmt.Println(fmt.Sprintf("Kafka healthiness     : %v", GoodOrBad(*health.Details.Kafka.IsHealthy)))
+	fmt.Println(fmt.Sprintf("Metastore healthiness : %v", GoodOrBad(*health.Details.Metastore.IsHealthy)))
+}
 
-	fmt.Println("===== as console output")
-	fmt.Println(fmt.Sprintf("Version        : %v", info.Version))
-	fmt.Println(fmt.Sprintf("KSQLServiceID  : %v", info.KsqlServiceID))
-	fmt.Println(fmt.Sprintf("KafkaClusterID : %v", info.KafkaClusterID))
-	fmt.Println("===== as info log")
-	log.Current.Infow("server info", log.Fields{"version": info.Version, "ksqlServiceId": info.KsqlServiceID, "kafkaClusterId": info.KafkaClusterID})
+func GoodOrBad(healthiness bool) string {
+	if healthiness {
+		return "healthy"
+	}
+	return "unhealthy"
 }

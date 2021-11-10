@@ -29,6 +29,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/thmeitz/ksqldb-go/internal"
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
@@ -41,19 +42,19 @@ import (
 //
 // Ref: https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint/
 //
-func Execute(api net.KSqlDBClient, q string) (err error) {
+func Execute(api net.HTTPClient, q string) (err error) {
 
 	// first sanitize the query
-	query := SanitizeQuery(q)
+	query := internal.SanitizeQuery(q)
 	// we're kick in our ksqlparser to check the query string
-	ksqlerr := ParseKSQL(query)
+	ksqlerr := ParseSql(query)
 	if ksqlerr != nil {
 		return ksqlerr
 	}
 	//  make the request
 	payload := strings.NewReader(`{"ksql":"` + query + `"}`)
 
-	req, err := NewKsqlRequest(api, payload)
+	req, err := newKsqlRequest(api, payload)
 	// api.logger.Debugf("sending ksqlDB request:%v", q)
 	if err != nil {
 		return fmt.Errorf("can't create new request: %w", err)
@@ -70,6 +71,8 @@ func Execute(api net.KSqlDBClient, q string) (err error) {
 		return fmt.Errorf("can't read response body: %w", err)
 	}
 
+	// das hier ist nicht ganz korrekt
+	// Der StatusCode zeigt an, ob der Request gegen den ksqldb Server korrekt
 	if res.StatusCode != http.StatusOK {
 		return handleRequestError(res.StatusCode, body)
 	}
