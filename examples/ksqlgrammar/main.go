@@ -27,15 +27,16 @@ import (
 
 func main() {
 	//----------| this is the error
-	k := `SELECT1 TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, 
-				  TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, 
-					DOG_SIZE, DOGS_CT 
-	FROM DOGS_BY_SIZE 
-	WHERE DOG_SIZE='large';`
+	k := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as windowStart, 
+				  timestamptostring(windowend,'HH:mm:ss','Europe/London') as windowEnd, 
+					dogSize, dogsCt 
+	from dogs_by_size 
+	where dog_size='large';`
 
 	input := antlr.NewInputStream(k)
+	upper := parser.NewCaseChangingStream(input, true)
 	lexerErrors := &parser.KSqlErrorListener{}
-	lexer := parser.NewKSqlLexer(input)
+	lexer := parser.NewKSqlLexer(upper)
 	lexer.RemoveErrorListeners()
 	lexer.AddErrorListener(lexerErrors)
 

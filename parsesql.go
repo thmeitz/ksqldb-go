@@ -25,8 +25,9 @@ func ParseSql(sql string) *parser.SqlSyntaxErrorList {
 	errors := parser.SqlSyntaxErrorList{}
 
 	input := antlr.NewInputStream(sql)
+	upper := parser.NewCaseChangingStream(input, true)
 	lexerErrorListener := &parser.KSqlErrorListener{}
-	lexer := parser.NewKSqlLexer(input)
+	lexer := parser.NewKSqlLexer(upper)
 	lexer.RemoveErrorListeners()
 	lexer.AddErrorListener(lexerErrorListener)
 
