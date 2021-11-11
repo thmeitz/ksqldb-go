@@ -29,7 +29,6 @@ func (c *KsqldbClient) GetServerInfo() (*KsqlServerInfo, error) {
 	res, err := (*c.http).Get((*c.http).GetUrl(INFO_ENDPOINT))
 
 	if err != nil {
-		// TODO: we have to close the transport api.Close()
 		return nil, fmt.Errorf("can't get server info: %v", err)
 	}
 	defer res.Body.Close()
