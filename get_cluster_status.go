@@ -20,15 +20,99 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 )
+
+// TODO: check type for LastStatusUpdateMs
+type ClusterNode struct {
+	HostAlive          bool  `json:"hostAlive"`
+	LastStatusUpdateMs int64 `json:"lastStatusUpdateMs"`
+}
+
+type ClusterNodeMap map[string]ClusterNode
+
+type ClusterStatus struct {
+	Hostname ClusterNodeMap
+}
+type ClusterStatusResponse struct {
+	ClusterStatus ClusterStatus `json:"clusterStatus"`
+}
+
+type PartitionMap map[string]Partition
+
+type Partition struct {
+	CurrentOffsetPosition uint64 `json:"currentOffsetPosition"`
+	EndOffsetPosition     uint64 `json:"endOffsetPosition"`
+	OffsetLag             uint64 `json:"offsetLag"`
+}
+
+type LagByPartitionMap map[string]LagByPartition
+
+type lagByPartition LagByPartition
+
+func (pm *LagByPartition) UnmarshalJSON(b []byte) (err error) {
+	var orig lagByPartition
+	if err := json.Unmarshal(b, &orig); err != nil {
+		return fmt.Errorf("could not parse the response as JSON:%w", err)
+	}
+	if pm.Partition == nil {
+		pm.Partition = make(PartitionMap)
+	}
+	for k, v := range orig.Partition {
+		pm.Partition[k] = v
+	}
+	return
+}
+
+type LagByPartition struct {
+	Partition PartitionMap `json:"lagByPartition"`
+	Size      uint64       `json:"size"`
+}
+
+type StateStoreLags struct {
+	LagByPartition LagByPartitionMap `json:"lagByPartition"`
+}
+
+func (csr *StateStoreLags) UnmarshalJSON(b []byte) (err error) {
+	var orig LagByPartitionMap
+
+	if err := json.Unmarshal(b, &orig); err != nil {
+		return fmt.Errorf("could not parse the response as JSON:%w", err)
+	}
+
+	fmt.Printf("%+v\n=========\n%v", orig, string(b))
+	// fmt.Printf("%+v\n=========\n", orig)
+	if csr.LagByPartition == nil {
+		csr.LagByPartition = make(LagByPartitionMap)
+	}
+
+	for k, v := range orig {
+		csr.LagByPartition[k] = v
+		//csr.LagByPartition[k].Size = uint64(1)
+	}
+	return
+}
+
+type HostStoreLags struct {
+	StateStoreLags StateStoreLags `json:"stateStoreLags"`
+	UpdateTimeMs   uint64         `json:"updateTimeMs"`
+}
+
+type HostStatus struct {
+	HostAlive             bool                   `json:"hostAlive"`
+	LastStatusUpdateMs    uint64                 `json:"lastStatusUpdateMs"`
+	HostStoreLags         HostStoreLags          `json:"hostStoreLags"`
+	ActiveStandbyPerQuery map[string]interface{} `json:"activeStandbyPerQuery"`
+}
 
 // GetClusterStatus
 // @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/cluster-status-endpoint/
 func (c *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
-	csr := ClStatResp{}
-	url := (*c.http).GetUrl(CLUSTER_STATUS_ENDPOINT)
-	res, err := (*c.http).Get(url)
+	var csr ClusterStatusResponse
 
+	url := (*c.http).GetUrl(CLUSTER_STATUS_ENDPOINT)
+
+	res, err := (*c.http).Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("can't get cluster status: %v", err)
 	}
@@ -39,70 +123,17 @@ func (c *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 		return nil, fmt.Errorf("could not read response body: %v", readErr)
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return nil, handleRequestError(res.StatusCode, body)
+	}
+
 	if err := json.Unmarshal(body, &csr); err != nil {
 		return nil, fmt.Errorf("could not parse the response as JSON:%w", err)
 	}
+
+	fmt.Println(csr)
+
 	cs := ClusterStatusResponse{}
 
 	return &cs, nil
-}
-
-type ClusterNode struct {
-	Name               string
-	HostAlive          bool  `json:"hostAlive"`
-	LastStatusUpdateMs int64 `json:"lastStatusUpdateMs"`
-}
-
-type ClusterStatus struct {
-	Node []ClusterNode
-}
-
-type ClusterStatusResponse struct {
-	ClusterStatus ClusterStatus `json:"clusterStatus"`
-}
-
-type ClStatResp map[string]interface{}
-
-// the return types from the ksqldb are creapy, so we translate them
-// to better readable types
-type hostStatus struct {
-	HostAlive             bool                   `json:"hostAlive"`
-	LastStatusUpdateMs    int64                  `json:"lastStatusUpdateMs"`
-	ActiveStandbyPerQuery map[string]interface{} `json:"activeStandbyPerQuery"`
-	HostStoreLags         map[string]interface{} `json:"hostStoreLags"`
-}
-
-func (clr *ClStatResp) UnmarshalJSON(data []byte) error {
-	var v map[string]interface{}
-	nodes := []ClusterNode{}
-
-	if err := json.Unmarshal(data, &v); err != nil {
-		fmt.Println(err)
-		return err
-	}
-	if x, found := v["clusterStatus"]; found {
-		switch x := x.(type) {
-		case map[string]interface{}:
-			{
-
-				for key, value := range x {
-					fmt.Println(key, value)
-					node := ClusterNode{
-						Name: key,
-					}
-
-					nodes = append(nodes, node)
-				}
-
-				break
-			}
-
-		}
-		fmt.Println(nodes)
-		//for key, value := range x {
-		//
-		//}
-	}
-
-	return nil
 }

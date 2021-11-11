@@ -18,13 +18,15 @@ package ksqldb_test
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"testing"
 
+	"github.com/mitchellh/mapstructure"
+	"github.com/stretchr/testify/assert"
 	"github.com/thmeitz/ksqldb-go"
 )
 
-var js = `{
+var fullBlown = `{
   "clusterStatus": {
     "localhost:8088": {
       "hostAlive": true,
@@ -132,27 +134,114 @@ var js = `{
 }
 `
 
-var js2 = `{
-  "clusterStatus": {
-    "localhost:8088": {
-      "hostAlive": true,
-      "lastStatusUpdateMs": 1617609098808,
-      "activeStandbyPerQuery": {},
-      "hostStoreLags": {
-        "stateStoreLags": {},
-        "updateTimeMs": 1617609168917
-      }
-    }
-  }
+var hostStatusJson = `
+{
+	"hostAlive": true,
+	"lastStatusUpdateMs": 1617609098808,
+	"activeStandbyPerQuery": {},
+	"hostStoreLags": {
+		"stateStoreLags": {
+			"_lag1": {
+				"lagByPartition": {
+					"1": {
+						"currentOffsetPosition": 0,
+						"endOffsetPosition": 0,
+						"offsetLag": 0
+					},
+					"3": {
+						"currentOffsetPosition": 0,
+						"endOffsetPosition": 0,
+						"offsetLag": 0
+					}
+				},
+				"size": 2
+			},
+			"_lag2": {
+				"lagByPartition": {
+					"1": {
+						"currentOffsetPosition": 0,
+						"endOffsetPosition": 0,
+						"offsetLag": 0
+					}            
+				},
+				"size": 1
+			}
+		},				
+		"updateTimeMs": 1617609168917
+	}
 }
 `
 
-func TestTransformClusterStatusResponse(t *testing.T) {
-	bytes := []byte(js2)
-	csr := ksqldb.ClStatResp{}
-	if err := json.Unmarshal(bytes, &csr); err != nil {
-		log.Fatalf("could not parse the response as JSON:%v", err)
+var lagByPartition = `
+{
+	"lagByPartition": {
+		"1": {
+			"currentOffsetPosition": 11,
+			"endOffsetPosition": 12,
+			"offsetLag":13
+		},
+		"3": {
+			"currentOffsetPosition": 31,
+			"endOffsetPosition": 32,
+			"offsetLag": 33
+		}
 	}
+}
+`
 
-	// fmt.Println(csr)
+var part = ` 
+	{
+		"currentOffsetPosition": 1,
+		"endOffsetPosition": 2,
+		"offsetLag": 3
+	}
+`
+
+func XTestClusterStatusResponse(t *testing.T) {
+	var csr ksqldb.ClusterStatusResponse
+	var input map[string]interface{}
+	if err := json.Unmarshal([]byte(fullBlown), &input); err != nil {
+		fmt.Printf("could not parse the response as JSON:%+v", err)
+	}
+	//fmt.Println(input)
+	err := mapstructure.Decode(input, &csr)
+	if err != nil {
+		panic(err)
+	}
+	// fmt.Printf("%+v", csr)
+}
+
+func TestDecodeClusterNode_HostStatusJson(t *testing.T) {
+	var host ksqldb.HostStatus
+	if err := json.Unmarshal([]byte(hostStatusJson), &host); err != nil {
+		fmt.Printf("could not parse the response as JSON:%+v", err)
+	}
+	fmt.Printf("%+v", host)
+	assert.True(t, host.HostAlive)
+	assert.Equal(t, uint64(1617609098808), host.LastStatusUpdateMs)
+	assert.Equal(t, uint64(1617609168917), host.HostStoreLags.UpdateTimeMs)
+	assert.Equal(t, uint64(2), host.HostStoreLags.StateStoreLags.LagByPartition["_lag1"].Size)
+}
+
+func TestDecodeClusterNode_LagByPartitionJSON(t *testing.T) {
+	var lag ksqldb.LagByPartition
+	if err := json.Unmarshal([]byte(lagByPartition), &lag); err != nil {
+		fmt.Printf("could not parse the response as JSON:%+v", err)
+	}
+	assert.Equal(t, uint64(11), lag.Partition["1"].CurrentOffsetPosition)
+	assert.Equal(t, uint64(12), lag.Partition["1"].EndOffsetPosition)
+	assert.Equal(t, uint64(13), lag.Partition["1"].OffsetLag)
+	assert.Equal(t, uint64(31), lag.Partition["3"].CurrentOffsetPosition)
+	assert.Equal(t, uint64(32), lag.Partition["3"].EndOffsetPosition)
+	assert.Equal(t, uint64(33), lag.Partition["3"].OffsetLag)
+}
+
+func TestDecodeClusterNode_PartitionJSON(t *testing.T) {
+	var partition ksqldb.Partition
+	if err := json.Unmarshal([]byte(part), &partition); err != nil {
+		fmt.Printf("could not parse the response as JSON:%+v", err)
+	}
+	assert.Equal(t, uint64(1), partition.CurrentOffsetPosition)
+	assert.Equal(t, uint64(2), partition.EndOffsetPosition)
+	assert.Equal(t, uint64(3), partition.OffsetLag)
 }
