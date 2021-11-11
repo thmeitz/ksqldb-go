@@ -28,7 +28,7 @@ import (
 
 // cstatsCmd represents the cstats command
 var cstatsCmd = &cobra.Command{
-	Use:   "cstats",
+	Use:   "cluster-status",
 	Short: "get cluster status",
 }
 
@@ -61,9 +61,6 @@ func cstats(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	fmt.Println(clusterStatus)
+	fmt.Printf("%+v", clusterStatus)
 
-	//fmt.Println(fmt.Sprintf("Overall healthiness   : %v", GoodOrBad(*health.IsHealthy)))
-	//fmt.Println(fmt.Sprintf("Kafka healthiness     : %v", GoodOrBad(*health.Details.Kafka.IsHealthy)))
-	//fmt.Println(fmt.Sprintf("Metastore healthiness : %v", GoodOrBad(*health.Details.Metastore.IsHealthy)))
 }

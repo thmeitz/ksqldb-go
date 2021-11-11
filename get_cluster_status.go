@@ -21,94 +21,72 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/mitchellh/mapstructure"
 )
 
-// TODO: check type for LastStatusUpdateMs
-type ClusterNode struct {
-	HostAlive          bool  `json:"hostAlive"`
-	LastStatusUpdateMs int64 `json:"lastStatusUpdateMs"`
+type ClusterStatusResponse struct {
+	ClusterStatus ClusterStatus
+}
+
+type ClusterStatus struct {
+	Host ClusterNodeMap `mapstructure:",remain"`
 }
 
 type ClusterNodeMap map[string]ClusterNode
 
-type ClusterStatus struct {
-	Hostname ClusterNodeMap
+type ClusterNode struct {
+	HostAlive             bool
+	LastStatusUpdateMs    int64
+	HostStoreLags         HostStoreLags
+	ActiveStandbyPerQuery ActiveStandbyPerQueryMap
 }
-type ClusterStatusResponse struct {
-	ClusterStatus ClusterStatus `json:"clusterStatus"`
+
+type TopicPartition struct {
+	Topic     string
+	Partition uint64
+}
+
+type ActiveStandbyPerQueryMap map[string]ActiveStandbyPerQuery
+
+type ActiveStandbyPerQuery struct {
+	ActiveStores      []string
+	ActivePartitions  []TopicPartition
+	StandByStore      []string
+	StandByPartitions []string
+}
+
+type HostStoreLags struct {
+	StateStoreLags StateStoreLagMap
+	UpdateTimeMs   uint64
+}
+
+type StateStoreLagMap map[string]StateStoreLag
+
+type StateStoreLag struct {
+	LagByPartition LagByPartitionMap
+	Size           uint64
+}
+
+type LagByPartitionMap map[string]LagByPartition
+
+type LagByPartition struct {
+	Partition Partition
 }
 
 type PartitionMap map[string]Partition
 
 type Partition struct {
-	CurrentOffsetPosition uint64 `json:"currentOffsetPosition"`
-	EndOffsetPosition     uint64 `json:"endOffsetPosition"`
-	OffsetLag             uint64 `json:"offsetLag"`
-}
-
-type LagByPartitionMap map[string]LagByPartition
-
-type lagByPartition LagByPartition
-
-func (pm *LagByPartition) UnmarshalJSON(b []byte) (err error) {
-	var orig lagByPartition
-	if err := json.Unmarshal(b, &orig); err != nil {
-		return fmt.Errorf("could not parse the response as JSON:%w", err)
-	}
-	if pm.Partition == nil {
-		pm.Partition = make(PartitionMap)
-	}
-	for k, v := range orig.Partition {
-		pm.Partition[k] = v
-	}
-	return
-}
-
-type LagByPartition struct {
-	Partition PartitionMap `json:"lagByPartition"`
-	Size      uint64       `json:"size"`
-}
-
-type StateStoreLags struct {
-	LagByPartition LagByPartitionMap `json:"lagByPartition"`
-}
-
-func (csr *StateStoreLags) UnmarshalJSON(b []byte) (err error) {
-	var orig LagByPartitionMap
-
-	if err := json.Unmarshal(b, &orig); err != nil {
-		return fmt.Errorf("could not parse the response as JSON:%w", err)
-	}
-
-	fmt.Printf("%+v\n=========\n%v", orig, string(b))
-	// fmt.Printf("%+v\n=========\n", orig)
-	if csr.LagByPartition == nil {
-		csr.LagByPartition = make(LagByPartitionMap)
-	}
-
-	for k, v := range orig {
-		csr.LagByPartition[k] = v
-		//csr.LagByPartition[k].Size = uint64(1)
-	}
-	return
-}
-
-type HostStoreLags struct {
-	StateStoreLags StateStoreLags `json:"stateStoreLags"`
-	UpdateTimeMs   uint64         `json:"updateTimeMs"`
-}
-
-type HostStatus struct {
-	HostAlive             bool                   `json:"hostAlive"`
-	LastStatusUpdateMs    uint64                 `json:"lastStatusUpdateMs"`
-	HostStoreLags         HostStoreLags          `json:"hostStoreLags"`
-	ActiveStandbyPerQuery map[string]interface{} `json:"activeStandbyPerQuery"`
+	CurrentOffsetPosition uint64
+	EndOffsetPosition     uint64
+	OffsetLag             uint64
 }
 
 // GetClusterStatus
 // @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/cluster-status-endpoint/
 func (c *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 	var csr ClusterStatusResponse
+	var input map[string]interface{}
 
 	url := (*c.http).GetUrl(CLUSTER_STATUS_ENDPOINT)
 
@@ -127,13 +105,15 @@ func (c *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 		return nil, handleRequestError(res.StatusCode, body)
 	}
 
-	if err := json.Unmarshal(body, &csr); err != nil {
+	if err := json.Unmarshal(body, &input); err != nil {
 		return nil, fmt.Errorf("could not parse the response as JSON:%w", err)
 	}
 
-	fmt.Println(csr)
+	if err := mapstructure.Decode(&input, &csr); err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
 
-	cs := ClusterStatusResponse{}
+	// fmt.Println(csr)
 
-	return &cs, nil
+	return &csr, nil
 }
