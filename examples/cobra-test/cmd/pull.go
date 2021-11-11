@@ -55,6 +55,8 @@ func dogstats(cmd *cobra.Command, args []string) {
 		AllowHTTP:   true,
 	}
 
+	// only log.Logger is allowed or nil (since v0.0.4)
+	// logrus is in maintenance mode, so I'll using zap in the future
 	client, err := net.NewHTTPClient(options, nil)
 	if err != nil {
 		log.Fatal(err)

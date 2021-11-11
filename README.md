@@ -67,10 +67,16 @@ go mod tidy
 
 ### Create a ksqlDB Client
 
+> ### Breaking Change v0.0.4
+>
+> The HTTP client has now its own package
+
 ```golang
 import (
-	"github.com/Masterminds/log-go"
-	"github.com/Masterminds/log-go/impl/logrus"
+  "github.com/Masterminds/log-go"
+  "github.com/Masterminds/log-go/impl/logrus"
+  "github.com/thmeitz/ksqldb-go"
+  "github.com/thmeitz/ksqldb-go/net"
 )
 
 var (
@@ -80,14 +86,17 @@ var (
 func main {
   options := ksqldb.Options{
     // if you need a login, do this; if not its not necessary
-    Credentials: ksqldb.Credentials{Username: "myuser", Password: "mypassword"},
+    Credentials: net.Credentials{Username: "myuser", Password: "mypassword"},
     // defaults to http://localhost:8088
     BaseUrl:     "http://my-super-shiny-ksqldbserver:8082",
     // this is needed, because the ksql api communicates with http2 only
+    // default value in v0.0.4
     AllowHTTP:   true,
   }
 
-  client, err := ksqldb.NewClient(options, log.Current)
+  // only log.Logger is allowed or nil (since v0.0.4)
+  // logrus is in maintenance mode, so I'll using zap in the future
+  client, err := net.NewHTTPClient(options, nil)
   if err != nil {
      log.Fatal(err)
   }
@@ -99,7 +108,7 @@ func main {
 }
 ```
 
-For no authentication just use blank username and password values.
+For no authentication remove `Credentials` from options.
 
 ### QueryBuilder (since v0.0.3)
 
@@ -141,7 +150,7 @@ if err != nil {
 
 ```golang
 
-// we are using the client, we are created
+// we use the client from the above example
 
 ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer ctxCancel()
