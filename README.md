@@ -185,7 +185,7 @@ go func() {
       // Should do some type assertions here
       name = row[2].(string)
       dogSize = row[3].(string)
-      fmt.Printf("🐾%v: %v\n",  name, dogSize)
+      fmt.Printf("🐾 %v: %v\n",  name, dogSize)
     }
   }
 }()
@@ -240,13 +240,15 @@ Usage:
   cobra-test [command]
 
 Available Commands:
-  completion   generate the autocompletion script for the specified shell
-  help         Help about any command
-  info         Displays your server infos
-  pull         print the dog stats
-  push         push dogs example like all-in-one example, but with ParseKSQL
-  serverhealth display the server state of your servers
-  setup        setup a dummy connector like in all-in-one example
+  check          check a <example>.ksql file with the integrated parser
+  cluster-status get cluster status
+  completion     generate the autocompletion script for the specified shell
+  health         display the server state of your servers
+  help           Help about any command
+  info           Displays your server infos
+  pull           print the dog stats
+  push           push dogs example
+  setup          setup a dummy connector
 
 Flags:
       --config string      config file (default is $HOME/.cobra-test.yaml)
@@ -287,6 +289,14 @@ It contains the latest versions of all products.
 - kafka-connect (6.2.1)
 - ksqldb-cli (0.21.0)
 - kafdrop (latest)
+
+### ksqldb
+
+I've added following options to `docker-compose` to get the `ClusterStatus`.
+
+```yaml
+KSQL_OPTS: "-Dksql.heartbeat.enable=true -Dksql.lag.reporting.enable=true"
+```
 
 ### ksqldb-cli
 
