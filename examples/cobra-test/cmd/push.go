@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/Masterminds/log-go"
@@ -50,13 +49,13 @@ func push(cmd *cobra.Command, args []string) {
 		AllowHTTP:   true,
 	}
 
-	client, err := net.NewHTTPClient(options, nil)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Fatal(errors.Unwrap(err))
+		log.Fatal(err)
 	}
 
 	// You don't need to parse your ksql statement; Client.Pull parses it for you
-	k := "SELECT ROWTIME, ID, NAME, DOGSIZE, AGE FROM DOGS EMIT CHANGES;"
+	k := "select rowtime, id, name, dogsize, age from dogs emit changes;"
 
 	rc := make(chan ksqldb.Row)
 	hc := make(chan ksqldb.Header, 1)
@@ -91,11 +90,11 @@ func push(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	e := ksqldb.Push(client, ctx, k, rc, hc)
-
-	client.Close()
+	e := kcl.Push(ctx, k, rc, hc)
 
 	if e != nil {
 		log.Fatal(e)
 	}
+
+	kcl.Close()
 }

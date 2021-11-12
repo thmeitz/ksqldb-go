@@ -27,7 +27,6 @@ import (
 	"strings"
 
 	"github.com/thmeitz/ksqldb-go/internal"
-	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // Pull queries are like "traditional" RDBMS queries in which
@@ -48,7 +47,7 @@ import (
 // 			// Do other stuff with the data here
 // 			}
 // 		}
-func Pull(api net.HTTPClient, ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
+func (api *KsqldbClient) Pull(ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
 
 	// first sanitize the query
 	query := internal.SanitizeQuery(q)
@@ -61,13 +60,13 @@ func Pull(api net.HTTPClient, ctx context.Context, q string, s bool) (h Header, 
 	// Create the request
 	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(s) + `},"sql":"` + query + `"}`)
 
-	req, err := newQueryStreamRequest(api, ctx, payload)
+	req, err := newQueryStreamRequest(*api.http, ctx, payload)
 	if err != nil {
 		return h, r, fmt.Errorf("can't create new request with context: %w", err)
 	}
 	req.Header.Add("Accept", "application/json; charset=utf-8")
 
-	res, err := api.Do(req)
+	res, err := (*api.http).Do(req)
 	if err != nil {
 		return h, r, fmt.Errorf("can't do request: %+w", err)
 	}

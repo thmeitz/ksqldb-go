@@ -42,10 +42,11 @@ func newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Re
 	return newPostRequest(api, ctx, CLOSE_QUERY_ENDPOINT, payload)
 }
 
+// das hier muss überarbeitet werden
 func handleRequestError(code int, buf []byte) error {
 	ksqlError := ResponseError{}
 	if err := json.Unmarshal(buf, &ksqlError); err != nil {
-		return fmt.Errorf("could not parse ksqldb error: %w", err)
+		return fmt.Errorf("ksqldb error: %w", err)
 	}
 
 	return ksqlError

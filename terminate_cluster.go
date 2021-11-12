@@ -16,4 +16,4 @@ limitations under the License.
 
 package ksqldb
 
-// Todo
+type TopicList []string

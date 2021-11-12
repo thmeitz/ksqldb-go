@@ -36,6 +36,10 @@ import (
 	"golang.org/x/net/http2"
 )
 
+type TransportFactory interface {
+	NewTransport(options Options) *Transport
+}
+
 // Options configures the Client
 type Options struct {
 	// BaseUrl is the URL to your ksqldb server

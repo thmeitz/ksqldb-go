@@ -40,6 +40,10 @@ const (
 
 // NewClient(Options, log.Logger) (*Client, error)
 
+type HTTPClientFactory interface {
+	NewHTTPClient(options Options, logger *log.Logger) (*Client, error)
+}
+
 type HTTPClient interface {
 	GetUrl(endpoint string) string
 	Do(*http.Request) (*http.Response, error)

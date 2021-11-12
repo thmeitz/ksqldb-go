@@ -21,7 +21,7 @@ import (
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/stretchr/testify/assert"
-	"github.com/thmeitz/ksqldb-go/mocks"
+	mocks "github.com/thmeitz/ksqldb-go/mocks/parser"
 	"github.com/thmeitz/ksqldb-go/parser"
 )
 

@@ -55,17 +55,15 @@ func dogstats(cmd *cobra.Command, args []string) {
 		AllowHTTP:   true,
 	}
 
-	// only log.Logger is allowed or nil (since v0.0.4)
-	// logrus is in maintenance mode, so I'll using zap in the future
-	client, err := net.NewHTTPClient(options, nil)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	k := `SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, 
-	TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, 
-	DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE 
-	WHERE DOG_SIZE=?;`
+	k := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start, 
+	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, 
+	dog_size, dogs_ct from dogs_by_size 
+	where dog_size=?;`
 
 	builder, err := ksqldb.DefaultQueryBuilder(k)
 	if err != nil {
@@ -79,7 +77,7 @@ func dogstats(cmd *cobra.Command, args []string) {
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, err := ksqldb.Pull(client, ctx, *stmnt, true)
+	_, r, err := kcl.Pull(ctx, *stmnt, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -101,6 +99,6 @@ func dogstats(cmd *cobra.Command, args []string) {
 	}
 
 	// close transport
-	client.Close()
+	kcl.Close()
 
 }

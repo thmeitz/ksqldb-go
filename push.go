@@ -26,7 +26,6 @@ import (
 	"strings"
 
 	"github.com/thmeitz/ksqldb-go/internal"
-	"github.com/thmeitz/ksqldb-go/net"
 )
 
 const (
@@ -58,10 +57,10 @@ const (
 // 			if row != nil {
 //				DATA_TS = row[0].(float64)
 // 				ID = row[1].(string)
-func Push(api net.HTTPClient, ctx context.Context, q string, rc chan<- Row, hc chan<- Header) (err error) {
+func (api *KsqldbClient) Push(ctx context.Context, sql string, rc chan<- Row, hc chan<- Header) (err error) {
 
 	// first sanitize the query
-	query := internal.SanitizeQuery(q)
+	query := internal.SanitizeQuery(sql)
 	// we're kick in our ksqlparser to check the query string
 	ksqlerr := ParseSql(query)
 	if ksqlerr != nil {
@@ -71,7 +70,7 @@ func Push(api net.HTTPClient, ctx context.Context, q string, rc chan<- Row, hc c
 	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset
 	payload := strings.NewReader(`{"properties":{"ksql.streams.auto.offset.reset": "latest"},"sql":"` + query + `"}`)
 
-	req, err := newQueryStreamRequest(api, ctx, payload)
+	req, err := newQueryStreamRequest(*api.http, ctx, payload)
 	if err != nil {
 		return fmt.Errorf("error creating new request with context: %v", err)
 	}
@@ -80,7 +79,7 @@ func Push(api net.HTTPClient, ctx context.Context, q string, rc chan<- Row, hc c
 	// go cl.heartbeat(&cl.client, &ctx)
 
 	//  make the request
-	res, err := api.Do(req)
+	res, err := (*api.http).Do(req)
 
 	if err != nil {
 		return fmt.Errorf("%v", err)
@@ -103,14 +102,14 @@ func Push(api net.HTTPClient, ctx context.Context, q string, rc chan<- Row, hc c
 			// Try to close the query
 			payload := strings.NewReader(`{"queryId":"` + header.queryId + `"}`)
 			// cl.log("payload: %v", *payload)
-			req, err := newCloseQueryRequest(api, ctx, payload)
+			req, err := newCloseQueryRequest(*api.http, ctx, payload)
 
 			// api.logger.Debugw("closing ksqlDB query", log.Fields{"queryId": header.queryId})
 			if err != nil {
 				return fmt.Errorf("failed to construct http request to cancel query\n%w", err)
 			}
 
-			res, err := api.Do(req)
+			res, err := (*api.http).Do(req)
 			if err != nil {
 				return fmt.Errorf("failed to execute http request to cancel query\n%w", err)
 			}

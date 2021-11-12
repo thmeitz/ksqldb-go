@@ -19,12 +19,19 @@ package ksqldb
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/thmeitz/ksqldb-go/net"
 )
+
+type KsqldbFactory interface {
+	// NewClient factory
+	NewClient(net.HTTPClient) (*KsqldbClient, error)
+
+	// NewClientWithOptions factory
+	NewClientWithOptions(options net.Options) (*KsqldbClient, error)
+}
 
 type Ksqldb interface {
 	// GetServerInfo returns informations about the ksqlDB Server
@@ -45,28 +52,21 @@ type Ksqldb interface {
 
 	// ValidateProperty validates a property
 	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/is_valid_property-endpoint/
-	//ValidateProperty(http.Client, string) error
-}
+	//ValidateProperty(string) error
 
-type KsqldbClient struct {
-	http *net.HTTPClient
-}
+	//
+	Pull(context.Context, string, bool) (Header, Payload, error)
 
-func NewClient(http net.HTTPClient) (*KsqldbClient, error) {
-	var client = KsqldbClient{
-		http: &http,
-	}
+	//
+	Push(context.Context, string, chan<- Row, chan<- Header) error
 
-	return &client, nil
-}
+	//
+	EnableParseSQL(bool)
 
-func NewClientWithOptions(options net.Options) (*KsqldbClient, error) {
-	http, err := net.NewHTTPClient(options, nil)
-	if err != nil {
-		return nil, fmt.Errorf("%v", err)
-	}
+	ParseSQLEnabled() bool
 
-	return NewClient(http)
+	// Close closes net.HTTPClient transport
+	Close()
 }
 
 type ksqldbRequest interface {
@@ -84,21 +84,6 @@ type ksqldbRequest interface {
 
 type KsqlParser interface {
 	ParseSql(string) []error
-}
-
-type TopicList []string
-
-// KsqlServerInfo
-// @
-type KsqlServerInfo struct {
-	Version        string `json:"version"`
-	KafkaClusterID string `json:"kafkaClusterId"`
-	KsqlServiceID  string `json:"ksqlServiceId"`
-}
-
-// KsqlServerInfoResponse
-type KsqlServerInfoResponse struct {
-	KsqlServerInfo KsqlServerInfo `json:"KsqlServerInfo"`
 }
 
 // Row represents a row returned from a query

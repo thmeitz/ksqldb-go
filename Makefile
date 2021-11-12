@@ -2,7 +2,7 @@ GO=go
 GOCOVER=$(GO) tool cover
 GOTEST=$(GO) test
 
-.PHONY: fmt dev lint vet test test-cover build-all-in-one build-cobra build-ksqlgrammar all
+.PHONY: fmt dev lint vet test test-cover build-cobra build-ksqlgrammar all
 
 all:
 	make fmt vet lint test
@@ -16,6 +16,15 @@ build:
 
 build-ksqlgrammar:  
 	cd examples/ksqlgrammar && go build . && mv ksqlgrammar ../../bin
+
+mockery:
+	# mockery --all --inpackage --keeptree
+	# mockery --name Recognizer --srcpkg github.com/antlr/antlr4/runtime/Go/antlr
+	# mockery --name Ksqldb 
+	# mockery --name KsqldbFactory
+	# mockery --name HTTPClient --keeptree --recursive
+	# mockery --name HTTPClientFactory --keeptree --recursive
+	# mockery --name TransportFactory --keeptree --recursive
 
 test:
 	$(GOTEST) -v ./... -short

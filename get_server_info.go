@@ -22,6 +22,18 @@ import (
 	"io/ioutil"
 )
 
+// KsqlServerInfo
+type KsqlServerInfo struct {
+	Version        string `json:"version"`
+	KafkaClusterID string `json:"kafkaClusterId"`
+	KsqlServiceID  string `json:"ksqlServiceId"`
+}
+
+// KsqlServerInfoResponse
+type KsqlServerInfoResponse struct {
+	KsqlServerInfo KsqlServerInfo `json:"KsqlServerInfo"`
+}
+
 // ServerInfo gets the info for your server
 // api net.KsqlHTTPClient
 func (c *KsqldbClient) GetServerInfo() (*KsqlServerInfo, error) {

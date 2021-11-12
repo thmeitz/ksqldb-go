@@ -37,7 +37,9 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 
 ### KSqlParser
 
-- parse your ksql-statements with the provided `KSqlParser`.
+- the lexer works like the Confluent Java lexer case insensitive (ex `SELECT * FROM BLA` is identical to `select * from bla`). (since v0.0.4)
+- parse your ksql-statements with the provided `ksqldb.ParseSql` method.
+- `Push` and `Pull` queries parsed by default with `ksqldb.ParseSQL`. [TODO: configure ksqldb.Client to disable it with options]
 
 ## Installation
 
@@ -84,7 +86,7 @@ var (
 )
 // than later in your code...
 func main {
-  options := ksqldb.Options{
+  options := net.Options{
     // if you need a login, do this; if not its not necessary
     Credentials: net.Credentials{Username: "myuser", Password: "mypassword"},
     // defaults to http://localhost:8088
@@ -344,6 +346,12 @@ ksql>
 ## [Kafdrop](https://github.com/obsidiandynamics/kafdrop)
 
 Kafdrop is a web UI for viewing Kafka topics and browsing consumer groups. The tool displays information such as brokers, topics, partitions, consumers, and lets you view messages.
+
+Kafdrop runs on port 9000 on your localhost.
+
+```
+http://localhost:9000
+```
 
 ![](https://raw.githubusercontent.com/obsidiandynamics/kafdrop/master/docs/images/overview.png)
 
