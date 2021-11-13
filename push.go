@@ -1,6 +1,6 @@
 /*
 Copyright © 2021 Robin Moffat & Contributors
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/thmeitz/ksqldb-go/internal"
+	"github.com/thmeitz/ksqldb-go/parser"
 )
 
 const (
@@ -61,10 +62,12 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rc chan<- Row, hc
 
 	// first sanitize the query
 	query := internal.SanitizeQuery(sql)
-	// we're kick in our ksqlparser to check the query string
-	ksqlerr := ParseSql(query)
-	if ksqlerr != nil {
-		return ksqlerr
+
+	if api.ParseSQLEnabled() {
+		ksqlerr := parser.ParseSql(query)
+		if ksqlerr != nil {
+			return ksqlerr
+		}
 	}
 
 	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset

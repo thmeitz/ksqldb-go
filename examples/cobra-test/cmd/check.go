@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/parser"
 )
 
 // checkCmd represents the check command
@@ -56,7 +56,7 @@ func checksqlfile(cmd *cobra.Command, args []string) {
 		log.Fatalf("%v %w", fname, err)
 	}
 
-	ksqlerr := ksqldb.ParseSql(string(fbytes))
+	ksqlerr := parser.ParseSql(string(fbytes))
 	if ksqlerr != nil {
 		log.Errorw("sql parser error", log.Fields{"error": ksqlerr})
 		for _, e := range *ksqlerr {

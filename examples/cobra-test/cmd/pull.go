@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ func dogstats(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer kcl.Close()
 
 	k := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start, 
 	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, 
@@ -97,8 +98,4 @@ func dogstats(cmd *cobra.Command, args []string) {
 			log.Infof("🐶 There are %v dogs size %v between %v and %v", dogsCt, dogSize, windowStart, windowEnd)
 		}
 	}
-
-	// close transport
-	kcl.Close()
-
 }

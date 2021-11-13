@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
 )
 
@@ -139,8 +139,8 @@ func TestClusterStatusResponse(t *testing.T) {
 	var input map[string]interface{}
 
 	err = json.Unmarshal([]byte(fullBlown), &input)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	err = mapstructure.Decode(&input, &csr)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }

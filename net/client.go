@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,11 +25,12 @@ package net
 import (
 	"fmt"
 	"io"
-	"log"
+
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/Masterminds/log-go"
 	"github.com/thmeitz/ksqldb-go/internal"
 )
 
@@ -41,7 +42,7 @@ const (
 // NewClient(Options, log.Logger) (*Client, error)
 
 type HTTPClientFactory interface {
-	NewHTTPClient(options Options, logger *log.Logger) (*Client, error)
+	NewHTTPClient(options Options, logger log.Logger) (*Client, error)
 }
 
 type HTTPClient interface {
@@ -66,7 +67,7 @@ type Credentials struct {
 	Password string `json:"password" mapstructure:"password"`
 }
 
-func NewHTTPClient(options Options, logger *log.Logger) (*Client, error) {
+func NewHTTPClient(options Options, logger log.Logger) (*Client, error) {
 	var uri *url.URL
 	var err error
 
@@ -80,12 +81,12 @@ func NewHTTPClient(options Options, logger *log.Logger) (*Client, error) {
 
 	tr := NewTransport(options)
 
-	if logger == nil {
-		logger = log.Default()
-	}
+	//if logger == nil {
+	//	logger = log.Default()
+	//}
 
 	return &Client{
-		logger: *logger,
+		logger: logger,
 		client: http.Client{
 			Transport: tr,
 		},

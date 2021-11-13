@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -25,18 +23,18 @@ import (
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
-// infoCmd represents the info command
-var infoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Displays your server infos",
+// validateCmd represents the validate command
+var validateCmd = &cobra.Command{
+	Use:   "validate",
+	Short: "validates a property",
 }
 
 func init() {
-	infoCmd.Run = info
-	rootCmd.AddCommand(infoCmd)
+	validateCmd.Run = validate
+	rootCmd.AddCommand(validateCmd)
 }
 
-func info(cmd *cobra.Command, args []string) {
+func validate(cmd *cobra.Command, args []string) {
 	setLogger()
 	host := viper.GetString("host")
 	user := viper.GetString("username")
@@ -45,28 +43,18 @@ func info(cmd *cobra.Command, args []string) {
 	options := net.Options{
 		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
+		AllowHTTP:   true,
 	}
 
-	client, err := net.NewHTTPClient(options, nil)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	kcl, err := ksqldb.NewClient(client)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer kcl.Close()
-
-	info, err := kcl.GetServerInfo()
+	err = kcl.ValidateProperty("test")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("===== as console output")
-	fmt.Println(fmt.Sprintf("Version        : %v", info.Version))
-	fmt.Println(fmt.Sprintf("KSQLServiceID  : %v", info.KsqlServiceID))
-	fmt.Println(fmt.Sprintf("KafkaClusterID : %v", info.KafkaClusterID))
-	fmt.Println("===== as info log")
-	log.Current.Infow("server info", log.Fields{"version": info.Version, "ksqlServiceId": info.KsqlServiceID, "kafkaClusterId": info.KafkaClusterID})
+	kcl.Close()
 }

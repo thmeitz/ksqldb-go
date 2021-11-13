@@ -1,6 +1,6 @@
 /*
 Copyright © 2021 Robin Moffat & Contributors
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/thmeitz/ksqldb-go/internal"
+	"github.com/thmeitz/ksqldb-go/parser"
 )
 
 // Pull queries are like "traditional" RDBMS queries in which
@@ -51,10 +52,12 @@ func (api *KsqldbClient) Pull(ctx context.Context, q string, s bool) (h Header, 
 
 	// first sanitize the query
 	query := internal.SanitizeQuery(q)
-	// we're kick in our ksqlparser to check the query string
-	ksqlerr := ParseSql(query)
-	if ksqlerr != nil {
-		return h, r, ksqlerr
+
+	if api.ParseSQLEnabled() {
+		ksqlerr := parser.ParseSql(query)
+		if ksqlerr != nil {
+			return h, r, ksqlerr
+		}
 	}
 
 	// Create the request

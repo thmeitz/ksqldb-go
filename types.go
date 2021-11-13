@@ -1,6 +1,6 @@
 /*
 Copyright © 2021 Robin Moffat & Contributors
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import (
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
-type KsqldbFactory interface {
+type NewClientFactory interface {
 	// NewClient factory
 	NewClient(net.HTTPClient) (*KsqldbClient, error)
+}
 
+type NewClientWithOptionsFactory interface {
 	// NewClientWithOptions factory
-	NewClientWithOptions(options net.Options) (*KsqldbClient, error)
+	NewClientWithOptions(options net.Options) (*Ksqldb, error)
 }
 
 type Ksqldb interface {
@@ -52,7 +54,7 @@ type Ksqldb interface {
 
 	// ValidateProperty validates a property
 	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/is_valid_property-endpoint/
-	//ValidateProperty(string) error
+	ValidateProperty(string) error
 
 	//
 	Pull(context.Context, string, bool) (Header, Payload, error)
@@ -80,10 +82,6 @@ type ksqldbRequest interface {
 
 	// NewIntrospectQueryRequest
 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/status-endpoint/
-}
-
-type KsqlParser interface {
-	ParseSql(string) []error
 }
 
 // Row represents a row returned from a query

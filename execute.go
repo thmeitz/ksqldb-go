@@ -1,6 +1,6 @@
 /*
 Copyright © 2021 Robin Moffat & Contributors
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import (
 	"strings"
 
 	"github.com/thmeitz/ksqldb-go/internal"
+	"github.com/thmeitz/ksqldb-go/parser"
 )
 
 // Execute will execute a ksqlDB statement, such as creating
@@ -45,11 +46,14 @@ func (api *KsqldbClient) Execute(sql string) (err error) {
 
 	// first sanitize the query
 	query := internal.SanitizeQuery(sql)
-	// we're kick in our ksqlparser to check the query string
-	ksqlerr := ParseSql(query)
-	if ksqlerr != nil {
-		return ksqlerr
+
+	if api.ParseSQLEnabled() {
+		ksqlerr := parser.ParseSql(query)
+		if ksqlerr != nil {
+			return ksqlerr
+		}
 	}
+
 	//  make the request
 	payload := strings.NewReader(`{"ksql":"` + query + `"}`)
 

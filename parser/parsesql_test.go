@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,29 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ksqldb_test
+package parser_test
 
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/thmeitz/ksqldb-go"
+	"github.com/stretchr/testify/require"
+	"github.com/thmeitz/ksqldb-go/parser"
 )
 
 func TestParseKSQL_Error(t *testing.T) {
 	sql := "SELECT * FROM DOGS"
-	err := ksqldb.ParseSql(sql)
-	assert.NotNil(t, err)
-	assert.Equal(t, "1 sql syntax error(s) found", err.Error())
+	err := parser.ParseSql(sql)
+	require.NotNil(t, err)
+	require.Equal(t, "1 sql syntax error(s) found", err.Error())
 	if err != nil {
 		for _, e := range *err {
-			assert.Equal(t, "error on line(1):column(18): missing ';' at '<EOF>'", e.Error())
+			require.Equal(t, "error on line(1):column(18): missing ';' at '<EOF>'", e.Error())
 		}
 	}
 }
 
 func TestParseKSQL_NoError(t *testing.T) {
 	sql := "SELECT * FROM DOGS;"
-	err := ksqldb.ParseSql(sql)
-	assert.Nil(t, err)
+	err := parser.ParseSql(sql)
+	require.Nil(t, err)
 }

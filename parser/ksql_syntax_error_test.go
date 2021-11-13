@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	mocks "github.com/thmeitz/ksqldb-go/mocks/parser"
 	"github.com/thmeitz/ksqldb-go/parser"
 )
@@ -31,7 +31,7 @@ func TestKSqlSyntaxError_ErrorFunc(t *testing.T) {
 		Column: 10,
 		Msg:    "dummy message",
 	}
-	assert.Equal(t, "error on line(1):column(10): dummy message", err.Error())
+	require.Equal(t, "error on line(1):column(10): dummy message", err.Error())
 }
 
 func TestKSqlSyntaxErrorList_ErrorfFunc(t *testing.T) {
@@ -42,28 +42,28 @@ func TestKSqlSyntaxErrorList_ErrorfFunc(t *testing.T) {
 			Msg:    "dummy message",
 		},
 	}
-	assert.Equal(t, "1 sql syntax error(s) found", errorList.Error())
+	require.Equal(t, "1 sql syntax error(s) found", errorList.Error())
 }
 
 func TestKSqlErrorListener_HasErrors_ErrorCount(t *testing.T) {
 	listener := parser.KSqlErrorListener{}
-	assert.False(t, listener.HasErrors())
-	assert.Equal(t, 0, listener.ErrorCount())
+	require.False(t, listener.HasErrors())
+	require.Equal(t, 0, listener.ErrorCount())
 }
 
 func TestKSqlErrorListener_SyntaxError(t *testing.T) {
 	listener := parser.KSqlErrorListener{}
-	assert.False(t, listener.HasErrors())
-	assert.Equal(t, 0, listener.ErrorCount())
+	require.False(t, listener.HasErrors())
+	require.Equal(t, 0, listener.ErrorCount())
 
 	var r antlr.Recognizer
 	recognizer := mocks.Recognizer{}
 	r = &recognizer
 	listener.SyntaxError(r, nil, 1, 10, "some error", nil)
 
-	assert.True(t, listener.HasErrors())
-	assert.Equal(t, 1, listener.ErrorCount())
+	require.True(t, listener.HasErrors())
+	require.Equal(t, 1, listener.ErrorCount())
 
 	listener.SyntaxError(r, nil, 1, 10, "some more error", nil)
-	assert.Equal(t, 2, listener.ErrorCount())
+	require.Equal(t, 2, listener.ErrorCount())
 }

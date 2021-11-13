@@ -1,0 +1,46 @@
+/*
+Copyright © 2021 Thomas Meitz
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package parser
+
+import (
+	"unicode"
+
+	"github.com/antlr/antlr4/runtime/Go/antlr"
+)
+
+// UpperCaseStream wraps an existing CharStream, but upper cases
+// the input before it is tokenized.
+type UpperCaseStream struct {
+	antlr.CharStream
+}
+
+// NewUpperCaseStream returns a new UpperCaseStream that forces
+// all tokens read from the underlying stream to be upper case.
+func NewUpperCaseStream(in antlr.CharStream) *UpperCaseStream {
+	return &UpperCaseStream{in}
+}
+
+// LA gets the value of the symbol at offset from the current position
+// from the underlying CharStream and converts it to upper case.
+func (is *UpperCaseStream) LA(offset int) int {
+	in := is.CharStream.LA(offset)
+	if in < 0 {
+		// antlr.TokenEOF is -1
+		return in
+	}
+	return int(unicode.ToUpper(rune(in)))
+}

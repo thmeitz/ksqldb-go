@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,30 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ksqldb
+package parser
 
 import (
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/thmeitz/ksqldb-go/parser"
 )
 
-func ParseSql(sql string) *parser.SqlSyntaxErrorList {
-	errors := parser.SqlSyntaxErrorList{}
+type CanParseSQL interface {
+	ParseSql(string) []error
+}
+
+func ParseSql(sql string) *SqlSyntaxErrorList {
+	errors := SqlSyntaxErrorList{}
 
 	input := antlr.NewInputStream(sql)
-	upper := parser.NewCaseChangingStream(input, true)
-	lexerErrorListener := &parser.KSqlErrorListener{}
-	lexer := parser.NewKSqlLexer(upper)
+	upper := NewUpperCaseStream(input)
+	lexerErrorListener := &KSqlErrorListener{}
+	lexer := NewKSqlLexer(upper)
 	lexer.RemoveErrorListeners()
 	lexer.AddErrorListener(lexerErrorListener)
 
 	stream := antlr.NewCommonTokenStream(lexer, 0)
-	parserErrorListener := &parser.KSqlErrorListener{}
-	p := parser.NewKSqlParser(stream)
+	parserErrorListener := &KSqlErrorListener{}
+	p := NewKSqlParser(stream)
 	p.RemoveErrorListeners()
 	p.AddErrorListener(parserErrorListener)
 
-	antlr.ParseTreeWalkerDefault.Walk(&parser.BaseKSqlListener{}, p.Statements())
+	antlr.ParseTreeWalkerDefault.Walk(&BaseKSqlListener{}, p.Statements())
 
 	if lexerErrorListener.HasErrors() {
 		errors = append(errors, lexerErrorListener.Errors...)

@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,4 +16,8 @@ limitations under the License.
 
 package ksqldb_test
 
-// Todo
+import "testing"
+
+func TestValidateProperty(t *testing.T) {
+
+}

@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ func main() {
 	k := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as windowStart, 
 				  timestamptostring(windowend,'HH:mm:ss','Europe/London') as windowEnd, 
 					dogSize, dogsCt 
-	from dogs_by_size 
+	from1 dogs_by_size 
 	where dog_size='large';`
 
 	input := antlr.NewInputStream(k)
-	upper := parser.NewCaseChangingStream(input, true)
+	upper := parser.NewUpperCaseStream(input)
 	lexerErrors := &parser.KSqlErrorListener{}
 	lexer := parser.NewKSqlLexer(upper)
 	lexer.RemoveErrorListeners()

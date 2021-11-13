@@ -102,11 +102,9 @@ func main {
   if err != nil {
      log.Fatal(err)
   }
+  defer client.Close()
 
   // then make a pull, push, execute request
-
-  // if you finished your work, you **MUST** close the http.Transport!!!
-  client.Close()
 }
 ```
 

@@ -1,10 +1,9 @@
 package ksqldb_test
 
 import (
-	"log"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
 	"github.com/thmeitz/ksqldb-go/net"
 )
@@ -15,24 +14,28 @@ var options = net.Options{
 	AllowHTTP:   true,
 }
 
-func TestNewClient(t *testing.T) {}
+func TestNewClient(t *testing.T) {
+
+}
 
 func TestNewClientWithOptions(t *testing.T) {
 
-	//factory := new(mocks.KsqldbFactory)
-	//kcl := factory.On("NewClientWithOptions", options).Return(nil, nil)
-	//fmt.Println(kcl.ReturnArguments)
+	kcl, _ := ksqldb.NewClientWithOptions(options)
+
+	// Ensures that the Ksqldb interface is implemented.
+	// Aborts the compiler if it does not.
+	var _ ksqldb.Ksqldb = kcl
 
 }
 
 func TestClient_EnableParseSQL(t *testing.T) {
-
 	kcl, err := ksqldb.NewClientWithOptions(options)
-	if err != nil {
-		log.Fatal(err)
-	}
-	assert.True(t, kcl.ParseSQLEnabled())
+	require.Nil(t, err)
+	require.True(t, kcl.ParseSQLEnabled())
 	kcl.EnableParseSQL(false)
-	assert.False(t, kcl.ParseSQLEnabled())
+	require.False(t, kcl.ParseSQLEnabled())
 }
-func TestClient_ParseSQLEnabled(t *testing.T) {}
+
+func TestClient_Close(t *testing.T) {
+
+}

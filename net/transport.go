@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ type Options struct {
 }
 
 // Transport wraps an http.Transport and adds support for tracing and
-// bearerToken injection.
+// http2.
 type Transport struct {
 	quit          chan struct{}
 	closed        bool
@@ -104,8 +104,6 @@ type Transport struct {
 	tracer        opentracing.Tracer
 	spanName      string
 	componentName string
-	// bearerToken        string
-
 }
 
 // NewTransport creates a new Transport with Options

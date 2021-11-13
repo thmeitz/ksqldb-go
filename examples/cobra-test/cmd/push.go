@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ func push(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer kcl.Close()
 
 	// You don't need to parse your ksql statement; Client.Pull parses it for you
 	k := "select rowtime, id, name, dogsize, age from dogs emit changes;"

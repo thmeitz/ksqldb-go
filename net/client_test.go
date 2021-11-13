@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,23 +19,23 @@ package net_test
 import (
 	"testing"
 
-	"github.com/Masterminds/log-go/impl/logrus"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
-var (
-	logger = logrus.NewStandard()
-)
+// var (
+// 	logger = zap.Logger{}
+// )
 
 func TestClientNotNil(t *testing.T) {
-	client, _ := net.NewHTTPClient(net.Options{}, nil)
-	assert.NotNil(t, client)
+	client, err := net.NewHTTPClient(net.Options{}, nil)
+	require.NotNil(t, client)
+	require.Nil(t, err)
 }
 
 // we don't panic anymore
 func TestClientNil(t *testing.T) {
 	client, err := net.NewHTTPClient(net.Options{BaseUrl: "sf"}, nil)
-	assert.NotNil(t, err)
-	assert.Nil(t, client)
+	require.NotNil(t, err)
+	require.Nil(t, client)
 }

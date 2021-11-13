@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package internal_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go/internal"
 )
 
@@ -44,7 +44,7 @@ func TestGetUrlValid(t *testing.T) {
 			_, err := internal.GetUrl(tt.url)
 			// fmt.Println(fmt.Sprintf("%v. %v: %v: %v => isValid:%v error: %v", idx, tt.name, tt.url, tt.want, valid, err))
 			if err != nil {
-				assert.Equal(t, tt.message, err.Error())
+				require.Equal(t, tt.message, err.Error())
 			}
 		})
 	}
@@ -56,5 +56,5 @@ func TestClientSanitizeQuery(t *testing.T) {
 		This is the 	house of Nicolas
 	
 	`)
-	assert.Equal(t, "This is the house of Nicolas", sanitizedString)
+	require.Equal(t, "This is the house of Nicolas", sanitizedString)
 }

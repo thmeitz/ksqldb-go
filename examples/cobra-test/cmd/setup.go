@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ func setup(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer kcl.Close()
 
 	if err := kcl.Execute(`
 		CREATE SOURCE CONNECTOR DOGS WITH (
@@ -105,5 +106,4 @@ func setup(cmd *cobra.Command, args []string) {
 		log.Current.Error(err)
 		os.Exit(-1)
 	}
-	kcl.Close()
 }
