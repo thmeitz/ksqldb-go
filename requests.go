@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/thmeitz/ksqldb-go/net"
@@ -51,11 +52,23 @@ func handleRequestError(code int, buf []byte) error {
 	return ksqlError
 }
 
-/*
-func handleUnmarshallJsonError(err error, buf []byte) error {
-	return nil
+func handleGetRequest(httpClient *net.HTTPClient, url string) (*[]byte, error) {
+	res, err := (*httpClient).Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("ksqldb get request failed: %v", err)
+	}
+	defer res.Body.Close()
+
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		return nil, fmt.Errorf("could not read response body: %v", readErr)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, handleRequestError(res.StatusCode, body)
+	}
+	return &body, nil
 }
-*/
 
 func newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, "POST", api.GetUrl(endpoint), payload)

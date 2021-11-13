@@ -19,8 +19,6 @@ package ksqldb
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -87,25 +85,16 @@ type Partition struct {
 func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 	var csr ClusterStatusResponse
 	var input map[string]interface{}
+	var body *[]byte
+	var err error
 
 	url := (*api.http).GetUrl(CLUSTER_STATUS_ENDPOINT)
 
-	res, err := (*api.http).Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("can't get cluster status: %v", err)
-	}
-	defer res.Body.Close()
-
-	body, readErr := ioutil.ReadAll(res.Body)
-	if readErr != nil {
-		return nil, fmt.Errorf("could not read response body: %v", readErr)
+	if body, err = handleGetRequest(api.http, url); err != nil {
+		return nil, fmt.Errorf("%w", err)
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, handleRequestError(res.StatusCode, body)
-	}
-
-	if err := json.Unmarshal(body, &input); err != nil {
+	if err := json.Unmarshal(*body, &input); err != nil {
 		return nil, fmt.Errorf("could not parse the response:%w", err)
 	}
 
