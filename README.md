@@ -20,7 +20,7 @@ This client is `not production ready`!!!
 
 ## Migration?
 
-Checkout [ksqldb-migrate](https://github.com/thmeitz/ksqldb-migrate), a tool that uses this package.
+Checkout [ksqldb-migrate](https://github.com/thmeitz/ksqldb-migrate), a tool to run your ksqlDB migrations.
 
 ## Description
 
