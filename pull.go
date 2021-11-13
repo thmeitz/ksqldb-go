@@ -48,10 +48,10 @@ import (
 // 			// Do other stuff with the data here
 // 			}
 // 		}
-func (api *KsqldbClient) Pull(ctx context.Context, q string, s bool) (h Header, r Payload, err error) {
+func (api *KsqldbClient) Pull(ctx context.Context, sql string, fullTableScan bool) (h Header, r Payload, err error) {
 
 	// first sanitize the query
-	query := internal.SanitizeQuery(q)
+	query := internal.SanitizeQuery(sql)
 
 	if api.ParseSQLEnabled() {
 		ksqlerr := parser.ParseSql(query)
@@ -61,7 +61,8 @@ func (api *KsqldbClient) Pull(ctx context.Context, q string, s bool) (h Header, 
 	}
 
 	// Create the request
-	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(s) + `},"sql":"` + query + `"}`)
+	// its not really "goish"
+	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(fullTableScan) + `},"sql":"` + query + `"}`)
 
 	req, err := newQueryStreamRequest(*api.http, ctx, payload)
 	if err != nil {
@@ -108,10 +109,10 @@ func (api *KsqldbClient) Pull(ctx context.Context, q string, s bool) (h Header, 
 				// {"queryId":null,"columnNames":["WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"],"columnTypes":["STRING","STRING","STRING","BIGINT"]}
 				if _, ok := zz["queryId"].(string); ok {
 					h.queryId = zz["queryId"].(string)
-				} else {
-					// api.logger.Info("(query id not found - this is expected for a pull query)")
-					// TODO: why should we log this???? - check facts in java source code
-				}
+				} //else {
+				//api.logger.Info("(query id not found - this is expected for a pull query)")
+				// TODO: why should we log this???? - check facts in java source code
+				//}
 
 				names, okn := zz["columnNames"].([]interface{})
 				types, okt := zz["columnTypes"].([]interface{})
@@ -122,16 +123,16 @@ func (api *KsqldbClient) Pull(ctx context.Context, q string, s bool) (h Header, 
 								a := Column{Name: n, Type: t}
 								h.columns = append(h.columns, a)
 
-							} else {
+							} /*else {
 								// api.logger.Infof("nil type found for column %v", col)
-							}
-						} else {
+							}*/
+						} /*else {
 							// api.logger.Infof("nil name found for column %v", col)
-						}
+						}*/
 					}
-				} else {
+				} /*else {
 					// api.logger.Infof("column names/types not found in header:\n%v", zz)
-				}
+				}*/
 
 			case []interface{}:
 				// It's a row of data

@@ -50,11 +50,15 @@ func validate(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer kcl.Close()
 
-	err = kcl.ValidateProperty("test")
+	// ksql.query.pull.metrics.enabled => true
+	// ksql.service.id => error
+	metrics := "ksql.query.pull.metrics.enabled"
+	value, err := kcl.ValidateProperty(metrics)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Infof("%v is writable: %v", metrics, *value)
 
-	kcl.Close()
 }

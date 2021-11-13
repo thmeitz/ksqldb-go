@@ -46,8 +46,9 @@ const (
 //
 // * ksqldb.Row - rows of data
 // * ksqldb.Header - header (including column definitions).
-//                  If you don't want to block before receiving
-//				    row data then make this channel buffered.
+//
+// If you don't want to block before receiving
+// row data then make this channel buffered.
 //
 // The channel is populated with ksqldb.Row which represents
 // one row of data. You will need to define variables to hold
@@ -58,7 +59,7 @@ const (
 // 			if row != nil {
 //				DATA_TS = row[0].(float64)
 // 				ID = row[1].(string)
-func (api *KsqldbClient) Push(ctx context.Context, sql string, rc chan<- Row, hc chan<- Header) (err error) {
+func (api *KsqldbClient) Push(ctx context.Context, sql string, rowChannel chan<- Row, headerChannel chan<- Header) (err error) {
 
 	// first sanitize the query
 	query := internal.SanitizeQuery(sql)
@@ -99,8 +100,8 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rc chan<- Row, hc
 		select {
 		case <-ctx.Done():
 			// close the channels and terminate the loop regardless
-			defer close(rc)
-			defer close(hc)
+			defer close(rowChannel)
+			defer close(headerChannel)
 			defer func() { doThis = false }()
 			// Try to close the query
 			payload := strings.NewReader(`{"queryId":"` + header.queryId + `"}`)
@@ -145,9 +146,9 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rc chan<- Row, hc
 					// {"queryId":null,"columnNames":["WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"],"columnTypes":["STRING","STRING","STRING","BIGINT"]}
 					if _, ok := zz["queryId"].(string); ok {
 						header.queryId = zz["queryId"].(string)
-					} else {
+					} /*else {
 						// api.logger.Debug("query id not found - this is expected for a pull query")
-					}
+					}*/
 
 					names, okn := zz["columnNames"].([]interface{})
 					types, okt := zz["columnTypes"].([]interface{})
@@ -157,24 +158,23 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rc chan<- Row, hc
 								if t, ok := types[col].(string); t != "" && ok {
 									a := Column{Name: n, Type: t}
 									header.columns = append(header.columns, a)
-
-								} else {
+								} /*else {
 									// api.logger.Infof("nil type found for column %v", col)
-								}
-							} else {
+								}*/
+							} /*else {
 								// api.logger.Infof("Nil name found for column %v", col)
-							}
+							}*/
 						}
-					} else {
-						// api.logger.Infof("Column names/types not found in header:\n%v", zz)
-					}
+					} /*else {
+						api.logger.Infof("Column names/types not found in header:\n%v", zz)
+					}*/
 					// api.logger.Debugf("Header: %v", header)
-					hc <- header
+					headerChannel <- header
 
 				case []interface{}:
 					// It's a row of data
 					// api.logger.Debugf("Row: %v", zz)
-					rc <- zz
+					rowChannel <- zz
 				}
 			}
 		}

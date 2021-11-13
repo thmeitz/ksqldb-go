@@ -63,5 +63,4 @@ func cstats(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Printf("%+v", clusterStatus)
-
 }

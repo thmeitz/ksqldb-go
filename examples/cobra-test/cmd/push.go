@@ -56,10 +56,12 @@ func push(cmd *cobra.Command, args []string) {
 	defer kcl.Close()
 
 	// You don't need to parse your ksql statement; Client.Pull parses it for you
-	k := "select rowtime, id, name, dogsize, age from dogs emit changes;"
+	// if parsing is enabled (default)
+	// you can disable parsing with `kcl.EnableParseSQL(false)`
+	query := "select rowtime, id, name, dogsize, age from dogs emit changes;"
 
-	rc := make(chan ksqldb.Row)
-	hc := make(chan ksqldb.Header, 1)
+	rowChannel := make(chan ksqldb.Row)
+	headerChannel := make(chan ksqldb.Header, 1)
 
 	// This Go routine will handle rows as and when they
 	// are sent to the channel
@@ -69,7 +71,7 @@ func push(cmd *cobra.Command, args []string) {
 		var name string
 		var dogSize string
 		var age string
-		for row := range rc {
+		for row := range rowChannel {
 			if row != nil {
 				// Should do some type assertions here
 				dataTs = row[0].(float64)
@@ -91,11 +93,9 @@ func push(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	e := kcl.Push(ctx, k, rc, hc)
+	e := kcl.Push(ctx, query, rowChannel, headerChannel)
 
 	if e != nil {
 		log.Fatal(e)
 	}
-
-	kcl.Close()
 }

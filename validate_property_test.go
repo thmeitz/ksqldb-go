@@ -16,8 +16,23 @@ limitations under the License.
 
 package ksqldb_test
 
-import "testing"
+import (
+	"testing"
 
-func TestValidateProperty(t *testing.T) {
+	"github.com/stretchr/testify/require"
+	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/net"
+)
 
+func TestValidateProperty_EmptyProperty(t *testing.T) {
+	var options = net.Options{
+		BaseUrl:   "http://localhost:8088",
+		AllowHTTP: true,
+	}
+	kcl, err := ksqldb.NewClientWithOptions(options)
+	require.Nil(t, err)
+	require.NotNil(t, kcl)
+	val, err := kcl.ValidateProperty("")
+	require.Equal(t, "property must not empty", err.Error())
+	require.Nil(t, val)
 }

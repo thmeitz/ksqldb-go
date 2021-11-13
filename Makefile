@@ -29,6 +29,8 @@ mockery:
 
 test:
 	$(GOTEST) -v ./... -short
+
+test-sec:
 	gosec ./...
 
 test-cover:
@@ -36,6 +38,9 @@ test-cover:
 	$(GOCOVER) -func=coverage/coverage.out 
 	$(GOCOVER) -html=coverage/coverage.out
 	golangci-lint run ./... --verbose --no-config --out-format checkstyle > coverage/golangci-lint.out
+
+test-ci:
+	golangci-lint run ./... --verbose --no-config
 
 vet:	## run go vet on the source files
 	$(GO) vet ./...
@@ -49,8 +54,8 @@ lint:
 create-grammar:
 	java -jar `pwd`/antlr/antlr-4.7.1-complete.jar -Dlanguage=Go -o parser KSql.g4 
 
-clean-compose-all-in-one:	
-	cd examples/all-in-one && docker-compose down && docker-compose up -d && cd ..
+clean-compose:	
+	cd examples/cobra-test && docker-compose down && docker-compose up -d && cd ..
 
 fmt: 
 	$(GO) fmt ./...

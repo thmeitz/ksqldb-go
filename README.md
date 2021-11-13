@@ -33,7 +33,7 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 - [ ] Introspect query status (/status endpoint)
 - [x] Introspect server status (/info endpoint)
 - [x] Introspect cluster status (/clusterStatus endpoint)
-- [ ] Get the validity of a property (/is_valid_property)
+- [x] Get the validity of a property (/is_valid_property)
 
 ### KSqlParser
 

@@ -84,13 +84,13 @@ type Partition struct {
 
 // GetClusterStatus
 // @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/cluster-status-endpoint/
-func (c *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
+func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 	var csr ClusterStatusResponse
 	var input map[string]interface{}
 
-	url := (*c.http).GetUrl(CLUSTER_STATUS_ENDPOINT)
+	url := (*api.http).GetUrl(CLUSTER_STATUS_ENDPOINT)
 
-	res, err := (*c.http).Get(url)
+	res, err := (*api.http).Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("can't get cluster status: %v", err)
 	}
@@ -112,8 +112,6 @@ func (c *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 	if err := mapstructure.Decode(&input, &csr); err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
-
-	// fmt.Println(csr)
 
 	return &csr, nil
 }

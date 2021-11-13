@@ -16,11 +16,42 @@ limitations under the License.
 
 package ksqldb
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
 
-func (c *KsqldbClient) ValidateProperty(property string) error {
+// ValidateProperty resource tells you whether a property is prohibited from setting.
+// If prohibited the ksqlDB server api returns a 400 error
+func (api *KsqldbClient) ValidateProperty(property string) (*bool, error) {
+	var input bool
 
-	url := (*c.http).GetUrl(PROP_VALIDITY_ENPOINT)
-	fmt.Println(url)
-	return nil
+	if len(property) < 1 {
+		return nil, fmt.Errorf("property must not empty")
+	}
+
+	url := (*api.http).GetUrl(PROP_VALIDITY_ENPOINT + "/" + property)
+
+	res, err := (*api.http).Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("can't get cluster status: %v", err)
+	}
+	defer res.Body.Close()
+
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		return nil, fmt.Errorf("could not read response body: %v", readErr)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, handleRequestError(res.StatusCode, body)
+	}
+
+	if err := json.Unmarshal(body, &input); err != nil {
+		return nil, fmt.Errorf("could not parse the response as JSON:%w", err)
+	}
+
+	return &input, nil
 }

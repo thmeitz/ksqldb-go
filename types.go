@@ -19,8 +19,6 @@ package ksqldb
 
 import (
 	"context"
-	"io"
-	"net/http"
 
 	"github.com/thmeitz/ksqldb-go/net"
 )
@@ -54,7 +52,7 @@ type Ksqldb interface {
 
 	// ValidateProperty validates a property
 	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/is_valid_property-endpoint/
-	ValidateProperty(string) error
+	ValidateProperty(string) (*bool, error)
 
 	//
 	Pull(context.Context, string, bool) (Header, Payload, error)
@@ -62,15 +60,17 @@ type Ksqldb interface {
 	//
 	Push(context.Context, string, chan<- Row, chan<- Header) error
 
-	//
+	// EnableParseSQL enables/disables query parsing for push/pull/execute requests
 	EnableParseSQL(bool)
 
+	// ParseSQLEnabled returns true if query parsing is enabled or not
 	ParseSQLEnabled() bool
 
 	// Close closes net.HTTPClient transport
 	Close()
 }
 
+/* don't needed at this time
 type ksqldbRequest interface {
 	// newQueryRequest interface
 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/query-endpoint/
@@ -83,6 +83,7 @@ type ksqldbRequest interface {
 	// NewIntrospectQueryRequest
 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/status-endpoint/
 }
+*/
 
 // Row represents a row returned from a query
 type Row []interface{}

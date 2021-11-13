@@ -134,6 +134,7 @@ var fullBlown = `{
 `
 
 func TestClusterStatusResponse(t *testing.T) {
+	// this must be mocked
 	var csr ksqldb.ClusterStatusResponse
 	var err error
 	var input map[string]interface{}
