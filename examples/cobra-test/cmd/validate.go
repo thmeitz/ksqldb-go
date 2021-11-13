@@ -60,5 +60,4 @@ func validate(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 	log.Infof("%v is writable: %v", metrics, *value)
-
 }
