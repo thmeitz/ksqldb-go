@@ -15,3 +15,19 @@ limitations under the License.
 */
 
 package ksqldb_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/thmeitz/ksqldb-go"
+)
+
+func TestResponseError_ErrorMessage(t *testing.T) {
+	error := ksqldb.ResponseError{
+		ErrType: "some error",
+		ErrCode: 40001,
+		Message: "Some error occured\nNext line",
+	}
+	require.Equal(t, "Some error occured Next line", error.Error())
+}

@@ -38,7 +38,7 @@ func (e ResponseError) Error() string {
 	return fmt.Sprintf("%v", e.Message)
 }
 
-func (e *ResponseError) Is(target error) bool {
-	_, ok := target.(*ResponseError)
-	return ok
-}
+// func (e *ResponseError) Is(target error) bool {
+// 	_, ok := target.(*ResponseError)
+// 	return ok
+// }
