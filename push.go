@@ -137,7 +137,7 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rowChannel chan<-
 			if len(body) > 0 {
 				// Parse the output
 				if err := json.Unmarshal(body, &row); err != nil {
-					return fmt.Errorf("could not parse the response as JSON: %w\n%v", err, string(body))
+					return fmt.Errorf("could not parse the response: %w\n%v", err, string(body))
 				}
 
 				switch zz := row.(type) {

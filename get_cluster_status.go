@@ -106,7 +106,7 @@ func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 	}
 
 	if err := json.Unmarshal(body, &input); err != nil {
-		return nil, fmt.Errorf("could not parse the response as JSON:%w", err)
+		return nil, fmt.Errorf("could not parse the response:%w", err)
 	}
 
 	if err := mapstructure.Decode(&input, &csr); err != nil {

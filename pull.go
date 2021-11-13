@@ -88,7 +88,7 @@ func (api *KsqldbClient) Pull(ctx context.Context, sql string, fullTableScan boo
 	var x []interface{}
 	// Parse the output
 	if err := json.Unmarshal(body, &x); err != nil {
-		return h, r, fmt.Errorf("could not parse the response as json:\n%w", err)
+		return h, r, fmt.Errorf("could not parse the response:\n%w", err)
 
 	}
 
@@ -110,8 +110,8 @@ func (api *KsqldbClient) Pull(ctx context.Context, sql string, fullTableScan boo
 				if _, ok := zz["queryId"].(string); ok {
 					h.queryId = zz["queryId"].(string)
 				} //else {
-				//api.logger.Info("(query id not found - this is expected for a pull query)")
-				// TODO: why should we log this???? - check facts in java source code
+				// api.logger.Info("(query id not found - this is expected for a pull query)")
+				// why should we log this???? - check facts in java source code
 				//}
 
 				names, okn := zz["columnNames"].([]interface{})

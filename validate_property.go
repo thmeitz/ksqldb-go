@@ -36,7 +36,7 @@ func (api *KsqldbClient) ValidateProperty(property string) (*bool, error) {
 
 	res, err := (*api.http).Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("can't get cluster status: %v", err)
+		return nil, fmt.Errorf("can't get validity of property: %v", err)
 	}
 	defer res.Body.Close()
 
@@ -50,7 +50,7 @@ func (api *KsqldbClient) ValidateProperty(property string) (*bool, error) {
 	}
 
 	if err := json.Unmarshal(body, &input); err != nil {
-		return nil, fmt.Errorf("could not parse the response as JSON:%w", err)
+		return nil, fmt.Errorf("could not parse the response:%w", err)
 	}
 
 	return &input, nil

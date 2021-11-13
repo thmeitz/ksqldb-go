@@ -42,7 +42,6 @@ func newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Re
 	return newPostRequest(api, ctx, CLOSE_QUERY_ENDPOINT, payload)
 }
 
-// das hier muss überarbeitet werden
 func handleRequestError(code int, buf []byte) error {
 	ksqlError := ResponseError{}
 	if err := json.Unmarshal(buf, &ksqlError); err != nil {
@@ -51,6 +50,12 @@ func handleRequestError(code int, buf []byte) error {
 
 	return ksqlError
 }
+
+/*
+func handleUnmarshallJsonError(err error, buf []byte) error {
+	return nil
+}
+*/
 
 func newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, "POST", api.GetUrl(endpoint), payload)
