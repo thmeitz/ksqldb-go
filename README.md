@@ -38,8 +38,9 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 ### KSqlParser
 
 - the lexer works like the Confluent Java lexer case insensitive (ex `SELECT * FROM BLA` is identical to `select * from bla`). (since v0.0.4)
-- parse your ksql-statements with the provided `ksqldb.ParseSql` method.
-- `Push` and `Pull` queries parsed by default with `ksqldb.ParseSQL`. [TODO: configure ksqldb.Client to disable it with options]
+- parse your ksql-statements with the provided `parser.ParseSql` method.
+- `Push`, `Pull`, `Execute` queries parsed by default with `parser.ParseSQL`.
+- `<client-instance>.EnableParseSQL(false)` enables / disables the parser
 
 ## Installation
 
