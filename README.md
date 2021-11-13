@@ -111,11 +111,15 @@ func main {
 
 For no authentication remove `Credentials` from options.
 
-### QueryBuilder (since v0.0.3)
+### QueryBuilder
+
+> #### Breaking Change v0.0.4
+>
+> The QueryBuilder was to complicated, so I've refactored it
 
 SQL strings should be build by a QueryBuilder. Otherwise the system is open for SQL injections (see [go-webapp-scp.pdf](https://github.com/OWASP/Go-SCP/blob/master/dist/go-webapp-scp.pdf) ).
 
-You can add multiple parameters `Bind(nil, 1, 2.5686, "string", true)`.
+You can add multiple parameters `QueryBuilder("insert into bla values(?,?,?,?,?)", nil, 1, 2.5686, "string", true)`.
 
 `nil` will be converted to `NULL`.
 
@@ -129,12 +133,7 @@ TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END,
 DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE
 WHERE DOG_SIZE=?;`
 
-builder, err := ksqldb.DefaultQueryBuilder(k)
-if err != nil {
-	log.Fatal(err)
-}
-
-stmnt, err := builder.Bind("middle")
+stmnt, err := ksqldb.QueryBuilder(k, "middle")
 if err != nil {
 	log.Fatal(err)
 }
@@ -156,10 +155,15 @@ if err != nil {
 ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer ctxCancel()
 
-k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
+k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='?';"
+
+stmnt, err := ksqldb.QueryBuilder(k, "middle")
+if err != nil {
+	log.Fatal(err)
+}
 
 // your select statement will be checked with integrated KSqlParser
-_, r, e := ksqldb.Pull(client, ctx, k, false)
+_, r, e := ksqldb.Pull(client, ctx, *stmnt, false)
 if e != nil {
   // handle the error better here, e.g. check for no rows returned
   return fmt.Errorf("error running pull request against ksqlDB:\n%v", e)
@@ -259,6 +263,7 @@ Available Commands:
   pull           print the dog stats
   push           push dogs example
   setup          setup a dummy connector
+  validate       validates a property
 
 Flags:
       --config string      config file (default is $HOME/.cobra-test.yaml)

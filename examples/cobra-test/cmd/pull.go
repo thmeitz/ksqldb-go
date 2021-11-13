@@ -47,7 +47,7 @@ func dogstats(cmd *cobra.Command, args []string) {
 	host := viper.GetString("host")
 	user := viper.GetString("username")
 	password := viper.GetString("password")
-	s := viper.GetString("dogsize")
+	dogsize := viper.GetString("dogsize")
 
 	options := net.Options{
 		Credentials: net.Credentials{Username: user, Password: password},
@@ -61,17 +61,12 @@ func dogstats(cmd *cobra.Command, args []string) {
 	}
 	defer kcl.Close()
 
-	k := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start, 
+	query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start, 
 	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, 
 	dog_size, dogs_ct from dogs_by_size 
 	where dog_size=?;`
 
-	builder, err := ksqldb.DefaultQueryBuilder(k)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stmnt, err := builder.Bind(s)
+	stmnt, err := ksqldb.QueryBuilder(query, dogsize)
 	if err != nil {
 		log.Fatal(err)
 	}

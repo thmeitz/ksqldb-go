@@ -17,7 +17,6 @@ limitations under the License.
 package ksqldb_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -26,7 +25,8 @@ import (
 
 const (
 	select1Param  = "select * from bla where column=?"
-	select5Params = "insert into bla values(?,?,?,?,?,?)"
+	select5Params = "insert into bla values(?,?,?,?,?)"
+	select6Params = "insert into bla values(?,?,?,?,?,?)"
 )
 
 var qbtests = []struct {
@@ -56,8 +56,7 @@ var qbtests = []struct {
 func TestQueryBuilderTypes(t *testing.T) {
 	for _, tt := range qbtests {
 		t.Run(tt.name, func(t *testing.T) {
-			builder, _ := ksqldb.DefaultQueryBuilder(tt.stmnt)
-			stmnt, err := builder.Bind(tt.value)
+			stmnt, err := ksqldb.QueryBuilder(tt.stmnt, tt.value)
 			if err != nil {
 				require.Equal(t, tt.message, err.Error())
 				return
@@ -68,81 +67,49 @@ func TestQueryBuilderTypes(t *testing.T) {
 }
 
 func TestDefaultQueryBuilder_Types5Params(t *testing.T) {
-	builder, _ := ksqldb.DefaultQueryBuilder(select5Params)
-	stmnt, err := builder.Bind(nil, 1, "2", 3.5, 4, 5)
+	stmnt, err := ksqldb.QueryBuilder(select5Params, nil, 1, "2", 3.5, 4)
 
 	require.Nil(t, err)
 	require.NotNil(t, stmnt)
-	require.Equal(t, "insert into bla values(NULL,1,'2',3.5,4,5)", *stmnt)
-}
-
-func TestDefaultQueryBuilder_NotNil(t *testing.T) {
-	builder, err := ksqldb.DefaultQueryBuilder(select1Param)
-	require.Nil(t, err)
-	require.NotNil(t, builder)
+	require.Equal(t, "insert into bla values(NULL,1,'2',3.5,4)", *stmnt)
 }
 
 func TestDefaultQueryBuilder_EmptyStatement(t *testing.T) {
-	builder, err := ksqldb.DefaultQueryBuilder("")
-	require.Nil(t, builder)
+	stmnt, err := ksqldb.QueryBuilder("")
+	require.Nil(t, stmnt)
 	require.NotNil(t, err)
 	require.Equal(t, "qbErr: empty ksql statement", err.Error())
 }
 
-func TestDefaultQueryBuilder_GetStatement(t *testing.T) {
-	builder, err := ksqldb.DefaultQueryBuilder(select1Param)
-	require.NotNil(t, builder)
-	require.Nil(t, err)
-	stmnt := builder.GetInputStatement()
-	require.Equal(t, select1Param, stmnt)
-}
-
-func TestQueryBuilderWithOptions_EmptyStatement_NilOptions(t *testing.T) {
-	builder, err := ksqldb.QueryBuilderWithOptions("", nil)
-	require.Nil(t, builder)
-	require.NotNil(t, err)
-}
-
-func TestQueryBuilderWithOptions_EmptyOptions(t *testing.T) {
-	options := ksqldb.QueryBuilderOptions{}
-	builder, err := ksqldb.QueryBuilderWithOptions(select1Param, &options)
-	require.NotNil(t, builder)
-	require.Nil(t, err)
-}
-
-func TestQueryBuilderWithOptions_WithContext(t *testing.T) {
-	options := ksqldb.QueryBuilderOptions{Context: context.Background()}
-	builder, err := ksqldb.QueryBuilderWithOptions(select1Param, &options)
-	require.NotNil(t, builder)
-	require.Nil(t, err)
-}
-
 func TestQueryBuilder_Bind_ToManyParamsError(t *testing.T) {
-	builder, _ := ksqldb.DefaultQueryBuilder(select1Param)
-	_, err := builder.Bind(1, "bla", 31235)
+	_, err := ksqldb.QueryBuilder(select1Param, 1, "bla", 31235)
 	require.NotNil(t, err)
 	require.Equal(t, "qbErr: to many params", err.Error())
 }
 
 func TestQueryBuilder_Bind_ToFewParamsError(t *testing.T) {
-	builder, _ := ksqldb.DefaultQueryBuilder(select1Param)
-	_, err := builder.Bind()
+	stmnt, err := ksqldb.QueryBuilder(select1Param)
 	require.NotNil(t, err)
+	require.Nil(t, stmnt)
 	require.Equal(t, "qbErr: to few params", err.Error())
 }
 
 func TestQueryBuilder_Bind_CorrectParams(t *testing.T) {
-	builder, _ := ksqldb.DefaultQueryBuilder(select1Param)
-	stmnt, err := builder.Bind(1)
+	stmnt, err := ksqldb.QueryBuilder(select1Param, 1)
 	require.Nil(t, err)
 	require.NotNil(t, stmnt)
 	require.Equal(t, "select * from bla where column=1", *stmnt)
 }
 
 func TestQueryBuilder_Bind_MultiParams(t *testing.T) {
-	builder, _ := ksqldb.DefaultQueryBuilder(select5Params)
-	stmnt, err := builder.Bind(nil, 1, "rainer", 1.98, true, nil)
+	stmnt, err := ksqldb.QueryBuilder(select6Params, nil, 1, "rainer", 1.98, true, nil)
 	require.Nil(t, err)
 	require.NotNil(t, stmnt)
 	require.Equal(t, "insert into bla values(NULL,1,'rainer',1.98,true,NULL)", *stmnt)
+}
+
+func TestQueryBuilder_UnsupportedType(t *testing.T) {
+	stmnt, err := ksqldb.QueryBuilder(select1Param, map[string]interface{}{"test": 5})
+	require.Nil(t, stmnt)
+	require.Equal(t, "qbErr: unsupported param type :map[test:5]", err.Error())
 }
