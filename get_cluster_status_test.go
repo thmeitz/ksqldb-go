@@ -18,11 +18,13 @@ package ksqldb_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
+	mock "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
 var fullBlown = `{
@@ -144,4 +146,15 @@ func TestClusterStatusResponse(t *testing.T) {
 
 	err = mapstructure.Decode(&input, &csr)
 	require.Nil(t, err)
+}
+
+func TestClusterStatusResponse_GetError(t *testing.T) {
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", "http://localhost/clusterStatus").Return(nil, errors.New("shit happens"))
+
+	kcl, _ := ksqldb.NewClient(&m)
+	_, err := kcl.GetClusterStatus()
+	require.NotNil(t, err)
+	require.Equal(t, "ksqldb get request failed: shit happens", err.Error())
 }

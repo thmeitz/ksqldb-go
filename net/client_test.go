@@ -31,6 +31,7 @@ func TestClientNotNil(t *testing.T) {
 	client, err := net.NewHTTPClient(net.Options{}, nil)
 	require.NotNil(t, client)
 	require.Nil(t, err)
+	var _ net.HTTPClient = client
 }
 
 // we don't panic anymore
