@@ -14,7 +14,8 @@ Thank you Robin and all other contributors for their work!
 ## Attention - WIP
 
 If you use this library, be warned as the client will be completely overhauled!
-This client is `not production ready`!!!
+
+This client is `not production ready` and the interfaces can be changed without notification!!!
 
 ⚠️ Disclaimer #1: This is a personal project and not supported or endorsed by Confluent.
 
@@ -29,7 +30,7 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 - [x] Execute a statement (/ksql endpoint)
 - [ ] Run a query (/query endpoint)
 - [x] Run push and pull queries (/query-stream endpoint)
-- [ ] Terminate a cluster (/ksql/terminate endpoint)
+- [x] Terminate a cluster (/ksql/terminate endpoint)
 - [ ] Introspect query status (/status endpoint)
 - [x] Introspect server status (/info endpoint)
 - [x] Introspect cluster status (/clusterStatus endpoint)
@@ -70,7 +71,7 @@ go mod tidy
 
 ### Create a ksqlDB Client
 
-> ### Breaking Change v0.0.4
+> #### Breaking Change v0.0.4
 >
 > The HTTP client has now its own package
 
@@ -254,16 +255,17 @@ Usage:
   cobra-test [command]
 
 Available Commands:
-  check          check a <example>.ksql file with the integrated parser
-  cluster-status get cluster status
-  completion     generate the autocompletion script for the specified shell
-  health         display the server state of your servers
-  help           Help about any command
-  info           Displays your server infos
-  pull           print the dog stats
-  push           push dogs example
-  setup          setup a dummy connector
-  validate       validates a property
+  check             check a <example>.ksql file with the integrated parser
+  cluster-status    get cluster status
+  completion        generate the autocompletion script for the specified shell
+  health            display the server state of your servers
+  help              Help about any command
+  info              Displays your server infos
+  pull              print the dog stats
+  push              push dogs example
+  setup             setup a dummy connector
+  terminate-cluster terminates your cluster
+  validate          validates a property
 
 Flags:
       --config string      config file (default is $HOME/.cobra-test.yaml)
@@ -283,16 +285,11 @@ So run it first.
 
 ### KSql Grammar example
 
-This example was written to test and fix the `Antlr4` generation problems for Golang. We changed the `Antlr4` file because there are some type issues. The `Antlr4` code generation introduced some bugs that we had to fix manually. So be careful when you use our `Makefile` to generate the `KSqlParser`. It will break the code!
+This example was written to test and fix the `Antlr4` generation problems for Golang. We changed the `Antlr4` file because there are some type issues (type is a reserved word in golang). The `Antlr4` code generation introduced some bugs that we had to fix manually (no Antlr4 output for needed package names). So be careful when you use our `Makefile` to generate the `KSqlParser`. It will break the code!
 
 We had copied the `Antlr4` file from the original sources of [confluent](https://github.com/confluentinc/ksql/blob/master/ksqldb-parser/src/main/antlr4/io/confluent/ksql/parser/SqlBase.g4).
-It seems that some errors are not found by the parser because the terminal symbols are not present in the grammar.
 
-The parser is used to check the `KSql syntax`. If there are syntax errors, we collect the errors and you get a notification about it.
-
-The example has an error in the `Select` statement to output the errors.
-
-Feel free to play around :)
+The parser is used to check the `KSql syntax`. If there are syntax errors, the errors will be collected and you get a notification about it.
 
 ## Docker compose
 

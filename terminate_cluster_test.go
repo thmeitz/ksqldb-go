@@ -15,3 +15,18 @@ limitations under the License.
 */
 
 package ksqldb_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/thmeitz/ksqldb-go"
+)
+
+func TestTerminateClusterTopics_Add(t *testing.T) {
+	topicList := ksqldb.TerminateClusterTopics{}
+	topicList.Add("FOO", "bar.*")
+	require.Equal(t, 2, topicList.Size())
+	require.Equal(t, "FOO", topicList.DeleteTopicList[0])
+	require.Equal(t, "bar.*", topicList.DeleteTopicList[1])
+}

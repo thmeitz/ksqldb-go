@@ -25,7 +25,6 @@ package net
 import (
 	"fmt"
 	"io"
-
 	"net/http"
 	"net/url"
 	"time"
@@ -49,6 +48,7 @@ type HTTPClient interface {
 	GetUrl(endpoint string) string
 	Do(*http.Request) (*http.Response, error)
 	Get(url string) (*http.Response, error)
+	Post(url, contentType string, body io.Reader) (*http.Response, error)
 	Close()
 }
 

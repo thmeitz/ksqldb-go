@@ -48,11 +48,11 @@ type Ksqldb interface {
 
 	// TerminateCluster terminates a ksqldb cluster - READ THE DOCS before you call this endpoint
 	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/terminate-endpoint/
-	//TerminateCluster(*TopicList) error
+	TerminateCluster(topics ...string) (*KsqlResponseSlice, error)
 
 	// ValidateProperty validates a property
 	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/is_valid_property-endpoint/
-	ValidateProperty(string) (*bool, error)
+	ValidateProperty(property string) (*bool, error)
 
 	//
 	Pull(context.Context, string, bool) (Header, Payload, error)
