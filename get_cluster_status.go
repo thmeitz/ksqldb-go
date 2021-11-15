@@ -87,7 +87,7 @@ func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 	var body *[]byte
 	var err error
 
-	url := (*api.http).GetUrl(CLUSTER_STATUS_ENDPOINT)
+	url := api.http.GetUrl(CLUSTER_STATUS_ENDPOINT)
 
 	if body, err = handleGetRequest(api.http, url); err != nil {
 		return nil, fmt.Errorf("%w", err)

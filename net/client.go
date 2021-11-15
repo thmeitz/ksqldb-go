@@ -67,16 +67,17 @@ type Credentials struct {
 	Password string `json:"password" mapstructure:"password"`
 }
 
-func NewHTTPClient(options Options, logger log.Logger) (*Client, error) {
+func NewHTTPClient(options Options, logger log.Logger) (Client, error) {
 	var uri *url.URL
 	var err error
+	var cl = Client{}
 
 	if options.BaseUrl == "" {
 		options.BaseUrl = DefaultBaseUrl
 	}
 
 	if uri, err = internal.GetUrl(options.BaseUrl); err != nil {
-		return nil, fmt.Errorf("%+w", err)
+		return cl, fmt.Errorf("%+w", err)
 	}
 
 	tr := NewTransport(options)
@@ -85,7 +86,7 @@ func NewHTTPClient(options Options, logger log.Logger) (*Client, error) {
 	//	logger = log.Default()
 	//}
 
-	return &Client{
+	return Client{
 		logger: logger,
 		client: http.Client{
 			Transport: tr,

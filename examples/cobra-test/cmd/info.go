@@ -52,7 +52,7 @@ func info(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	kcl, err := ksqldb.NewClient(client)
+	kcl, err := ksqldb.NewClient(&client)
 	if err != nil {
 		log.Fatal(err)
 	}

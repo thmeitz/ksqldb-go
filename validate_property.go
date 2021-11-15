@@ -32,7 +32,7 @@ func (api *KsqldbClient) ValidateProperty(property string) (*bool, error) {
 		return nil, fmt.Errorf("property must not empty")
 	}
 
-	url := (*api.http).GetUrl(PROP_VALIDITY_ENPOINT + "/" + property)
+	url := api.http.GetUrl(PROP_VALIDITY_ENPOINT + "/" + property)
 
 	if body, err = handleGetRequest(api.http, url); err != nil {
 		return nil, fmt.Errorf("%w", err)

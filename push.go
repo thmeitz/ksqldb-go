@@ -74,7 +74,7 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rowChannel chan<-
 	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset
 	payload := strings.NewReader(`{"properties":{"ksql.streams.auto.offset.reset": "latest"},"sql":"` + query + `"}`)
 
-	req, err := newQueryStreamRequest(*api.http, ctx, payload)
+	req, err := newQueryStreamRequest(api.http, ctx, payload)
 	if err != nil {
 		return fmt.Errorf("error creating new request with context: %v", err)
 	}
@@ -83,7 +83,7 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rowChannel chan<-
 	// go cl.heartbeat(&cl.client, &ctx)
 
 	//  make the request
-	res, err := (*api.http).Do(req)
+	res, err := api.http.Do(req)
 
 	if err != nil {
 		return fmt.Errorf("%v", err)
@@ -106,14 +106,14 @@ func (api *KsqldbClient) Push(ctx context.Context, sql string, rowChannel chan<-
 			// Try to close the query
 			payload := strings.NewReader(`{"queryId":"` + header.queryId + `"}`)
 			// cl.log("payload: %v", *payload)
-			req, err := newCloseQueryRequest(*api.http, ctx, payload)
+			req, err := newCloseQueryRequest(api.http, ctx, payload)
 
 			// api.logger.Debugw("closing ksqlDB query", log.Fields{"queryId": header.queryId})
 			if err != nil {
 				return fmt.Errorf("failed to construct http request to cancel query\n%w", err)
 			}
 
-			res, err := (*api.http).Do(req)
+			res, err := api.http.Do(req)
 			if err != nil {
 				return fmt.Errorf("failed to execute http request to cancel query\n%w", err)
 			}

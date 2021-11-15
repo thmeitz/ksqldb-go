@@ -53,8 +53,8 @@ func handleRequestError(code int, buf []byte) error {
 	return ksqlError
 }
 
-func handleGetRequest(httpClient *net.HTTPClient, url string) (*[]byte, error) {
-	res, err := (*httpClient).Get(url)
+func handleGetRequest(httpClient net.HTTPClient, url string) (*[]byte, error) {
+	res, err := httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("ksqldb get request failed: %v", err)
 	}

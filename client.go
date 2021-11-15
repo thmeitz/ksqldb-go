@@ -13,32 +13,32 @@ type BodyReader func(io.Reader) ([]byte, error)
 type RespUnmarshaller func([]byte, interface{}) error
 
 type KsqldbClient struct {
-	http          *net.HTTPClient
+	http          net.HTTPClient
 	parseSQL      bool
 	readBody      BodyReader
 	unMarshalResp RespUnmarshaller
 }
 
 // NewClient returns a new KsqldbClient with the given net.HTTPclient
-func NewClient(http net.HTTPClient) (*KsqldbClient, error) {
+func NewClient(http net.HTTPClient) (KsqldbClient, error) {
 	var client = KsqldbClient{
-		http:          &http,
+		http:          http,
 		parseSQL:      true,
 		readBody:      ioutil.ReadAll,
 		unMarshalResp: json.Unmarshal,
 	}
 
-	return &client, nil
+	return client, nil
 }
 
 // NewClientWithOptions returns a new @KsqldbClient with Options
-func NewClientWithOptions(options net.Options) (*KsqldbClient, error) {
+func NewClientWithOptions(options net.Options) (KsqldbClient, error) {
 	http, err := net.NewHTTPClient(options, nil)
 	if err != nil {
-		return nil, fmt.Errorf("%v", err)
+		return KsqldbClient{}, fmt.Errorf("%v", err)
 	}
 
-	return NewClient(http)
+	return NewClient(&http)
 }
 
 // EnableParseSQL enables / disables sql parsing
@@ -53,5 +53,5 @@ func (cl *KsqldbClient) ParseSQLEnabled() bool {
 
 // Close closes the underlying http transport
 func (cl *KsqldbClient) Close() {
-	(*cl.http).Close()
+	cl.http.Close()
 }

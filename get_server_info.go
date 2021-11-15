@@ -37,7 +37,7 @@ type KsqlServerInfoResponse struct {
 // api net.KsqlHTTPClient
 func (api *KsqldbClient) GetServerInfo() (*KsqlServerInfo, error) {
 	info := KsqlServerInfoResponse{}
-	res, err := (*api.http).Get((*api.http).GetUrl(INFO_ENDPOINT))
+	res, err := api.http.Get(api.http.GetUrl(INFO_ENDPOINT))
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get server info: %v", err)

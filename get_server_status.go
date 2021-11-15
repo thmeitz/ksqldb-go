@@ -37,9 +37,9 @@ type ServerStatusResponse struct {
 // ServerInfo provides information about your server
 func (api *KsqldbClient) GetServerStatus() (*ServerStatusResponse, error) {
 	info := ServerStatusResponse{}
-	url := (*api.http).GetUrl(HEALTHCHECK_ENDPOINT)
+	url := api.http.GetUrl(HEALTHCHECK_ENDPOINT)
 
-	res, err := (*api.http).Get(url)
+	res, err := api.http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("can't get healthcheck informations: %v", err)
 	}

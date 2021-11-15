@@ -63,13 +63,13 @@ func (api *KsqldbClient) Pull(ctx context.Context, sql string, fullTableScan boo
 	// its not really "goish"
 	payload := strings.NewReader(`{"properties":{"ksql.query.pull.table.scan.enabled": ` + strconv.FormatBool(fullTableScan) + `},"sql":"` + query + `"}`)
 
-	req, err := newQueryStreamRequest(*api.http, ctx, payload)
+	req, err := newQueryStreamRequest(api.http, ctx, payload)
 	if err != nil {
 		return h, r, fmt.Errorf("can't create new request with context: %w", err)
 	}
 	req.Header.Add("Accept", "application/json; charset=utf-8")
 
-	res, err := (*api.http).Do(req)
+	res, err := api.http.Do(req)
 	if err != nil {
 		return h, r, fmt.Errorf("can't do request: %+w", err)
 	}

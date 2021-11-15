@@ -28,7 +28,7 @@ func TestClient_NotNil(t *testing.T) {
 
 	// Ensures that the HTTPClient interface is implemented.
 	// Aborts the compiler if it does not.
-	var _ net.HTTPClient = client
+	var _ net.HTTPClient = &client
 
 	require.NotNil(t, client)
 	require.Nil(t, err)
@@ -36,7 +36,7 @@ func TestClient_NotNil(t *testing.T) {
 
 func TestClient_Nil(t *testing.T) {
 	client, err := net.NewHTTPClient(net.Options{BaseUrl: "sf"}, nil)
-	require.Nil(t, client)
+	require.NotNil(t, client)
 	require.NotNil(t, err)
 	require.Equal(t, "invalid host name given", err.Error())
 }

@@ -56,13 +56,13 @@ func (api *KsqldbClient) Execute(sql string) (err error) {
 	//  make the request
 	payload := strings.NewReader(`{"ksql":"` + query + `"}`)
 
-	req, err := newKsqlRequest(*api.http, payload)
+	req, err := newKsqlRequest(api.http, payload)
 	// api.logger.Debugf("sending ksqlDB request:%v", q)
 	if err != nil {
 		return fmt.Errorf("can't create new request: %w", err)
 	}
 
-	res, err := (*api.http).Do(req)
+	res, err := api.http.Do(req)
 	if err != nil {
 		return fmt.Errorf("can't do request: %w", err)
 	}

@@ -53,7 +53,7 @@ func (api *KsqldbClient) TerminateCluster(topics ...string) (*KsqlResponseSlice,
 	var b []byte
 	var err error
 
-	url := (*api.http).GetUrl(TERMINATE_CLUSTER_ENDPOINT)
+	url := api.http.GetUrl(TERMINATE_CLUSTER_ENDPOINT)
 	if len(topics) > 0 {
 		tpc.Add(topics...)
 	}
@@ -62,7 +62,7 @@ func (api *KsqldbClient) TerminateCluster(topics ...string) (*KsqlResponseSlice,
 		return nil, fmt.Errorf("can't marshal data %w", err)
 	}
 
-	res, err := (*api.http).Post(url, "application/vnd.ksql.v1+json", bytes.NewBuffer(b))
+	res, err := api.http.Post(url, "application/vnd.ksql.v1+json", bytes.NewBuffer(b))
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
