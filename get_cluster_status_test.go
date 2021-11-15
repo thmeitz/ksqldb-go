@@ -151,10 +151,18 @@ func TestClusterStatusResponse(t *testing.T) {
 func TestClusterStatusResponse_GetError(t *testing.T) {
 	m := mock.HTTPClient{}
 	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
-	m.Mock.On("Get", "http://localhost/clusterStatus").Return(nil, errors.New("shit happens"))
+	m.Mock.On("Get", "http://localhost/clusterStatus").Return(nil, errors.New("error"))
+	m.Mock.On("Close").Return()
 
 	kcl, _ := ksqldb.NewClient(&m)
+	kcl.Close()
 	_, err := kcl.GetClusterStatus()
+
 	require.NotNil(t, err)
-	require.Equal(t, "ksqldb get request failed: shit happens", err.Error())
+	require.Equal(t, "ksqldb get request failed: error", err.Error())
+	m.AssertCalled(t, "Close")
+}
+
+func TestClusterStatus_handleGetRequestUnmarshalError(t *testing.T) {
+
 }

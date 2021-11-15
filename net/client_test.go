@@ -23,20 +23,24 @@ import (
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
-// var (
-// 	logger = zap.Logger{}
-// )
-
-func TestClientNotNil(t *testing.T) {
+func TestClient_NotNil(t *testing.T) {
 	client, err := net.NewHTTPClient(net.Options{}, nil)
+
+	// Ensures that the HTTPClient interface is implemented.
+	// Aborts the compiler if it does not.
+	var _ net.HTTPClient = client
+
 	require.NotNil(t, client)
 	require.Nil(t, err)
-	var _ net.HTTPClient = client
 }
 
-// we don't panic anymore
-func TestClientNil(t *testing.T) {
+func TestClient_Nil(t *testing.T) {
 	client, err := net.NewHTTPClient(net.Options{BaseUrl: "sf"}, nil)
-	require.NotNil(t, err)
 	require.Nil(t, client)
+	require.NotNil(t, err)
+	require.Equal(t, "invalid host name given", err.Error())
+}
+
+func Testclient_Error(t *testing.T) {
+	// m := mock.HTTPClient{}
 }

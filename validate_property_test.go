@@ -17,10 +17,15 @@ limitations under the License.
 package ksqldb_test
 
 import (
+	"bytes"
+	"errors"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
+	mock "github.com/thmeitz/ksqldb-go/mocks/net"
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
@@ -35,4 +40,45 @@ func TestValidateProperty_EmptyProperty(t *testing.T) {
 	val, err := kcl.ValidateProperty("")
 	require.Equal(t, "property must not empty", err.Error())
 	require.Nil(t, val)
+}
+
+func TestValidateProperty_RequestError(t *testing.T) {
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/is_valid_property/test").Return("http://localhost/is_valid_property/test")
+	m.Mock.On("Get", "http://localhost/is_valid_property/test").Return(nil, errors.New("error"))
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.ValidateProperty("test")
+	require.Nil(t, val)
+	require.NotNil(t, err)
+	require.Equal(t, "ksqldb get request failed: error", err.Error())
+}
+
+func TestValidateProperty_UnmarshalError(t *testing.T) {
+	json := `{"name":"Test Name"}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/is_valid_property/test").Return("http://localhost/is_valid_property/test")
+	m.Mock.On("Get", "http://localhost/is_valid_property/test").Return(&res, nil)
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.ValidateProperty("test")
+	require.Nil(t, val)
+	require.NotNil(t, err)
+	require.Equal(t, "could not parse the response:json: cannot unmarshal object into Go value of type bool", err.Error())
+}
+
+func TestValidateProperty_Successfull(t *testing.T) {
+	json := `true`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/is_valid_property/test").Return("http://localhost/is_valid_property/test")
+	m.Mock.On("Get", "http://localhost/is_valid_property/test").Return(&res, nil)
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.ValidateProperty("test")
+	require.NotNil(t, val)
+	require.Nil(t, err)
+	require.True(t, *val)
 }
