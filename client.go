@@ -1,21 +1,31 @@
 package ksqldb
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
+type BodyReader func(io.Reader) ([]byte, error)
+type RespUnmarshaller func([]byte, interface{}) error
+
 type KsqldbClient struct {
-	http     *net.HTTPClient
-	parseSQL bool
+	http          *net.HTTPClient
+	parseSQL      bool
+	readBody      BodyReader
+	unMarshalResp RespUnmarshaller
 }
 
 // NewClient returns a new KsqldbClient with the given net.HTTPclient
 func NewClient(http net.HTTPClient) (*KsqldbClient, error) {
 	var client = KsqldbClient{
-		http:     &http,
-		parseSQL: true,
+		http:          &http,
+		parseSQL:      true,
+		readBody:      ioutil.ReadAll,
+		unMarshalResp: json.Unmarshal,
 	}
 
 	return &client, nil

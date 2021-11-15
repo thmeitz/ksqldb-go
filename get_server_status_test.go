@@ -15,3 +15,46 @@ limitations under the License.
 */
 
 package ksqldb_test
+
+import (
+	"bytes"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/thmeitz/ksqldb-go"
+	mock "github.com/thmeitz/ksqldb-go/mocks/net"
+)
+
+func TestGetServerStatus_ResponseError(t *testing.T) {
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/healthcheck").Return("http://localhost/healthcheck")
+	m.Mock.
+		On("Get", "http://localhost/healthcheck").
+		Return(nil, errors.New("error"))
+
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.GetServerStatus()
+	require.Nil(t, val)
+	require.NotNil(t, err)
+	require.Equal(t, "can't get healthcheck informations: error", err.Error())
+}
+
+func TestGetServerStatus_SuccessfullResponse(t *testing.T) {
+	json := `{"isHealthy":true,"details":{"metastore":{"isHealthy":true},"kafka":{"isHealthy":true},"commandRunner":{"isHealthy":true}}}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/info").Return("http://localhost/healthcheck")
+	m.Mock.
+		On("Get", "http://localhost/healthcheck").
+		Return(&res, nil)
+
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.GetServerInfo()
+	require.Nil(t, err)
+	require.NotNil(t, val)
+}

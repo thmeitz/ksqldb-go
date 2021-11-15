@@ -21,7 +21,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -76,7 +75,7 @@ func (api *KsqldbClient) Pull(ctx context.Context, sql string, fullTableScan boo
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := api.readBody(res.Body)
 	if err != nil {
 		return h, r, fmt.Errorf("can't read response body:\n%w", err)
 	}

@@ -17,7 +17,6 @@ limitations under the License.
 package ksqldb
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/mitchellh/mapstructure"
@@ -94,7 +93,7 @@ func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	if err := json.Unmarshal(*body, &input); err != nil {
+	if err := api.unMarshalResp(*body, &input); err != nil {
 		return nil, fmt.Errorf("could not parse the response:%w", err)
 	}
 

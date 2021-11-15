@@ -17,9 +17,7 @@ limitations under the License.
 package ksqldb
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 )
 
 // ServerStatusResponse
@@ -47,12 +45,12 @@ func (api *KsqldbClient) GetServerStatus() (*ServerStatusResponse, error) {
 	}
 	defer res.Body.Close()
 
-	body, readErr := ioutil.ReadAll(res.Body)
+	body, readErr := api.readBody(res.Body)
 	if readErr != nil {
 		return nil, fmt.Errorf("could not read response body: %v", readErr)
 	}
 
-	if err := json.Unmarshal(body, &info); err != nil {
+	if err := api.unMarshalResp(body, &info); err != nil {
 		return nil, fmt.Errorf("could not parse the response: %w", err)
 	}
 

@@ -19,9 +19,9 @@ build-ksqlgrammar:
 
 mockery:
 	# 
-	mockery --all --inpackage --keeptree
+	# mockery --all --inpackage --keeptree
 	# mockery --name Recognizer --srcpkg github.com/antlr/antlr4/runtime/Go/antlr
-	# mockery --name Ksqldb 
+	mockery --name Ksqldb 
 	# mockery --name KsqldbFactory
 	# mockery --name HTTPClient --keeptree --recursive
 	# mockery --name NewClientWithOptionsFactory --keeptree --recursive

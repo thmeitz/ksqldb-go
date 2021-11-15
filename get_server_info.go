@@ -17,9 +17,7 @@ limitations under the License.
 package ksqldb
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 )
 
 // KsqlServerInfo
@@ -37,21 +35,21 @@ type KsqlServerInfoResponse struct {
 
 // ServerInfo gets the info for your server
 // api net.KsqlHTTPClient
-func (c *KsqldbClient) GetServerInfo() (*KsqlServerInfo, error) {
+func (api *KsqldbClient) GetServerInfo() (*KsqlServerInfo, error) {
 	info := KsqlServerInfoResponse{}
-	res, err := (*c.http).Get((*c.http).GetUrl(INFO_ENDPOINT))
+	res, err := (*api.http).Get((*api.http).GetUrl(INFO_ENDPOINT))
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get server info: %v", err)
 	}
 	defer res.Body.Close()
 
-	body, readErr := ioutil.ReadAll(res.Body)
+	body, readErr := api.readBody(res.Body)
 	if readErr != nil {
 		return nil, fmt.Errorf("could not read response body: %v", readErr)
 	}
 
-	if err := json.Unmarshal(body, &info); err != nil {
+	if err := api.unMarshalResp(body, &info); err != nil {
 		return nil, fmt.Errorf("could not parse the response: %w", err)
 	}
 

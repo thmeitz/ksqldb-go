@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -69,7 +68,7 @@ func (api *KsqldbClient) TerminateCluster(topics ...string) (*KsqlResponseSlice,
 	}
 	defer res.Body.Close()
 
-	body, readErr := ioutil.ReadAll(res.Body)
+	body, readErr := api.readBody(res.Body)
 	if readErr != nil {
 		return nil, fmt.Errorf("could not read response body: %v", readErr)
 	}

@@ -25,7 +25,6 @@ package ksqldb
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -69,7 +68,7 @@ func (api *KsqldbClient) Execute(sql string) (err error) {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := api.readBody(res.Body)
 	if err != nil {
 		return fmt.Errorf("can't read response body: %w", err)
 	}
