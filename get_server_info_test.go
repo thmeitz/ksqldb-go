@@ -15,3 +15,51 @@ limitations under the License.
 */
 
 package ksqldb_test
+
+import (
+	"bytes"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/thmeitz/ksqldb-go"
+	mock "github.com/thmeitz/ksqldb-go/mocks/net"
+)
+
+func TestGetServerInfo_ResponseError(t *testing.T) {
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/info").Return("http://localhost/info")
+	m.Mock.
+		On("Get", "http://localhost/info").
+		Return(nil, errors.New("error"))
+
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.GetServerInfo()
+	require.Nil(t, val)
+	require.NotNil(t, err)
+	require.Equal(t, "can't get server info: error", err.Error())
+}
+
+//
+
+func TestGetServerInfo_SuccessfullResponse(t *testing.T) {
+	json := `{"KsqlServerInfo":{"version":"0.21.0","kafkaClusterId":"kgqdUfEoTBSutJd1JWHIyQ","ksqlServiceId":"confluent_rmoff_01","serverStatus":"RUNNING"}}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/info").Return("http://localhost/info")
+	m.Mock.
+		On("Get", "http://localhost/info").
+		Return(&res, nil)
+
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.GetServerInfo()
+	require.Nil(t, err)
+	require.NotNil(t, val)
+	require.Equal(t, "0.21.0", val.Version)
+	require.Equal(t, "kgqdUfEoTBSutJd1JWHIyQ", val.KafkaClusterID)
+	require.Equal(t, "confluent_rmoff_01", val.KsqlServiceID)
+	require.Equal(t, "RUNNING", val.ServerStatus)
+}

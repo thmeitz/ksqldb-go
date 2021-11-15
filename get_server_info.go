@@ -27,6 +27,7 @@ type KsqlServerInfo struct {
 	Version        string `json:"version"`
 	KafkaClusterID string `json:"kafkaClusterId"`
 	KsqlServiceID  string `json:"ksqlServiceId"`
+	ServerStatus   string `json:"serverStatus,omitempty"`
 }
 
 // KsqlServerInfoResponse

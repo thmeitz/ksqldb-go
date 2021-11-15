@@ -67,6 +67,7 @@ func info(cmd *cobra.Command, args []string) {
 	fmt.Println(fmt.Sprintf("Version        : %v", info.Version))
 	fmt.Println(fmt.Sprintf("KSQLServiceID  : %v", info.KsqlServiceID))
 	fmt.Println(fmt.Sprintf("KafkaClusterID : %v", info.KafkaClusterID))
+	fmt.Println(fmt.Sprintf("ServerStatus   : %v", info.ServerStatus))
 	fmt.Println("===== as info log")
-	log.Current.Infow("server info", log.Fields{"version": info.Version, "ksqlServiceId": info.KsqlServiceID, "kafkaClusterId": info.KafkaClusterID})
+	log.Current.Infow("server info", log.Fields{"version": info.Version, "ksqlServiceId": info.KsqlServiceID, "kafkaClusterId": info.KafkaClusterID, "serverStatus": info.ServerStatus})
 }
