@@ -48,13 +48,14 @@ func TestGetServerStatus_SuccessfullResponse(t *testing.T) {
 	res := http.Response{StatusCode: 200, Body: r}
 
 	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/info").Return("http://localhost/healthcheck")
+	m.Mock.On("GetUrl", "/healthcheck").Return("http://localhost/healthcheck")
 	m.Mock.
 		On("Get", "http://localhost/healthcheck").
 		Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.GetServerInfo()
+	val, err := kcl.GetServerStatus()
 	require.Nil(t, err)
 	require.NotNil(t, val)
+	require.True(t, *val.IsHealthy)
 }
