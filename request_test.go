@@ -20,11 +20,23 @@ func TestHandleRequestError(t *testing.T) {
 }
 
 func TestNewCloseQueryRequest(t *testing.T) {
-
+	postFn := ksqldb.NewCloseQueryRequest
+	client, _ := net.NewHTTPClient(net.Options{}, nil)
+	r := ioutil.NopCloser(bytes.NewReader([]byte("hallo")))
+	req, err := postFn(client, context.TODO(), r)
+	require.NotNil(t, req)
+	require.Nil(t, err)
+	require.Equal(t, "/close-query", req.URL.Path)
 }
 
 func TestNewKsqlRequest(t *testing.T) {
-
+	postFn := ksqldb.NewKsqlRequest
+	client, _ := net.NewHTTPClient(net.Options{}, nil)
+	r := ioutil.NopCloser(bytes.NewReader([]byte("hallo")))
+	req, err := postFn(client, r)
+	require.NotNil(t, req)
+	require.Nil(t, err)
+	require.Equal(t, "/ksql", req.URL.Path)
 }
 
 func TestNewPostRequest_Error(t *testing.T) {
@@ -53,5 +65,13 @@ func TestNewQueryRequest(t *testing.T) {
 }
 
 func TestNewQueryStreamRequest(t *testing.T) {
-
+	postFn := ksqldb.NewQueryStreamRequest
+	client, _ := net.NewHTTPClient(net.Options{}, nil)
+	r := ioutil.NopCloser(bytes.NewReader([]byte("hallo")))
+	req, err := postFn(client, context.TODO(), r)
+	require.NotNil(t, req)
+	require.Nil(t, err)
+	require.Equal(t, "localhost:8088", req.Host)
+	require.Equal(t, "POST", req.Method)
+	require.Equal(t, "/query-stream", req.URL.Path)
 }
