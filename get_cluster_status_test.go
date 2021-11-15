@@ -17,11 +17,12 @@ limitations under the License.
 package ksqldb_test
 
 import (
-	"encoding/json"
+	"bytes"
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
-	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
 	mock "github.com/thmeitz/ksqldb-go/mocks/net"
@@ -135,19 +136,6 @@ var fullBlown = `{
 }
 `
 
-func TestClusterStatusResponse(t *testing.T) {
-	// this must be mocked
-	var csr ksqldb.ClusterStatusResponse
-	var err error
-	var input map[string]interface{}
-
-	err = json.Unmarshal([]byte(fullBlown), &input)
-	require.Nil(t, err)
-
-	err = mapstructure.Decode(&input, &csr)
-	require.Nil(t, err)
-}
-
 func TestClusterStatusResponse_GetError(t *testing.T) {
 	m := mock.HTTPClient{}
 	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
@@ -163,6 +151,45 @@ func TestClusterStatusResponse_GetError(t *testing.T) {
 	m.AssertCalled(t, "Close")
 }
 
-func TestClusterStatus_handleGetRequestUnmarshalError(t *testing.T) {
+func TestClusterStatus_Successful(t *testing.T) {
+	r := ioutil.NopCloser(bytes.NewReader([]byte(fullBlown)))
+	res := http.Response{StatusCode: 200, Body: r}
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", "http://localhost/clusterStatus").Return(&res, nil)
 
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.GetClusterStatus()
+	require.Nil(t, err)
+	require.NotNil(t, val)
+}
+
+func TestClusterStatus_UnmarshalError(t *testing.T) {
+	json := `true`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", "http://localhost/clusterStatus").Return(&res, nil)
+
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.GetClusterStatus()
+	require.Nil(t, val)
+	require.NotNil(t, err)
+	require.Equal(t, "could not parse the response:json: cannot unmarshal bool into Go value of type map[string]interface {}", err.Error())
+}
+
+func TestClusterStatus_DecodeError(t *testing.T) {
+	json := `{"clusterStatus": {"host": "some value"}}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+	m := mock.HTTPClient{}
+	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", "http://localhost/clusterStatus").Return(&res, nil)
+
+	kcl, _ := ksqldb.NewClient(&m)
+	val, err := kcl.GetClusterStatus()
+	require.Nil(t, val)
+	require.NotNil(t, err)
+	require.Equal(t, "1 error(s) decoding:\n\n* 'ClusterStatus[<interface {} Value>]' expected a map, got 'string'", err.Error())
 }
