@@ -12,12 +12,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Parts of the net.client are borrowed from Zalando Skipper
-https://github.com/zalando/skipper/blob/master/net/httpclient.go
-
-Zalando licence: MIT
-https://github.com/zalando/skipper/blob/master/LICENSE
 */
 
 package ksqldb

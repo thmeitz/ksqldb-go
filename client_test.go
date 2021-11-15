@@ -14,18 +14,21 @@ var options = net.Options{
 	AllowHTTP:   true,
 }
 
-func TestNewClient(t *testing.T) {
+func TestNewClientWithOptions_Error(t *testing.T) {
+	var opt1 = net.Options{
+		Credentials: net.Credentials{Username: "user", Password: "password"},
+		BaseUrl:     "fa",
+		AllowHTTP:   true,
+	}
 
-}
+	_, err := ksqldb.NewClientWithOptions(opt1)
 
-func TestNewClientWithOptions(t *testing.T) {
-
-	kcl, _ := ksqldb.NewClientWithOptions(options)
+	require.NotNil(t, err)
+	require.Equal(t, "invalid host name given", err.Error())
 
 	// Ensures that the Ksqldb interface is implemented.
 	// Aborts the compiler if it does not.
-	var _ ksqldb.Ksqldb = kcl
-
+	// var _ ksqldb.Ksqldb = kcl
 }
 
 func TestClient_EnableParseSQL(t *testing.T) {
@@ -34,8 +37,4 @@ func TestClient_EnableParseSQL(t *testing.T) {
 	require.True(t, kcl.ParseSQLEnabled())
 	kcl.EnableParseSQL(false)
 	require.False(t, kcl.ParseSQLEnabled())
-}
-
-func TestClient_Close(t *testing.T) {
-
 }

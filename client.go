@@ -11,6 +11,7 @@ type KsqldbClient struct {
 	parseSQL bool
 }
 
+// NewClient returns a new KsqldbClient with the given net.HTTPclient
 func NewClient(http net.HTTPClient) (*KsqldbClient, error) {
 	var client = KsqldbClient{
 		http:     &http,
@@ -20,6 +21,7 @@ func NewClient(http net.HTTPClient) (*KsqldbClient, error) {
 	return &client, nil
 }
 
+// NewClientWithOptions returns a new @KsqldbClient with Options
 func NewClientWithOptions(options net.Options) (*KsqldbClient, error) {
 	http, err := net.NewHTTPClient(options, nil)
 	if err != nil {
@@ -39,7 +41,7 @@ func (cl *KsqldbClient) ParseSQLEnabled() bool {
 	return cl.parseSQL
 }
 
-//
+// Close closes the underlying http transport
 func (cl *KsqldbClient) Close() {
 	(*cl.http).Close()
 }
