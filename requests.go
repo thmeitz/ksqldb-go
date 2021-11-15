@@ -45,9 +45,11 @@ func newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Re
 
 func handleRequestError(code int, buf []byte) error {
 	ksqlError := ResponseError{}
+	fmt.Printf("handleRequestError called: %+v\n", string(buf))
 	if err := json.Unmarshal(buf, &ksqlError); err != nil {
 		return fmt.Errorf("ksqldb error: %w", err)
 	}
+	fmt.Printf("ksql: %+v\n", ksqlError)
 
 	return ksqlError
 }

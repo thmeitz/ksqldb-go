@@ -40,7 +40,3 @@ func TestClient_Nil(t *testing.T) {
 	require.NotNil(t, err)
 	require.Equal(t, "invalid host name given", err.Error())
 }
-
-func Testclient_Error(t *testing.T) {
-	// m := mock.HTTPClient{}
-}
