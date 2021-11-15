@@ -23,9 +23,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
-	mock "github.com/thmeitz/ksqldb-go/mocks/net"
+	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
@@ -43,9 +44,9 @@ func TestValidateProperty_EmptyProperty(t *testing.T) {
 }
 
 func TestValidateProperty_RequestError(t *testing.T) {
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/is_valid_property/test").Return("http://localhost/is_valid_property/test")
-	m.Mock.On("Get", "http://localhost/is_valid_property/test").Return(nil, errors.New("error"))
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/is_valid_property/test")
+	m.Mock.On("Get", mock.Anything).Return(nil, errors.New("error"))
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.ValidateProperty("test")
 	require.Nil(t, val)
@@ -58,9 +59,9 @@ func TestValidateProperty_UnmarshalError(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/is_valid_property/test").Return("http://localhost/is_valid_property/test")
-	m.Mock.On("Get", "http://localhost/is_valid_property/test").Return(&res, nil)
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/is_valid_property/test")
+	m.Mock.On("Get", mock.Anything).Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.ValidateProperty("test")
 	require.Nil(t, val)
@@ -73,9 +74,9 @@ func TestValidateProperty_Successfull(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/is_valid_property/test").Return("http://localhost/is_valid_property/test")
-	m.Mock.On("Get", "http://localhost/is_valid_property/test").Return(&res, nil)
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/is_valid_property/test")
+	m.Mock.On("Get", mock.Anything).Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.ValidateProperty("test")
 	require.NotNil(t, val)

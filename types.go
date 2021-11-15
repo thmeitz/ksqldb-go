@@ -70,28 +70,28 @@ type Ksqldb interface {
 	Close()
 }
 
-//type ksqldbRequest interface {
-// 	// newQueryRequest interface
-// 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/query-endpoint/
-// 	newQueryRequest(http.Client, io.Reader) (*http.Request, error)
-//
-// 	newKsqlRequest(api net.HTTPClient, payload io.Reader) (*http.Request, error)
-//
-// 	// newQueryStreamRequest interface
-// 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/streaming-endpoint/
-// 	newQueryStreamRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error)
-//
-// 	newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error)
-//
-// 	handleRequestError(code int, buf []byte) error
-//
-//handleGetRequest(httpClient *net.HTTPClient, url string) (*[]byte, error)
-//
-// 	newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error)
-//
-// 	// NewIntrospectQueryRequest
-// 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/status-endpoint/
-//}
+type ksqldbRequest interface {
+	// 	// newQueryRequest interface
+	// 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/query-endpoint/
+	// 	newQueryRequest(http.Client, io.Reader) (*http.Request, error)
+	//
+	// 	newKsqlRequest(api net.HTTPClient, payload io.Reader) (*http.Request, error)
+	//
+	// 	// newQueryStreamRequest interface
+	// 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/streaming-endpoint/
+	// 	newQueryStreamRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error)
+	//
+	// 	newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error)
+	//
+	// 	handleRequestError(code int, buf []byte) error
+	//
+	handleGetRequest(httpClient *net.HTTPClient, url string) (*[]byte, error)
+	//
+	// 	newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error)
+	//
+	// 	// NewIntrospectQueryRequest
+	// 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/status-endpoint/
+}
 
 // Row represents a row returned from a query
 type Row []interface{}

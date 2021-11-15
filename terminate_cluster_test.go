@@ -24,9 +24,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
-	mock "github.com/thmeitz/ksqldb-go/mocks/net"
+	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
 func TestTerminateClusterTopics_Add(t *testing.T) {
@@ -40,10 +41,10 @@ func TestTerminateClusterTopics_Add(t *testing.T) {
 func TestTerminateCluster_WithoutTopicsPostError(t *testing.T) {
 	tpc := ksqldb.TerminateClusterTopics{}
 	b, _ := json.Marshal(&tpc)
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/ksql/terminate").Return("http://localhost/ksql/terminate")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", "http://localhost/ksql/terminate", "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(nil, errors.New("error"))
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.TerminateCluster()
@@ -61,10 +62,10 @@ func TestTerminateCluster_WithTopicsUnmarshalError(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/ksql/terminate").Return("http://localhost/ksql/terminate")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", "http://localhost/ksql/terminate", "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.TerminateCluster("test", "test2")
@@ -82,10 +83,10 @@ func TestTerminateCluster_HttpStatusNotOk(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 400, Body: r}
 
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/ksql/terminate").Return("http://localhost/ksql/terminate")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", "http://localhost/ksql/terminate", "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.TerminateCluster("test", "test2")
@@ -102,10 +103,10 @@ func TestTerminateCluster_EmptyResponseBody(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte("")))
 	res := http.Response{StatusCode: 400, Body: r}
 
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/ksql/terminate").Return("http://localhost/ksql/terminate")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", "http://localhost/ksql/terminate", "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.TerminateCluster("test", "test2")
@@ -123,10 +124,10 @@ func TestTerminateCluster_TerminatedCluster(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/ksql/terminate").Return("http://localhost/ksql/terminate")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", "http://localhost/ksql/terminate", "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.TerminateCluster("test", "test2")

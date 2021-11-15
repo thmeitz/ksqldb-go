@@ -23,9 +23,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
-	mock "github.com/thmeitz/ksqldb-go/mocks/net"
+	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
 var fullBlown = `{
@@ -137,9 +138,9 @@ var fullBlown = `{
 `
 
 func TestClusterStatusResponse_GetError(t *testing.T) {
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
-	m.Mock.On("Get", "http://localhost/clusterStatus").Return(nil, errors.New("error"))
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", mock.Anything).Return(nil, errors.New("error"))
 	m.Mock.On("Close").Return()
 
 	kcl, _ := ksqldb.NewClient(&m)
@@ -154,9 +155,9 @@ func TestClusterStatusResponse_GetError(t *testing.T) {
 func TestClusterStatus_Successful(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(fullBlown)))
 	res := http.Response{StatusCode: 200, Body: r}
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
-	m.Mock.On("Get", "http://localhost/clusterStatus").Return(&res, nil)
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", mock.Anything).Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.GetClusterStatus()
@@ -168,9 +169,9 @@ func TestClusterStatus_UnmarshalError(t *testing.T) {
 	json := `true`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
-	m.Mock.On("Get", "http://localhost/clusterStatus").Return(&res, nil)
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", mock.Anything).Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.GetClusterStatus()
@@ -183,9 +184,9 @@ func TestClusterStatus_DecodeError(t *testing.T) {
 	json := `{"clusterStatus": {"host": "some value"}}`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/clusterStatus").Return("http://localhost/clusterStatus")
-	m.Mock.On("Get", "http://localhost/clusterStatus").Return(&res, nil)
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/clusterStatus")
+	m.Mock.On("Get", mock.Anything).Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
 	val, err := kcl.GetClusterStatus()

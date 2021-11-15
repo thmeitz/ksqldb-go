@@ -23,16 +23,17 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
-	mock "github.com/thmeitz/ksqldb-go/mocks/net"
+	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
 func TestGetServerStatus_ResponseError(t *testing.T) {
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/healthcheck").Return("http://localhost/healthcheck")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/healthcheck")
 	m.Mock.
-		On("Get", "http://localhost/healthcheck").
+		On("Get", mock.Anything).
 		Return(nil, errors.New("error"))
 
 	kcl, _ := ksqldb.NewClient(&m)
@@ -47,10 +48,10 @@ func TestGetServerStatus_SuccessfullResponse(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/healthcheck").Return("http://localhost/healthcheck")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/healthcheck")
 	m.Mock.
-		On("Get", "http://localhost/healthcheck").
+		On("Get", mock.Anything).
 		Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)

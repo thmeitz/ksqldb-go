@@ -23,16 +23,17 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
-	mock "github.com/thmeitz/ksqldb-go/mocks/net"
+	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
 func TestGetServerInfo_ResponseError(t *testing.T) {
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/info").Return("http://localhost/info")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/info")
 	m.Mock.
-		On("Get", "http://localhost/info").
+		On("Get", mock.Anything).
 		Return(nil, errors.New("error"))
 
 	kcl, _ := ksqldb.NewClient(&m)
@@ -48,10 +49,10 @@ func TestGetServerInfo_SuccessfullResponse(t *testing.T) {
 	json := `{"KsqlServerInfo":{"version":"0.21.0","kafkaClusterId":"kgqdUfEoTBSutJd1JWHIyQ","ksqlServiceId":"confluent_rmoff_01","serverStatus":"RUNNING"}}`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
-	m := mock.HTTPClient{}
-	m.Mock.On("GetUrl", "/info").Return("http://localhost/info")
+	m := mocknet.HTTPClient{}
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/info")
 	m.Mock.
-		On("Get", "http://localhost/info").
+		On("Get", mock.Anything).
 		Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
