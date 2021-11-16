@@ -39,8 +39,8 @@ func GetUrl(path string) (*url.URL, error) {
 }
 
 // SanitizeQuery sanitizes the given content
-// eventually we can use the KSqlParser to rewrite the query, so its automatically sanitized
-// whitespaces will be eaten by the KSqlParser
+//
+// eventually we can use the KSqlParser to rewrite the query
 func SanitizeQuery(content string) string {
 	content = strings.ReplaceAll(content, "\t", "")
 	content = strings.ReplaceAll(content, "\n", "")
