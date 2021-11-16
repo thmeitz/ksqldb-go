@@ -76,6 +76,5 @@ func newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, pa
 	if err != nil {
 		return req, fmt.Errorf("can't create new request with context: %w", err)
 	}
-
 	return req, nil
 }
