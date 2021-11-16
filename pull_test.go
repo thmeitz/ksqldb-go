@@ -17,8 +17,11 @@ limitations under the License.
 package ksqldb_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -61,12 +64,43 @@ func TestPull_RequestError(t *testing.T) {
 	kcl.EnableParseSQL(true)
 
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
-
-	//json := `{"name":"Test Name"}`
-	//r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	m.On("Do", mock.Anything).Return(nil, errors.New("error"))
 
 	_, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
 	require.NotNil(t, err)
 	require.Equal(t, "can't do request: error", err.Error())
+}
+
+func TestPull_RequestStatusCode(t *testing.T) {
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	json := `{"name":"Test Name"}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 400, Body: r}
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(&res, nil)
+
+	_, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
+	require.NotNil(t, err)
+	require.Equal(t, "", err.Error())
+}
+
+func TestPull_UnmarshallError(t *testing.T) {
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	json := `{"name":"Test Name"}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(&res, nil)
+
+	_, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
+	require.NotNil(t, err)
+	require.Equal(t, "could not parse the response:\njson: cannot unmarshal object into Go value of type []interface {}", err.Error())
 }
