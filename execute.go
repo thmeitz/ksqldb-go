@@ -33,19 +33,14 @@ import (
 	"github.com/thmeitz/ksqldb-go/parser"
 )
 
-type StreamPropertyMap map[string]string
-type SessionVariablesMap map[string]interface{}
-
 type ExecOptions struct {
-	KSql                  string `json:"ksql"`
-	origKSql              string
-	StreamsProperties     StreamPropertyMap   `json:"streamsProperties,omitempty"`
+	KSql                  string              `json:"ksql"`
+	StreamsProperties     PropertyMap         `json:"streamsProperties,omitempty"`
 	SessionVariables      SessionVariablesMap `json:"sessionVariables,omitempty"`
 	CommandSequenceNumber int64               `json:"commandSequenceNumber,omitempty"`
 }
 
 func (o *ExecOptions) SanitizeQuery() {
-	o.origKSql = o.KSql
 	o.KSql = internal.SanitizeQuery(o.KSql)
 }
 
@@ -101,8 +96,6 @@ func (api *KsqldbClient) Execute(options ExecOptions) (*KsqlResponseSlice, error
 	if err != nil {
 		return nil, fmt.Errorf("can't read response body: %w", err)
 	}
-
-	fmt.Println(string(body))
 
 	// this is only one side of the coin
 	if res.StatusCode != http.StatusOK {

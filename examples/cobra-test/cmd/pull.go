@@ -62,9 +62,8 @@ func dogstats(cmd *cobra.Command, args []string) {
 	defer kcl.Close()
 
 	query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start, 
-	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, 
-	dog_size, dogs_ct from dogs_by_size 
-	where dog_size=?;`
+	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, dog_size, dogs_ct 
+	from dogs_by_size where dog_size=?;`
 
 	stmnt, err := ksqldb.QueryBuilder(query, dogsize)
 	if err != nil {
@@ -73,7 +72,12 @@ func dogstats(cmd *cobra.Command, args []string) {
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, err := kcl.Pull(ctx, *stmnt, true)
+
+	qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(false)
+
+	log.Infof("%+v", qOpts)
+
+	_, r, err := kcl.Pull(ctx, *qOpts)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -93,6 +93,10 @@ type Ksqldb interface {
 // 	// @API https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/status-endpoint/
 //}
 
+type SessionVariablesMap map[string]interface{}
+
+type PropertyMap map[string]string
+
 // Row represents a row returned from a query
 type Row []interface{}
 
