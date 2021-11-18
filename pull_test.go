@@ -30,6 +30,29 @@ import (
 	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
+// var data = `[
+// 	{
+// 		"queryId":null,
+// 		"columnNames":[
+// 			"WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"
+// 		],
+// 		"columnTypes":[
+// 			"STRING","STRING","STRING","BIGINT"
+// 		]
+// 	},
+// 	["2021-11-16 06:00:00","06:15:00","medium",23],
+// 	["2021-11-16 06:15:00","06:30:00","medium",250],
+// 	["2021-11-16 06:30:00","06:45:00","medium",234],
+// 	["2021-11-16 06:45:00","07:00:00","medium",242],
+// 	["2021-11-16 07:00:00","07:15:00","medium",228],
+// 	["2021-11-16 07:15:00","07:30:00","medium",242],
+// 	["2021-11-16 07:30:00","07:45:00","medium",226],
+// 	["2021-11-16 07:45:00","08:00:00","medium",222],
+// 	["2021-11-16 08:00:00","08:15:00","medium",216],
+// 	["2021-11-16 08:15:00","08:30:00","medium",219]
+// ]
+// `
+
 func TestQueryOptions_SanitizeQuery(t *testing.T) {
 	o := ksqldb.QueryOptions{Sql: `select * 
 	from bla`}

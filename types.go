@@ -54,11 +54,17 @@ type Ksqldb interface {
 	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/is_valid_property-endpoint/
 	ValidateProperty(property string) (*bool, error)
 
-	//
+	// Pull data
+	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/streaming-endpoint/
 	Pull(context.Context, string, bool) (Header, Payload, error)
 
-	//
+	// Push data
+	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/streaming-endpoint/
 	Push(context.Context, string, chan<- Row, chan<- Header) error
+
+	// GetQueryStatus
+	// @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/status-endpoint/
+	GetQueryStatus(string) (*QueryStatus, error)
 
 	// EnableParseSQL enables/disables query parsing for push/pull/execute requests
 	EnableParseSQL(bool)

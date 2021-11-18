@@ -150,7 +150,7 @@ func (api *KsqldbClient) Pull(ctx context.Context, options QueryOptions) (header
 		// len 1 means we just got a header, no rows
 		// Should we define our own error types here so we can return more clearly
 		// an indicator that no rows were found?
-		// ANSWER: yes
+		// ANSWER: no - maybe we have no data - its not an error
 		return header, payload, ErrNotFound
 	default:
 		for _, z := range result {
