@@ -35,7 +35,7 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 - [x] Introspect cluster status (/clusterStatus endpoint)
 - [x] Get the validity of a property (/is_valid_property)
 
-> Deprecation: 
+> Deprecation:
 > the [Run a query](https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/query-endpoint/) endpoint is deprecated and willl not be implemented.
 
 ### KSqlParser
@@ -153,77 +153,144 @@ if err != nil {
 
 ```golang
 
-// we use the client from the above example
+  options := net.Options{
+		Credentials: net.Credentials{Username: "user", Password: "password"},
+		BaseUrl:     "http://localhost:8088",
+		AllowHTTP:   true,
+	}
 
-ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
-defer ctxCancel()
+	kcl, err := ksqldb.NewClientWithOptions(options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer kcl.Close()
 
-k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='?';"
+	query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start,
+	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, dog_size, dogs_ct
+	from dogs_by_size where dog_size=?;`
 
-stmnt, err := ksqldb.QueryBuilder(k, "middle")
-if err != nil {
-	log.Fatal(err)
-}
+	stmnt, err := ksqldb.QueryBuilder(query, dogsize)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// your select statement will be checked with integrated KSqlParser
-_, r, e := ksqldb.Pull(client, ctx, *stmnt, false)
-if e != nil {
-  // handle the error better here, e.g. check for no rows returned
-  return fmt.Errorf("error running pull request against ksqlDB:\n%v", e)
-}
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	defer cancel()
 
-var dogSize string
-var dogsCt float64
-for *, row := range r {
-  if row != nil {
-    // Should do some type assertions here
-    dogSize = row[2].(string)
-    dogsCt = row[3].(float64)
-    fmt.Printf("🐶 There are %v dogs size %v\n", dogsCt, dogSize)
-  }
-}
+	qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(false)
+
+	_, r, err := kcl.Pull(ctx, *qOpts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var windowStart string
+	var windowEnd string
+	var dogSize string
+	var dogsCt float64
+	for _, row := range r {
+
+		if row != nil {
+			// Should do some type assertions here
+			windowStart = row[0].(string)
+			windowEnd = row[1].(string)
+			dogSize = row[2].(string)
+			dogsCt = row[3].(float64)
+			log.Infof("🐶 There are %v dogs size %v between %v and %v", dogsCt, dogSize, windowStart, windowEnd)
+		}
+	}
 ```
 
 ### Push query
 
 ```golang
-rc := make(chan ksqldb.Row)
-hc := make(chan ksqldb.Header, 1)
+  options := net.Options{
+		Credentials: net.Credentials{Username: "user", Password: "password"},
+		BaseUrl:     "http://localhost:8088",
+		AllowHTTP:   true,
+	}
 
-k := "SELECT ROWTIME, ID, NAME, DOGSIZE, AGE FROM DOGS EMIT CHANGES;"
+	kcl, err := ksqldb.NewClientWithOptions(options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer kcl.Close()
 
-// This Go routine will handle rows as and when they
-// are sent to the channel
-go func() {
-  var name string
-  var dogSize string
-  for row := range rc {
-    if row != nil {
-      // Should do some type assertions here
-      name = row[2].(string)
-      dogSize = row[3].(string)
-      fmt.Printf("🐾 %v: %v\n",  name, dogSize)
-    }
-  }
-}()
+	// you can disable parsing with `kcl.EnableParseSQL(false)`
+	query := "select rowtime, id, name, dogsize, age from dogs emit changes;"
 
-ctx, ctxCancel := context.WithTimeout(context.Background(), 10 \* time.Second)
-defer ctxCancel()
+	rowChannel := make(chan ksqldb.Row)
+	headerChannel := make(chan ksqldb.Header, 1)
 
-e := ksqldb.Push(client, ctx, k, rc, hc)
+	// This Go routine will handle rows as and when they
+	// are sent to the channel
+	go func() {
+		var dataTs float64
+		var id string
+		var name string
+		var dogSize string
+		var age string
+		for row := range rowChannel {
+			if row != nil {
+				// Should do some type assertions here
+				dataTs = row[0].(float64)
+				id = row[1].(string)
+				name = row[2].(string)
+				dogSize = row[3].(string)
+				age = row[4].(string)
 
-if e != nil {
-  // handle the error better here, e.g. check for no rows returned
-  return fmt.Errorf("ksqldbPushError:\n%v", e)
-}
+				// Handle the timestamp
+				t := int64(dataTs)
+				ts := time.Unix(t/1000, 0).Format(time.RFC822)
+
+				log.Infof("🐾 New dog at %v: '%v' is %v and %v (id %v)\n", ts, name, dogSize, age, id)
+			}
+		}
+
+	}()
+
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	defer cancel()
+
+	e := kcl.Push(ctx, query, rowChannel, headerChannel)
+
+	if e != nil {
+		log.Fatal(e)
+	}
 ```
 
 ### Execute a command
 
 ```golang
-if err := ksqldb.Execute(client, ctx, ksqlDBServer, `CREATE STREAM DOGS (ID STRING KEY, NAME STRING, DOGSIZE STRING, AGE STRING) WITH (KAFKA_TOPIC='dogs', VALUE_FORMAT='JSON');`); err != nil {
-  return fmt.Errorf("error creating the dogs stream.\n%v", err)
-}
+  options := net.Options{
+		Credentials: net.Credentials{Username: "user", Password: "password"},
+		BaseUrl:     "http://localhost:8088",
+		AllowHTTP:   true,
+	}
+
+	kcl, err := ksqldb.NewClientWithOptions(options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer kcl.Close()
+
+	resp, err := kcl.Execute(ksqldb.ExecOptions{KSql: `
+		CREATE SOURCE CONNECTOR DOGS WITH (
+		'connector.class'                = 'io.mdrogalis.voluble.VolubleSourceConnector',
+		'key.converter'                  = 'org.apache.kafka.connect.storage.StringConverter',
+		'value.converter'                = 'org.apache.kafka.connect.json.JsonConverter',
+		'value.converter.schemas.enable' = 'false',
+		'genkp.dogs.with'                = '#{Internet.uuid}',
+		'genv.dogs.name.with'            = '#{Dog.name}',
+		'genv.dogs.dogsize.with'         = '#{Dog.size}',
+		'genv.dogs.age.with'             = '#{Dog.age}',
+		'topic.dogs.throttle.ms'         = 1000
+		);
+		`})
+	if err != nil {
+		log.Fatalf("create source connector dogs failed %w", err)
+		os.Exit(-1)
+	}
 ```
 
 ## Examples
