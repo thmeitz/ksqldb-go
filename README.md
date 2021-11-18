@@ -141,12 +141,7 @@ if err != nil {
 	log.Fatal(err)
 }
 
-ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-defer cancel()
-_, r, err := ksqldb.Pull(client, ctx, *stmnt, true)
-if err != nil {
-	log.Fatal(err)
-}
+fmt.Println(*stmnt)
 ```
 
 ### Pull query
