@@ -153,110 +153,108 @@ if err != nil {
 
 ```golang
 
-  options := net.Options{
-		Credentials: net.Credentials{Username: "user", Password: "password"},
-		BaseUrl:     "http://localhost:8088",
-		AllowHTTP:   true,
+options := net.Options{
+	Credentials: net.Credentials{Username: "user", Password: "password"},
+	BaseUrl:     "http://localhost:8088",
+	AllowHTTP:   true,
+}
+
+kcl, err := ksqldb.NewClientWithOptions(options)
+if err != nil {
+	log.Fatal(err)
+}
+defer kcl.Close()
+
+query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start,
+timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, dog_size, dogs_ct
+from dogs_by_size where dog_size=?;`
+
+stmnt, err := ksqldb.QueryBuilder(query, dogsize)
+if err != nil {
+	log.Fatal(err)
+}
+
+ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+defer cancel()
+
+qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(false)
+
+_, r, err := kcl.Pull(ctx, *qOpts)
+if err != nil {
+	log.Fatal(err)
+}
+
+var windowStart string
+var windowEnd string
+var dogSize string
+var dogsCt float64
+for _, row := range r {
+
+	if row != nil {
+		// Should do some type assertions here
+		windowStart = row[0].(string)
+		windowEnd = row[1].(string)
+		dogSize = row[2].(string)
+		dogsCt = row[3].(float64)
+		log.Infof("🐶 There are %v dogs size %v between %v and %v", dogsCt, dogSize, windowStart, windowEnd)
 	}
-
-	kcl, err := ksqldb.NewClientWithOptions(options)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer kcl.Close()
-
-	query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start,
-	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, dog_size, dogs_ct
-	from dogs_by_size where dog_size=?;`
-
-	stmnt, err := ksqldb.QueryBuilder(query, dogsize)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-	defer cancel()
-
-	qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(false)
-
-	_, r, err := kcl.Pull(ctx, *qOpts)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var windowStart string
-	var windowEnd string
-	var dogSize string
-	var dogsCt float64
-	for _, row := range r {
-
-		if row != nil {
-			// Should do some type assertions here
-			windowStart = row[0].(string)
-			windowEnd = row[1].(string)
-			dogSize = row[2].(string)
-			dogsCt = row[3].(float64)
-			log.Infof("🐶 There are %v dogs size %v between %v and %v", dogsCt, dogSize, windowStart, windowEnd)
-		}
-	}
+}
 ```
 
 ### Push query
 
 ```golang
-  options := net.Options{
-		Credentials: net.Credentials{Username: "user", Password: "password"},
-		BaseUrl:     "http://localhost:8088",
-		AllowHTTP:   true,
-	}
+options := net.Options{
+	Credentials: net.Credentials{Username: "user", Password: "password"},
+	BaseUrl:     "http://localhost:8088",
+	AllowHTTP:   true,
+}
 
-	kcl, err := ksqldb.NewClientWithOptions(options)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer kcl.Close()
+kcl, err := ksqldb.NewClientWithOptions(options)
+if err != nil {
+	log.Fatal(err)
+}
+defer kcl.Close()
 
-	// you can disable parsing with `kcl.EnableParseSQL(false)`
-	query := "select rowtime, id, name, dogsize, age from dogs emit changes;"
+// you can disable parsing with `kcl.EnableParseSQL(false)`
+query := "select rowtime, id, name, dogsize, age from dogs emit changes;"
 
-	rowChannel := make(chan ksqldb.Row)
-	headerChannel := make(chan ksqldb.Header, 1)
+rowChannel := make(chan ksqldb.Row)
+headerChannel := make(chan ksqldb.Header, 1)
 
-	// This Go routine will handle rows as and when they
-	// are sent to the channel
-	go func() {
-		var dataTs float64
-		var id string
-		var name string
-		var dogSize string
-		var age string
-		for row := range rowChannel {
-			if row != nil {
-				// Should do some type assertions here
-				dataTs = row[0].(float64)
-				id = row[1].(string)
-				name = row[2].(string)
-				dogSize = row[3].(string)
-				age = row[4].(string)
+// This Go routine will handle rows as and when they
+// are sent to the channel
+go func() {
+	var dataTs float64
+	var id string
+	var name string
+	var dogSize string
+	var age string
+	for row := range rowChannel {
+		if row != nil {
+			// Should do some type assertions here
+			dataTs = row[0].(float64)
+			id = row[1].(string)
+			name = row[2].(string)
+			dogSize = row[3].(string)
+			age = row[4].(string)
 
-				// Handle the timestamp
-				t := int64(dataTs)
-				ts := time.Unix(t/1000, 0).Format(time.RFC822)
+			// Handle the timestamp
+			t := int64(dataTs)
+			ts := time.Unix(t/1000, 0).Format(time.RFC822)
 
-				log.Infof("🐾 New dog at %v: '%v' is %v and %v (id %v)\n", ts, name, dogSize, age, id)
-			}
+			log.Infof("🐾 New dog at %v: '%v' is %v and %v (id %v)\n", ts, name, dogSize, age, id)
 		}
-
-	}()
-
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-	defer cancel()
-
-	e := kcl.Push(ctx, query, rowChannel, headerChannel)
-
-	if e != nil {
-		log.Fatal(e)
 	}
+}()
+
+ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+defer cancel()
+
+e := kcl.Push(ctx, query, rowChannel, headerChannel)
+if e != nil {
+	log.Fatal(e)
+}
 ```
 
 ### Execute a command
