@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ Zalando licence: MIT
 https://github.com/zalando/skipper/blob/master/LICENSE
 
 Next: change opentracing-go to opentelemetry if stable version is released
-
 */
 
-package ksqldb
+package net
 
 import (
 	"crypto/tls"
@@ -36,6 +35,10 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	"golang.org/x/net/http2"
 )
+
+type TransportFactory interface {
+	NewTransport(options Options) *Transport
+}
 
 // Options configures the Client
 type Options struct {
@@ -92,7 +95,7 @@ type Options struct {
 }
 
 // Transport wraps an http.Transport and adds support for tracing and
-// bearerToken injection.
+// http2.
 type Transport struct {
 	quit          chan struct{}
 	closed        bool
@@ -101,8 +104,6 @@ type Transport struct {
 	tracer        opentracing.Tracer
 	spanName      string
 	componentName string
-	// bearerToken        string
-
 }
 
 // NewTransport creates a new Transport with Options

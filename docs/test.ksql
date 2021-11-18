@@ -1,0 +1,23 @@
+create stream if Not Exists dogs (id string key,name string,dogsize string, age string) 
+  with (kafka_topic='dogs', 
+  value_format='JSON', 
+  partitions=1
+);
+
+CREATE SOURCE CONNECTOR DOGS WITH (
+  'connector.class'='io.mdrogalis.voluble.VolubleSourceConnector',
+  'key.converter'='org.apache.kafka.connect.storage.StringConverter',
+  'value.converter'='org.apache.kafka.connect.json.JsonConverter',
+  'value.converter.schemas.enable'='false',
+  'genkp.dogs.with'='#{Internet.uuid}',
+  'genv.dogs.name.with'='#{Dog.name}',
+  'genv.dogs.dogsize.with'='#{Dog.size}',
+  'genv.dogs.age.with'='#{Dog.age}',
+  'topic.dogs.throttle.ms'=1000 
+);
+
+create stream if not exists dogs (id string key,name string,dogsize string, age string) 
+  with (kafka_topic='dogs', 
+  value_format='JSON',
+  partitions=1
+);      

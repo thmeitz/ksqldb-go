@@ -1,6 +1,5 @@
 /*
-Copyright © 2021 Robin Moffat & Contributors
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +17,6 @@ limitations under the License.
 package ksqldb
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -28,28 +26,19 @@ var (
 	ErrNotFound = errors.New("no result found")
 )
 
-type Error struct {
+type ResponseError struct {
 	ErrType string `json:"@type"`
 	ErrCode int    `json:"error_code"`
 	Message string `json:"message"`
 }
 
-func (e Error) Error() string {
+func (e ResponseError) Error() string {
 	// I don't like error messages with new lines
 	e.Message = strings.ReplaceAll(e.Message, "\n", " ")
 	return fmt.Sprintf("%v", e.Message)
 }
 
-func (e *Error) Is(target error) bool {
-	_, ok := target.(*Error)
-	return ok
-}
-
-func (api *Client) handleRequestError(code int, buf []byte) error {
-	ksqlError := Error{}
-	if err := json.Unmarshal(buf, &ksqlError); err != nil {
-		return fmt.Errorf("could not parse the ksqldb error: %w", err)
-	}
-
-	return ksqlError
-}
+// func (e *ResponseError) Is(target error) bool {
+// 	_, ok := target.(*ResponseError)
+// 	return ok
+// }

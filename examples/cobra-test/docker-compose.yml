@@ -8,9 +8,9 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  broker:
+  kafka:
     image: "confluentinc/cp-kafka:6.2.1"
-    container_name: broker
+    container_name: kafka
     ports:
       - "9092:9092"
     depends_on:
@@ -20,7 +20,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,HOST://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,HOST://localhost:9092
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -32,7 +32,7 @@ services:
     container_name: schema-registry
     depends_on:
       - zookeeper
-      - broker
+      - kafka
     ports:
       - "8081:8081"
     environment:
@@ -45,15 +45,16 @@ services:
     ports:
       - "8088:8088"
     depends_on:
-      - broker
+      - kafka
       - schema-registry
     environment:
-      KSQL_BOOTSTRAP_SERVERS: broker:29092
+      KSQL_BOOTSTRAP_SERVERS: kafka:29092
       KSQL_LISTENERS: http://0.0.0.0:8088
       KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       KSQL_KSQL_CONNECT_URL: http://kafka-connect:8083
       KSQL_KSQL_SERVICE_ID: confluent_rmoff_01
       KSQL_KSQL_HIDDEN_TOPICS: "^_.*,default_ksql_processing_log"
+      KSQL_OPTS: "-Dksql.heartbeat.enable=true -Dksql.lag.reporting.enable=true"
 
   kafka-connect:
     image: confluentinc/cp-kafka-connect-base:6.2.1
@@ -61,7 +62,7 @@ services:
     ports:
       - "8083:8083"
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: "broker:29092"
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:29092"
       CONNECT_REST_PORT: 8083
       CONNECT_GROUP_ID: compose-connect-group
       CONNECT_CONFIG_STORAGE_TOPIC: _kafka-connect-group-01-configs
@@ -81,7 +82,7 @@ services:
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/connectors,/usr/share/confluent-hub-components/"
     depends_on:
-      - broker
+      - kafka
       - schema-registry
     volumes:
       - $PWD/data/connectors/:/connectors/
@@ -101,7 +102,7 @@ services:
     image: confluentinc/ksqldb-cli:0.21.0
     container_name: ksqldb-cli
     depends_on:
-      - broker
+      - kafka
       - ksqldb
     entrypoint: /bin/sh
     tty: true
@@ -112,7 +113,7 @@ services:
     ports:
       - "9000:9000"
     environment:
-      KAFKA_BROKERCONNECT: "broker:29092"
+      KAFKA_BROKERCONNECT: "kafka:29092"
       JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
     depends_on:
-      - "broker"
+      - "kafka"

@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // setupCmd represents the setup command
@@ -43,66 +44,72 @@ func setup(cmd *cobra.Command, args []string) {
 	user := viper.GetString("username")
 	password := viper.GetString("password")
 
-	options := ksqldb.Options{
-		Credentials: ksqldb.Credentials{Username: user, Password: password},
+	options := net.Options{
+		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
 		AllowHTTP:   true,
 	}
 
-	client, err := ksqldb.NewClient(options, log.Current)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Current.Fatal(err)
+		log.Fatal(err)
 	}
+	defer kcl.Close()
 
-	if err := ksqldb.Execute(client, `
+	resp, err := kcl.Execute(ksqldb.ExecOptions{KSql: `
 		CREATE SOURCE CONNECTOR DOGS WITH (
-		'connector.class'               = 'io.mdrogalis.voluble.VolubleSourceConnector',
-		'key.converter'                 = 'org.apache.kafka.connect.storage.StringConverter',
-		'value.converter'               = 'org.apache.kafka.connect.json.JsonConverter',
-		'value.converter.schemas.enable'='false',
-		'genkp.dogs.with'               = '#{Internet.uuid}',
-		'genv.dogs.name.with'           = '#{Dog.name}',
-		'genv.dogs.dogsize.with'        = '#{Dog.size}',
-		'genv.dogs.age.with'            = '#{Dog.age}',
-		'topic.dogs.throttle.ms'        = 1000 
+		'connector.class'                = 'io.mdrogalis.voluble.VolubleSourceConnector',
+		'key.converter'                  = 'org.apache.kafka.connect.storage.StringConverter',
+		'value.converter'                = 'org.apache.kafka.connect.json.JsonConverter',
+		'value.converter.schemas.enable' = 'false',
+		'genkp.dogs.with'                = '#{Internet.uuid}',
+		'genv.dogs.name.with'            = '#{Dog.name}',
+		'genv.dogs.dogsize.with'         = '#{Dog.size}',
+		'genv.dogs.age.with'             = '#{Dog.age}',
+		'topic.dogs.throttle.ms'         = 1000 
 		);
-		`); err != nil {
-		log.Current.Error("create source connector dogs failed")
+		`})
+	if err != nil {
+		log.Current.Errorf("create source connector dogs failed %w", err)
 		os.Exit(-1)
 	}
+
+	log.Infof("%+v", resp)
 
 	// this is a bit lame but without doing the cool stuff with CommandId etc
 	// it's the easiest way to make sure the topic exists before continuing
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS stream
-	if err := ksqldb.Execute(client,
-		`
+	resp, err = kcl.Execute(ksqldb.ExecOptions{KSql: `
 		CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
 			NAME STRING, 
 			DOGSIZE STRING, 
 			AGE STRING) 
 		WITH (KAFKA_TOPIC='dogs', 
 		VALUE_FORMAT='JSON', PARTITIONS=1);
-	`); err != nil {
+	`})
+	if err != nil {
 		log.Current.Error(err)
 		os.Exit(-1)
 	}
+	log.Infof("%+v", resp)
 
 	// this is a bit lame but without doing the cool stuff with CommandId etc
 	// it's the easiest way to make sure the stream exists before continuing
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS_BY_SIZE table
-	if err := ksqldb.Execute(client,
-		`
-			CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
-				SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
-				FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 
-				GROUP BY DOGSIZE;
-	`); err != nil {
+	resp, err = kcl.Execute(ksqldb.ExecOptions{KSql: `
+		CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
+			SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
+			FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 
+			GROUP BY DOGSIZE;
+	`})
+
+	if err != nil {
 		log.Current.Error(err)
 		os.Exit(-1)
 	}
-	client.Close()
+	log.Infof("%+v", resp)
 }

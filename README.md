@@ -14,30 +14,38 @@ Thank you Robin and all other contributors for their work!
 ## Attention - WIP
 
 If you use this library, be warned as the client will be completely overhauled!
-This client is `not production ready`!!!
+
+This client is `not production ready` and the interfaces can be changed without notification!!!
 
 ⚠️ Disclaimer #1: This is a personal project and not supported or endorsed by Confluent.
 
 ## Migration?
 
-Checkout [ksqldb-migrate](https://github.com/thmeitz/ksqldb-migrate), a tool that uses this package.
+Checkout [ksqldb-migrate](https://github.com/thmeitz/ksqldb-migrate), a tool to run your ksqlDB migrations.
 
 ## Description
 
 This is a Go client for [ksqlDB](https://ksqldb.io/).
 
 - [x] Execute a statement (/ksql endpoint)
-- [ ] Run a query (/query endpoint)
+- [-] Run a query (/query endpoint)
 - [x] Run push and pull queries (/query-stream endpoint)
-- [ ] Terminate a cluster (/ksql/terminate endpoint)
-- [ ] Introspect query status (/status endpoint)
+- [x] Terminate a cluster (/ksql/terminate endpoint)
+- [x] Introspect query status (/status endpoint)
 - [x] Introspect server status (/info endpoint)
-- [ ] Introspect cluster status (/clusterStatus endpoint)
-- [ ] Get the validity of a property (/is_valid_property)
+- [x] Introspect cluster status (/clusterStatus endpoint)
+- [x] Get the validity of a property (/is_valid_property)
+
+> Deprecation
+
+> The [Run a query](https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/query-endpoint/) endpoint is deprecated and willl not be implemented.
 
 ### KSqlParser
 
-- parse your ksql-statements with the provided `KSqlParser`.
+- the lexer works like the Confluent Java lexer case insensitive (ex `SELECT * FROM BLA` is identical to `select * from bla`). (since v0.0.4)
+- parse your ksql-statements with the provided `parser.ParseSql` method.
+- `Push`, `Pull`, `Execute` queries parsed by default with `parser.ParseSQL`.
+- `<client-instance>.EnableParseSQL(false)` enables / disables the parser
 
 ## Installation
 
@@ -67,10 +75,16 @@ go mod tidy
 
 ### Create a ksqlDB Client
 
+> #### Breaking Change v0.0.4
+>
+> The HTTP client has now its own package
+
 ```golang
 import (
-	"github.com/Masterminds/log-go"
-	"github.com/Masterminds/log-go/impl/logrus"
+  "github.com/Masterminds/log-go"
+  "github.com/Masterminds/log-go/impl/logrus"
+  "github.com/thmeitz/ksqldb-go"
+  "github.com/thmeitz/ksqldb-go/net"
 )
 
 var (
@@ -78,34 +92,39 @@ var (
 )
 // than later in your code...
 func main {
-  options := ksqldb.Options{
+  options := net.Options{
     // if you need a login, do this; if not its not necessary
-    Credentials: ksqldb.Credentials{Username: "myuser", Password: "mypassword"},
+    Credentials: net.Credentials{Username: "myuser", Password: "mypassword"},
     // defaults to http://localhost:8088
     BaseUrl:     "http://my-super-shiny-ksqldbserver:8082",
     // this is needed, because the ksql api communicates with http2 only
+    // default value in v0.0.4
     AllowHTTP:   true,
   }
 
-  client, err := ksqldb.NewClient(options, log.Current)
+  // only log.Logger is allowed or nil (since v0.0.4)
+  // logrus is in maintenance mode, so I'll using zap in the future
+  client, err := net.NewHTTPClient(options, nil)
   if err != nil {
      log.Fatal(err)
   }
+  defer client.Close()
 
   // then make a pull, push, execute request
-
-  // if you finished your work, you **MUST** close the http.Transport!!!
-  client.Close()
 }
 ```
 
-For no authentication just use blank username and password values.
+For no authentication remove `Credentials` from options.
 
-### QueryBuilder (since v0.0.3)
+### QueryBuilder
+
+> #### Breaking Change v0.0.4
+>
+> The QueryBuilder was to complicated, so I've refactored it
 
 SQL strings should be build by a QueryBuilder. Otherwise the system is open for SQL injections (see [go-webapp-scp.pdf](https://github.com/OWASP/Go-SCP/blob/master/dist/go-webapp-scp.pdf) ).
 
-You can add multiple parameters `Bind(nil, 1, 2.5686, "string", true)`.
+You can add multiple parameters `QueryBuilder("insert into bla values(?,?,?,?,?)", nil, 1, 2.5686, "string", true)`.
 
 `nil` will be converted to `NULL`.
 
@@ -119,12 +138,7 @@ TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END,
 DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE
 WHERE DOG_SIZE=?;`
 
-builder, err := ksqldb.DefaultQueryBuilder(k)
-if err != nil {
-	log.Fatal(err)
-}
-
-stmnt, err := builder.Bind("middle")
+stmnt, err := ksqldb.QueryBuilder(k, "middle")
 if err != nil {
 	log.Fatal(err)
 }
@@ -141,15 +155,20 @@ if err != nil {
 
 ```golang
 
-// we are using the client, we are created
+// we use the client from the above example
 
 ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer ctxCancel()
 
-k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='" + s + "';"
+k := "SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE WHERE DOG_SIZE='?';"
+
+stmnt, err := ksqldb.QueryBuilder(k, "middle")
+if err != nil {
+	log.Fatal(err)
+}
 
 // your select statement will be checked with integrated KSqlParser
-_, r, e := ksqldb.Pull(client, ctx, k, false)
+_, r, e := ksqldb.Pull(client, ctx, *stmnt, false)
 if e != nil {
   // handle the error better here, e.g. check for no rows returned
   return fmt.Errorf("error running pull request against ksqlDB:\n%v", e)
@@ -185,7 +204,7 @@ go func() {
       // Should do some type assertions here
       name = row[2].(string)
       dogSize = row[3].(string)
-      fmt.Printf("🐾%v: %v\n",  name, dogSize)
+      fmt.Printf("🐾 %v: %v\n",  name, dogSize)
     }
   }
 }()
@@ -240,13 +259,17 @@ Usage:
   cobra-test [command]
 
 Available Commands:
-  completion   generate the autocompletion script for the specified shell
-  help         Help about any command
-  info         Displays your server infos
-  pull         print the dog stats
-  push         push dogs example like all-in-one example, but with ParseKSQL
-  serverhealth display the server state of your servers
-  setup        setup a dummy connector like in all-in-one example
+  check             check a <example>.ksql file with the integrated parser
+  cluster-status    get cluster status
+  completion        generate the autocompletion script for the specified shell
+  health            display the server state of your servers
+  help              Help about any command
+  info              Displays your server infos
+  pull              print the dog stats
+  push              push dogs example
+  setup             setup a dummy connector
+  terminate-cluster terminates your cluster
+  validate          validates a property
 
 Flags:
       --config string      config file (default is $HOME/.cobra-test.yaml)
@@ -266,16 +289,11 @@ So run it first.
 
 ### KSql Grammar example
 
-This example was written to test and fix the `Antlr4` generation problems for Golang. We changed the `Antlr4` file because there are some type issues. The `Antlr4` code generation introduced some bugs that we had to fix manually. So be careful when you use our `Makefile` to generate the `KSqlParser`. It will break the code!
+This example was written to test and fix the `Antlr4` generation problems for Golang. We changed the `Antlr4` file because there are some type issues (type is a reserved word in golang). The `Antlr4` code generation introduced some bugs that we had to fix manually (no Antlr4 output for needed package names). So be careful when you use our `Makefile` to generate the `KSqlParser`. It will break the code!
 
 We had copied the `Antlr4` file from the original sources of [confluent](https://github.com/confluentinc/ksql/blob/master/ksqldb-parser/src/main/antlr4/io/confluent/ksql/parser/SqlBase.g4).
-It seems that some errors are not found by the parser because the terminal symbols are not present in the grammar.
 
-The parser is used to check the `KSql syntax`. If there are syntax errors, we collect the errors and you get a notification about it.
-
-The example has an error in the `Select` statement to output the errors.
-
-Feel free to play around :)
+The parser is used to check the `KSql syntax`. If there are syntax errors, the errors will be collected and you get a notification about it.
 
 ## Docker compose
 
@@ -287,6 +305,14 @@ It contains the latest versions of all products.
 - kafka-connect (6.2.1)
 - ksqldb-cli (0.21.0)
 - kafdrop (latest)
+
+### ksqldb
+
+I've added following options to `docker-compose` to get the `ClusterStatus`.
+
+```yaml
+KSQL_OPTS: "-Dksql.heartbeat.enable=true -Dksql.lag.reporting.enable=true"
+```
 
 ### ksqldb-cli
 
@@ -325,6 +351,12 @@ ksql>
 ## [Kafdrop](https://github.com/obsidiandynamics/kafdrop)
 
 Kafdrop is a web UI for viewing Kafka topics and browsing consumer groups. The tool displays information such as brokers, topics, partitions, consumers, and lets you view messages.
+
+Kafdrop runs on port 9000 on your localhost.
+
+```
+http://localhost:9000
+```
 
 ![](https://raw.githubusercontent.com/obsidiandynamics/kafdrop/master/docs/images/overview.png)
 

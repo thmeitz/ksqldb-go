@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,4 +36,13 @@ func GetUrl(path string) (*url.URL, error) {
 		return nil, fmt.Errorf("invalid url scheme given")
 	}
 	return u, nil
+}
+
+// SanitizeQuery sanitizes the given content
+//
+// eventually we can use the KSqlParser to rewrite the query
+func SanitizeQuery(content string) string {
+	content = strings.ReplaceAll(content, "\t", "")
+	content = strings.ReplaceAll(content, "\n", "")
+	return content
 }

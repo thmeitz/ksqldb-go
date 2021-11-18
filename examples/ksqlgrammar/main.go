@@ -1,6 +1,5 @@
 /*
-Copyright © 2021 Robin Moffat & Contributors
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,12 +12,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Parts of this apiclient are borrowed from Zalando Skipper
-https://github.com/zalando/skipper/blob/master/net/httpclient.go
-
-Zalando licence: MIT
-https://github.com/zalando/skipper/blob/master/LICENSE
 */
 
 // https://stackoverflow.com/questions/66067549/how-to-write-a-custom-error-reporter-in-go-target-of-antlr
@@ -34,15 +27,16 @@ import (
 
 func main() {
 	//----------| this is the error
-	k := `SELECT1 TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, 
-				  TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, 
-					DOG_SIZE, DOGS_CT 
-	FROM DOGS_BY_SIZE 
-	WHERE DOG_SIZE='large';`
+	k := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as windowStart, 
+				  timestamptostring(windowend,'HH:mm:ss','Europe/London') as windowEnd, 
+					dogSize, dogsCt 
+	from1 dogs_by_size 
+	where dog_size='large';`
 
 	input := antlr.NewInputStream(k)
+	upper := parser.NewUpperCaseStream(input)
 	lexerErrors := &parser.KSqlErrorListener{}
-	lexer := parser.NewKSqlLexer(input)
+	lexer := parser.NewKSqlLexer(upper)
 	lexer.RemoveErrorListeners()
 	lexer.AddErrorListener(lexerErrors)
 

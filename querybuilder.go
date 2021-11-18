@@ -1,7 +1,22 @@
+/*
+Copyright © 2021 Thomas Meitz
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package ksqldb
 
 import (
-	"context"
 	"fmt"
 	"strings"
 )
@@ -12,55 +27,47 @@ const (
 	EMPTY_STATEMENT   = "empty ksql statement"
 )
 
-type QueryBuilder struct {
-	stmt      string
-	origStmnt string
-	options   *QueryBuilderOptions
-	ctx       context.Context
-}
+// QueryBuilder replaces ? with the correct types in the sql statement
+func QueryBuilder(stmnt string, params ...interface{}) (*string, error) {
+	var result *string
+	var err error
 
-// QueryBuilderOptions type
-type QueryBuilderOptions struct {
-	Parse   bool // set to true, to parse the sql by KSQLParser
-	Context context.Context
-}
-
-// DefaultQueryBuilder returns a @QueryBuilder with default values
-func DefaultQueryBuilder(stmnt string) (*QueryBuilder, error) {
-	context := context.Background()
-	options := QueryBuilderOptions{Parse: false}
-
-	if err := checkEmptyStatement(stmnt); err != nil {
+	if err = checkEmptyStatement(stmnt); err != nil {
 		return nil, err
 	}
 
-	return &QueryBuilder{ctx: context, stmt: stmnt, origStmnt: stmnt, options: &options}, nil
-}
-
-// QueryBuilderWithOptions returns a @QueryBuilder, which can be configured by @QueryBuilderOptions
-func QueryBuilderWithOptions(stmnt string, options *QueryBuilderOptions) (*QueryBuilder, error) {
-	ctx := context.Background()
-
-	if err := checkEmptyStatement(stmnt); err != nil {
-		return nil, err
+	if result, err = bind(stmnt, params...); err != nil {
+		return nil, fmt.Errorf("%w", err)
 	}
 
-	if options != nil && options.Context != nil {
-		ctx = options.Context
-	}
-
-	return &QueryBuilder{ctx: ctx, stmt: stmnt, origStmnt: stmnt, options: options}, nil
+	return result, nil
 }
 
-// GetInputStatement gets the original statement given do @DefaultQueryBuilder or @QueryBuilderWithOptions
-func (qb *QueryBuilder) GetInputStatement() string {
-	return qb.stmt
-}
+// ParseQueryBuilder parses the
+// func ParseQueryBuilder(stmnt string, parse bool, params ...interface{}) (*string, error) {
+// 	var result *string
+// 	var err error
+//
+// 	result, err = QueryBuilder(stmnt, params...)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	if !parse {
+// 		return result, err
+// 	}
+//
+// 	if ksqlErr := parser.ParseSql(*result); ksqlErr != nil {
+// 		return nil, ksqlErr
+// 	}
+//
+// 	return result, nil
+// }
 
-// Bind parameters to QueryBuilder
-func (qb *QueryBuilder) Bind(params ...interface{}) (*string, error) {
+// bind parameters to QueryBuilder
+func bind(stmnt string, params ...interface{}) (*string, error) {
 	paramCount := len(params)
-	count := strings.Count(qb.origStmnt, "?")
+	count := strings.Count(stmnt, "?")
 	if paramCount < count {
 		return nil, fmt.Errorf("%v: %v", QBErr, "to few params")
 	} else if paramCount > count {
@@ -72,9 +79,9 @@ func (qb *QueryBuilder) Bind(params ...interface{}) (*string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%v", err)
 		}
-		qb.stmt = strings.Replace(qb.stmt, "?", *replace, 1)
+		stmnt = strings.Replace(stmnt, "?", *replace, 1)
 	}
-	return &qb.stmt, nil
+	return &stmnt, nil
 }
 
 func getReplacement(param interface{}) (*string, error) {

@@ -1,6 +1,6 @@
 /*
 Copyright © 2021 Robin Moffat & Contributors
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,54 +24,87 @@ https://github.com/zalando/skipper/blob/master/LICENSE
 package ksqldb
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"strings"
+
+	"github.com/thmeitz/ksqldb-go/internal"
+	"github.com/thmeitz/ksqldb-go/parser"
 )
 
-// Execute will execute a ksqlDB statement, such as creating
-// a new stream or table. To run queries use Push or
-// Pull functions.
+type ExecOptions struct {
+	KSql                  string              `json:"ksql"`
+	StreamsProperties     PropertyMap         `json:"streamsProperties,omitempty"`
+	SessionVariables      SessionVariablesMap `json:"sessionVariables,omitempty"`
+	CommandSequenceNumber int64               `json:"commandSequenceNumber,omitempty"`
+}
+
+func (o *ExecOptions) SanitizeQuery() {
+	o.KSql = internal.SanitizeQuery(o.KSql)
+}
+
+func (o *ExecOptions) EmptyQuery() bool {
+	return len(o.KSql) < 1
+}
+
+// Execute will execute a ksqlDB statement.
+// All statements, except those starting with SELECT,
+// can be run on this endpoint.
+// To run SELECT statements use use Push or Pull functions.
 //
-// To use this function pass in the base URL of your
-// ksqlDB server, and the SQL query statement
+// To use this function pass in the @ExecOptions.
 //
 // Ref: https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint/
 //
-func Execute(api *Client, q string) (err error) {
+func (api *KsqldbClient) Execute(options ExecOptions) (*KsqlResponseSlice, error) {
+	var err error
+	var response = new(KsqlResponseSlice)
 
-	// first sanitize the query
-	query := api.SanitizeQuery(q)
-	// we're kick in our ksqlparser to check the query string
-	ksqlerr := api.ParseKSQL(query)
-	if ksqlerr != nil {
-		return ksqlerr
+	if options.EmptyQuery() {
+		return nil, fmt.Errorf("empty ksql query")
 	}
-	//  make the request
-	payload := strings.NewReader(`{"ksql":"` + query + `"}`)
+	// remove \t \n from query
+	options.SanitizeQuery()
 
-	req, err := api.newKsqlRequest(payload)
-	api.logger.Debugf("sending ksqlDB request:%v", q)
-	if err != nil {
-		return fmt.Errorf("can't create new request: %w", err)
+	if api.ParseSQLEnabled() {
+		ksqlerr := parser.ParseSql(options.KSql)
+		if ksqlerr != nil {
+			return nil, ksqlerr
+		}
 	}
 
-	res, err := (&api.client).Do(req)
+	jsonData, err := json.Marshal(options)
 	if err != nil {
-		return fmt.Errorf("can't do request: %w", err)
+		return nil, fmt.Errorf("can't marshal input data")
+	}
+
+	// make the request
+	req, err := newKsqlRequest(api.http, bytes.NewReader(jsonData))
+	// api.logger.Debugf("sending ksqlDB request:%v", q)
+	if err != nil {
+		return nil, fmt.Errorf("can't create new request: %w", err)
+	}
+
+	res, err := api.http.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("can't do request: %w", err)
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := api.readBody(res.Body)
 	if err != nil {
-		return fmt.Errorf("can't read response body: %w", err)
+		return nil, fmt.Errorf("can't read response body: %w", err)
 	}
-	api.logger.Debugf("response body: %v", string(body))
 
+	// this is only one side of the coin
 	if res.StatusCode != http.StatusOK {
-		return api.handleRequestError(res.StatusCode, body)
+		return nil, handleRequestError(res.StatusCode, body)
 	}
 
-	return nil
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("could not parse the response: %w\n%v", err, string(body))
+	}
+
+	return response, nil
 }

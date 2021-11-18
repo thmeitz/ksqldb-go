@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@ limitations under the License.
 package ksqldb
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 )
 
-type ServerHealth struct {
+// ServerStatusResponse
+type ServerStatusResponse struct {
 	IsHealthy *bool `json:"isHealthy"`
 	Details   struct {
 		Metastore struct {
@@ -32,25 +31,27 @@ type ServerHealth struct {
 			IsHealthy *bool `json:"isHealthy"`
 		} `json:"kafka"`
 	} `json:"details"`
-	KSQLServiceID string `json:"ksqlServiceId"`
+	KsqlServiceID string `json:"ksqlServiceId"`
 }
 
 // ServerInfo provides information about your server
-func (api *Client) Healthcheck() (*ServerHealth, error) {
-	info := ServerHealth{}
-	res, err := api.client.Get(api.options.BaseUrl + HEALTHCHECK_ENDPOINT)
+func (api *KsqldbClient) GetServerStatus() (*ServerStatusResponse, error) {
+	info := ServerStatusResponse{}
+	url := api.http.GetUrl(HEALTHCHECK_ENDPOINT)
+
+	res, err := api.http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("can't get healthcheck informations: %v", err)
 	}
 	defer res.Body.Close()
 
-	body, readErr := ioutil.ReadAll(res.Body)
+	body, readErr := api.readBody(res.Body)
 	if readErr != nil {
 		return nil, fmt.Errorf("could not read response body: %v", readErr)
 	}
 
-	if err := json.Unmarshal(body, &info); err != nil {
-		return nil, fmt.Errorf("could not parse the response as JSON:\n%w\n%v", err, string(body))
+	if err := api.unMarshalResp(body, &info); err != nil {
+		return nil, fmt.Errorf("could not parse the response: %w", err)
 	}
 
 	return &info, nil

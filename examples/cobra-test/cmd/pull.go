@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
 // pullCmd represents the pull command
@@ -46,37 +47,37 @@ func dogstats(cmd *cobra.Command, args []string) {
 	host := viper.GetString("host")
 	user := viper.GetString("username")
 	password := viper.GetString("password")
-	s := viper.GetString("dogsize")
+	dogsize := viper.GetString("dogsize")
 
-	options := ksqldb.Options{
-		Credentials: ksqldb.Credentials{Username: user, Password: password},
+	options := net.Options{
+		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
 		AllowHTTP:   true,
 	}
 
-	client, err := ksqldb.NewClient(options, log.Current)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer kcl.Close()
 
-	k := `SELECT TIMESTAMPTOSTRING(WINDOWSTART,'yyyy-MM-dd HH:mm:ss','Europe/London') AS WINDOW_START, 
-	TIMESTAMPTOSTRING(WINDOWEND,'HH:mm:ss','Europe/London') AS WINDOW_END, 
-	DOG_SIZE, DOGS_CT FROM DOGS_BY_SIZE 
-	WHERE DOG_SIZE=?;`
+	query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start, 
+	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, dog_size, dogs_ct 
+	from dogs_by_size where dog_size=?;`
 
-	builder, err := ksqldb.DefaultQueryBuilder(k)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stmnt, err := builder.Bind(s)
+	stmnt, err := ksqldb.QueryBuilder(query, dogsize)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
-	_, r, err := ksqldb.Pull(client, ctx, *stmnt, true)
+
+	qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(false)
+
+	log.Infof("%+v", qOpts)
+
+	_, r, err := kcl.Pull(ctx, *qOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,8 +97,4 @@ func dogstats(cmd *cobra.Command, args []string) {
 			log.Infof("🐶 There are %v dogs size %v between %v and %v", dogsCt, dogSize, windowStart, windowEnd)
 		}
 	}
-
-	// close transport
-	client.Close()
-
 }

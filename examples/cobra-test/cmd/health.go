@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Thomas Meitz <thme219@gmail.com>
+Copyright © 2021 Thomas Meitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,20 +23,21 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
+	"github.com/thmeitz/ksqldb-go/net"
 )
 
-// serverhealthCmd represents the serverhealth command
-var serverhealthCmd = &cobra.Command{
-	Use:   "serverhealth",
+// healthCmd represents the serverhealth command
+var healthCmd = &cobra.Command{
+	Use:   "health",
 	Short: "display the server state of your servers",
 }
 
 func init() {
-	serverhealthCmd.Run = serverhealth
-	rootCmd.AddCommand(serverhealthCmd)
+	healthCmd.Run = health
+	rootCmd.AddCommand(healthCmd)
 }
 
-func serverhealth(cmd *cobra.Command, args []string) {
+func health(cmd *cobra.Command, args []string) {
 	setLogger()
 
 	host := viper.GetString("host")
@@ -45,17 +46,18 @@ func serverhealth(cmd *cobra.Command, args []string) {
 
 	log.Current = logrus.NewStandard()
 
-	options := ksqldb.Options{
-		Credentials: ksqldb.Credentials{Username: user, Password: password},
+	options := net.Options{
+		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
 	}
 
-	client, err := ksqldb.NewClient(options, log.Current)
+	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer kcl.Close()
 
-	health, err := client.Healthcheck()
+	health, err := kcl.GetServerStatus()
 	if err != nil {
 		log.Fatal(err)
 	}
