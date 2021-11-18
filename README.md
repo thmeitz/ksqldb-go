@@ -31,7 +31,7 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 - [ ] Run a query (/query endpoint)
 - [x] Run push and pull queries (/query-stream endpoint)
 - [x] Terminate a cluster (/ksql/terminate endpoint)
-- [ ] Introspect query status (/status endpoint)
+- [x] Introspect query status (/status endpoint)
 - [x] Introspect server status (/info endpoint)
 - [x] Introspect cluster status (/clusterStatus endpoint)
 - [x] Get the validity of a property (/is_valid_property)
