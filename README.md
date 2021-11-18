@@ -28,7 +28,6 @@ Checkout [ksqldb-migrate](https://github.com/thmeitz/ksqldb-migrate), a tool to 
 This is a Go client for [ksqlDB](https://ksqldb.io/).
 
 - [x] Execute a statement (/ksql endpoint)
-- [-] Run a query (/query endpoint)
 - [x] Run push and pull queries (/query-stream endpoint)
 - [x] Terminate a cluster (/ksql/terminate endpoint)
 - [x] Introspect query status (/status endpoint)
@@ -36,9 +35,8 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 - [x] Introspect cluster status (/clusterStatus endpoint)
 - [x] Get the validity of a property (/is_valid_property)
 
-> Deprecation
-
-> The [Run a query](https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/query-endpoint/) endpoint is deprecated and willl not be implemented.
+> Deprecation: 
+> the [Run a query](https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/query-endpoint/) endpoint is deprecated and willl not be implemented.
 
 ### KSqlParser
 
