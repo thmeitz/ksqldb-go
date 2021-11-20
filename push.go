@@ -19,13 +19,13 @@ package ksqldb
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/thmeitz/ksqldb-go/internal"
 	"github.com/thmeitz/ksqldb-go/parser"
 )
 
@@ -59,22 +59,30 @@ const (
 // 			if row != nil {
 //				DATA_TS = row[0].(float64)
 // 				ID = row[1].(string)
-func (api *KsqldbClient) Push(ctx context.Context, sql string, rowChannel chan<- Row, headerChannel chan<- Header) (err error) {
+func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
+	rowChannel chan<- Row, headerChannel chan<- Header) (err error) {
+	if options.EmptyQuery() {
+		return fmt.Errorf("empty ksql query")
+	}
 
-	// first sanitize the query
-	query := internal.SanitizeQuery(sql)
+	// remove \t \n from query
+	options.SanitizeQuery()
 
 	if api.ParseSQLEnabled() {
-		ksqlerr := parser.ParseSql(query)
+		ksqlerr := parser.ParseSql(options.Sql)
 		if ksqlerr != nil {
 			return ksqlerr
 		}
 	}
 
-	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset
-	payload := strings.NewReader(`{"properties":{"ksql.streams.auto.offset.reset": "latest"},"sql":"` + query + `"}`)
+	jsonData, err := json.Marshal(options)
+	if err != nil {
+		return fmt.Errorf("can't marshal input data")
+	}
 
-	req, err := newQueryStreamRequest(api.http, ctx, payload)
+	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset
+
+	req, err := newQueryStreamRequest(api.http, ctx, bytes.NewReader(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating new request with context: %v", err)
 	}
