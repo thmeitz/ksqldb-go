@@ -246,7 +246,7 @@ go func() {
 ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 defer cancel()
 
-e := kcl.Push(ctx, query, rowChannel, headerChannel)
+e := kcl.Push(ctx, ksqldb.QueryOptions{Sql: query}, rowChannel, headerChannel)
 if e != nil {
 	log.Fatal(e)
 }
