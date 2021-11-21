@@ -20,4 +20,4 @@ create stream if not exists dogs (id string key,name string,dogsize string, age 
   with (kafka_topic='dogs', 
   value_format='JSON',
   partitions=1
-);      
+);   

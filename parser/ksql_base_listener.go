@@ -315,6 +315,12 @@ func (s *BaseKSqlListener) EnterTableElement(ctx *TableElementContext) {}
 // ExitTableElement is called when production tableElement is exited.
 func (s *BaseKSqlListener) ExitTableElement(ctx *TableElementContext) {}
 
+// EnterColumnConstraints is called when production columnConstraints is entered.
+func (s *BaseKSqlListener) EnterColumnConstraints(ctx *ColumnConstraintsContext) {}
+
+// ExitColumnConstraints is called when production columnConstraints is exited.
+func (s *BaseKSqlListener) ExitColumnConstraints(ctx *ColumnConstraintsContext) {}
+
 // EnterTableProperties is called when production tableProperties is entered.
 func (s *BaseKSqlListener) EnterTableProperties(ctx *TablePropertiesContext) {}
 

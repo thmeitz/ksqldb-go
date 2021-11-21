@@ -155,6 +155,9 @@ type KSqlListener interface {
 	// EnterTableElement is called when entering the tableElement production.
 	EnterTableElement(c *TableElementContext)
 
+	// EnterColumnConstraints is called when entering the columnConstraints production.
+	EnterColumnConstraints(c *ColumnConstraintsContext)
+
 	// EnterTableProperties is called when entering the tableProperties production.
 	EnterTableProperties(c *TablePropertiesContext)
 
@@ -562,6 +565,9 @@ type KSqlListener interface {
 
 	// ExitTableElement is called when exiting the tableElement production.
 	ExitTableElement(c *TableElementContext)
+
+	// ExitColumnConstraints is called when exiting the columnConstraints production.
+	ExitColumnConstraints(c *ColumnConstraintsContext)
 
 	// ExitTableProperties is called when exiting the tableProperties production.
 	ExitTableProperties(c *TablePropertiesContext)
