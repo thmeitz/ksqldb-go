@@ -11,7 +11,7 @@
  * License.
  */
 
-grammar KSql;
+grammar SqlBase;
 
 tokens {
 	DELIMITER
@@ -20,11 +20,9 @@ tokens {
 // channel names aren't supported in combined lexer/parser grammars so we just generate this
 // constants into the SqlBaseLexer and use the corresponding numberliteral in this file
 @lexer::members {
-    const ( 
-      COMMENTS = 2
-      WHITESPACE = 3
-      DIRECTIVES = 4
-    )
+    public static final int COMMENTS = 2;
+    public static final int WHITESPACE = 3;
+    public static final int DIRECTIVES = 4;
 }
 
 statements: (singleStatement)* EOF;
@@ -82,7 +80,7 @@ statement:
 	| DROP TABLE (IF EXISTS)? sourceName (DELETE TOPIC)?	# dropTable
 	| DROP CONNECTOR (IF EXISTS)? identifier				# dropConnector
 	| EXPLAIN (statement | identifier)						# explain
-	| CREATE TYPE (IF NOT EXISTS)? identifier AS sqltype	# registerType
+	| CREATE TYPE (IF NOT EXISTS)? identifier AS type		# registerType
 	| DROP TYPE (IF EXISTS)? identifier						# dropType
 	| ALTER (STREAM | TABLE) sourceName alterOption (
 		',' alterOption
@@ -111,11 +109,12 @@ query:
 
 resultMaterialization: CHANGES | FINAL;
 
-alterOption: ADD (COLUMN)? identifier sqltype;
+alterOption: ADD (COLUMN)? identifier type;
 
 tableElements: '(' tableElement (',' tableElement)* ')';
 
-tableElement: identifier sqltype columnConstraints?;
+tableElement: identifier type columnConstraints?;
+
 columnConstraints: ((PRIMARY)? KEY)
 	| HEADERS
 	| HEADER '(' STRING ')';
@@ -252,7 +251,7 @@ primaryExpression:
 		ELSE elseExpression = expression
 	)? END														# simpleCase
 	| CASE whenClause+ (ELSE elseExpression = expression)? END	# searchedCase
-	| CAST '(' expression AS sqltype ')'						# cast
+	| CAST '(' expression AS type ')'							# cast
 	| ARRAY '[' (expression (',' expression)*)? ']'				# arrayConstructor
 	| MAP '(' (
 		expression ASSIGN expression (
@@ -284,11 +283,11 @@ comparisonOperator: EQ | NEQ | LT | LTE | GT | GTE;
 
 booleanValue: TRUE | FALSE;
 
-sqltype:
-	sqltype ARRAY
-	| ARRAY '<' sqltype '>'
-	| MAP '<' sqltype ',' sqltype '>'
-	| STRUCT '<' (identifier sqltype (',' identifier sqltype)*)? '>'
+type:
+	type ARRAY
+	| ARRAY '<' type '>'
+	| MAP '<' type ',' type '>'
+	| STRUCT '<' (identifier type (',' identifier type)*)? '>'
 	| DECIMAL '(' number ',' number ')'
 	| baseType ('(' typeParameter (',' typeParameter)* ')')?;
 
@@ -572,4 +571,4 @@ WS: [ \r\n\t]+ -> channel(3); // channel(WHITESPACE)
 
 // Catch-all for anything we can't recognize. We use this to be able to ignore and recover all the
 // text when splitting statements with DelimiterLexer
-UNRECOGNIZED: .;
+UNRECOGNIZED: .;: .;
