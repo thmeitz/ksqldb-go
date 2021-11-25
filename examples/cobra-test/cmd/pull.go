@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Masterminds/log-go"
@@ -70,10 +71,12 @@ func dogstats(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	fmt.Println(*stmnt)
+
+	ctx, cancel := context.WithTimeout(context.TODO(), 50*time.Second)
 	defer cancel()
 
-	qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(false)
+	qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(true)
 
 	log.Infof("%+v", qOpts)
 
