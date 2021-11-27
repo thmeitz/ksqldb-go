@@ -84,7 +84,7 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 
 	req, err := newQueryStreamRequest(api.http, ctx, bytes.NewReader(jsonData))
 	if err != nil {
-		return fmt.Errorf("error creating new request with context: %v", err)
+		return fmt.Errorf("error creating new request with context: %w", err)
 	}
 
 	// don't know if we are needing this stuff in the new client
@@ -132,7 +132,6 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 			}
 			// api.logger.Info("query closed.")
 		default:
-
 			// Read the next chunk
 			body, err := reader.ReadBytes('\n')
 			if err != nil {
@@ -163,6 +162,10 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 }
 
 // heartbeat sends a heartbeat to the server
+//
+// I think, we have to rethink this problem domain
+// If the ksqldb server closes the connection, we have to reconnect
+// we're needing a watchdog or something like this....
 //
 // The default for KSQL server is a 10 minute timeout, which is a problem on low volume connections.
 // `heartbeat` must be used on a go routine like this `go cl.heartbeat(*client, ctx)`

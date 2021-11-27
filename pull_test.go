@@ -30,25 +30,6 @@ import (
 	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
-func TestQueryOptions_SanitizeQuery(t *testing.T) {
-	o := ksqldb.QueryOptions{Sql: `select * 
-	from bla`}
-	o.EnablePullQueryTableScan(true)
-	require.Equal(t, "true", o.Properties[ksqldb.KSQL_QUERY_PULL_TABLE_SCAN_ENABLED])
-	o.SanitizeQuery()
-	require.Equal(t, "select * from bla", o.Sql)
-}
-
-func TestQueryOptions_TestEmptyQuery(t *testing.T) {
-	o := ksqldb.QueryOptions{Sql: ""}
-	require.True(t, o.EmptyQuery())
-	m := mocknet.HTTPClient{}
-	kcl, _ := ksqldb.NewClient(&m)
-	_, _, err := kcl.Pull(context.TODO(), o)
-	require.NotNil(t, err)
-	require.Equal(t, "empty ksql query", err.Error())
-}
-
 func TestPull_ParseSQLError(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	kcl, _ := ksqldb.NewClient(&m)

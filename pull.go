@@ -23,57 +23,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
-	"github.com/thmeitz/ksqldb-go/internal"
 	"github.com/thmeitz/ksqldb-go/parser"
 )
-
-const (
-	KSQL_QUERY_PULL_TABLE_SCAN_ENABLED = "ksql.query.pull.table.scan.enabled"
-)
-
-type QueryOptions struct {
-	Sql        string      `json:"sql"`
-	Properties PropertyMap `json:"properties"`
-}
-
-/*
-EnablePullQueryTableScan to control whether table scans are permitted when executing pull queries.
-
-Without this enabled, only key lookups are used.
-
-Enabling table scans removes various restrictions on what types of queries are allowed.
-
-In particular, these pull query types are now permitted:
-
-- No WHERE clause
-
-- Range queries on keys
-
-- Equality and range queries on non-key columns
-
-- Multi-column key queries without specifying all key columns
-
-There may be significant performance implications to using these types of queries,
-depending on the size of the data and other workloads running, so use this config carefully.
-*/
-func (q *QueryOptions) EnablePullQueryTableScan(enable bool) *QueryOptions {
-	// check for empty map
-	if len(q.Properties) == 0 {
-		q.Properties = make(PropertyMap)
-	}
-	q.Properties[KSQL_QUERY_PULL_TABLE_SCAN_ENABLED] = strconv.FormatBool(enable)
-	return q
-}
-
-func (q *QueryOptions) SanitizeQuery() {
-	q.Sql = internal.SanitizeQuery(q.Sql)
-}
-
-func (o *QueryOptions) EmptyQuery() bool {
-	return len(o.Sql) < 1
-}
 
 // Pull queries are like "traditional" RDBMS queries in which
 // the query terminates once the state has been queried.

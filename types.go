@@ -101,8 +101,6 @@ type Ksqldb interface {
 
 type SessionVariablesMap map[string]interface{}
 
-type PropertyMap map[string]string
-
 // Row represents a row returned from a query
 type Row []interface{}
 
