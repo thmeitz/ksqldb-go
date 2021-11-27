@@ -45,6 +45,10 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 - `Push`, `Pull`, `Execute` queries parsed by default with `parser.ParseSQL`.
 - `<client-instance>.EnableParseSQL(false)` enables / disables the parser
 
+#### Supported ksqlDB versions
+
+- tested with ksqldb: v0.22.0, v0.21.0
+
 ## Installation
 
 Module install:

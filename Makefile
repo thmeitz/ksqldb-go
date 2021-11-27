@@ -63,3 +63,6 @@ fmt:
 
 changelog:
 	git-chglog --output CHANGELOG.md
+
+shell:
+	docker exec -it ksqldb-cli ksql http://ksqldb:8088

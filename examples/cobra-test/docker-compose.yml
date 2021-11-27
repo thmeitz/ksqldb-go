@@ -2,14 +2,14 @@
 version: "2"
 services:
   zookeeper:
-    image: "confluentinc/cp-zookeeper:6.2.1"
+    image: "confluentinc/cp-zookeeper:7.0.0"
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
   kafka:
-    image: "confluentinc/cp-kafka:6.2.1"
+    image: "confluentinc/cp-kafka:7.0.0"
     container_name: kafka
     ports:
       - "9092:9092"
@@ -28,7 +28,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
 
   schema-registry:
-    image: "confluentinc/cp-schema-registry:6.2.1"
+    image: "confluentinc/cp-schema-registry:7.0.0"
     container_name: schema-registry
     depends_on:
       - zookeeper
@@ -40,7 +40,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
 
   ksqldb:
-    image: confluentinc/ksqldb-server:0.21.0
+    image: confluentinc/ksqldb-server:0.22.0
     container_name: ksqldb
     ports:
       - "8088:8088"
@@ -57,7 +57,7 @@ services:
       KSQL_OPTS: "-Dksql.heartbeat.enable=true -Dksql.lag.reporting.enable=true"
 
   kafka-connect:
-    image: confluentinc/cp-kafka-connect-base:6.2.1
+    image: confluentinc/cp-kafka-connect-base:7.0.0
     container_name: kafka-connect
     ports:
       - "8083:8083"
@@ -99,7 +99,7 @@ services:
         sleep infinity
 
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.21.0
+    image: confluentinc/ksqldb-cli:0.22.0
     container_name: ksqldb-cli
     depends_on:
       - kafka

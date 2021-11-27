@@ -30,29 +30,6 @@ import (
 	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
-// var data = `[
-// 	{
-// 		"queryId":null,
-// 		"columnNames":[
-// 			"WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"
-// 		],
-// 		"columnTypes":[
-// 			"STRING","STRING","STRING","BIGINT"
-// 		]
-// 	},
-// 	["2021-11-16 06:00:00","06:15:00","medium",23],
-// 	["2021-11-16 06:15:00","06:30:00","medium",250],
-// 	["2021-11-16 06:30:00","06:45:00","medium",234],
-// 	["2021-11-16 06:45:00","07:00:00","medium",242],
-// 	["2021-11-16 07:00:00","07:15:00","medium",228],
-// 	["2021-11-16 07:15:00","07:30:00","medium",242],
-// 	["2021-11-16 07:30:00","07:45:00","medium",226],
-// 	["2021-11-16 07:45:00","08:00:00","medium",222],
-// 	["2021-11-16 08:00:00","08:15:00","medium",216],
-// 	["2021-11-16 08:15:00","08:30:00","medium",219]
-// ]
-// `
-
 func TestQueryOptions_SanitizeQuery(t *testing.T) {
 	o := ksqldb.QueryOptions{Sql: `select * 
 	from bla`}
@@ -126,4 +103,106 @@ func TestPull_UnmarshallError(t *testing.T) {
 	_, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
 	require.NotNil(t, err)
 	require.Equal(t, "could not parse the response:\njson: cannot unmarshal object into Go value of type []interface {}", err.Error())
+}
+
+func TestPull_HeaderWithoutData(t *testing.T) {
+	var nodata = `[
+	{
+		"queryId":null,
+		"columnNames":[
+			"WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"
+		],
+		"columnTypes":[
+			"STRING","STRING","STRING","BIGINT"
+		]
+	}]`
+
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	r := ioutil.NopCloser(bytes.NewReader([]byte(nodata)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(&res, nil)
+
+	header, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
+	require.Nil(t, err)
+	require.Equal(t, "", header.QueryId)
+	require.Equal(t, 4, len(header.Columns))
+	require.Equal(t, "WINDOW_START", header.Columns[0].Name)
+	require.Equal(t, "STRING", header.Columns[0].Type)
+	require.Equal(t, "WINDOW_END", header.Columns[1].Name)
+	require.Equal(t, "STRING", header.Columns[1].Type)
+	require.Equal(t, "DOG_SIZE", header.Columns[2].Name)
+	require.Equal(t, "STRING", header.Columns[2].Type)
+	require.Equal(t, "DOGS_CT", header.Columns[3].Name)
+	require.Equal(t, "BIGINT", header.Columns[3].Type)
+}
+
+func TestPull_HeaderWithData(t *testing.T) {
+	var data = `[
+	{
+		"queryId":"0815",
+		"columnNames":[
+			"WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"
+		],
+		"columnTypes":[
+			"STRING","STRING","STRING","BIGINT"
+		]
+	},
+	["2021-11-16 06:00:00","06:15:00","medium",23],
+	["2021-11-16 06:15:00","06:30:00","medium",250],
+	["2021-11-16 06:30:00","06:45:00","medium",234],
+	["2021-11-16 06:45:00","07:00:00","medium",242],
+	["2021-11-16 07:00:00","07:15:00","medium",228],
+	["2021-11-16 07:15:00","07:30:00","medium",242],
+	["2021-11-16 07:30:00","07:45:00","medium",226],
+	["2021-11-16 07:45:00","08:00:00","medium",222],
+	["2021-11-16 08:00:00","08:15:00","medium",216],
+	["2021-11-16 08:15:00","08:30:00","medium",219]
+]
+`
+
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	r := ioutil.NopCloser(bytes.NewReader([]byte(data)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(&res, nil)
+
+	header, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
+	require.Nil(t, err)
+	require.Equal(t, "0815", header.QueryId)
+	require.Equal(t, 4, len(header.Columns))
+	require.Equal(t, "WINDOW_START", header.Columns[0].Name)
+	require.Equal(t, "STRING", header.Columns[0].Type)
+	require.Equal(t, "WINDOW_END", header.Columns[1].Name)
+	require.Equal(t, "STRING", header.Columns[1].Type)
+	require.Equal(t, "DOG_SIZE", header.Columns[2].Name)
+	require.Equal(t, "STRING", header.Columns[2].Type)
+	require.Equal(t, "DOGS_CT", header.Columns[3].Name)
+	require.Equal(t, "BIGINT", header.Columns[3].Type)
+}
+
+func TestPull_NoData(t *testing.T) {
+	var data = `[]`
+
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	r := ioutil.NopCloser(bytes.NewReader([]byte(data)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(&res, nil)
+
+	_, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
+	require.NotNil(t, err)
+	require.Equal(t, "no result found", err.Error())
 }

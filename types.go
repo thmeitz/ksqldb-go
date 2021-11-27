@@ -111,8 +111,8 @@ type Payload []Row
 
 // Header represents a header returned from a query
 type Header struct {
-	queryId string
-	columns []Column
+	QueryId string   `json:"queryId"`
+	Columns []Column `json:"Columns"`
 }
 
 // Column represents the metadata for a column in a Row
