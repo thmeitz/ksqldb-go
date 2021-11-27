@@ -148,41 +148,13 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 					return fmt.Errorf("could not parse the response: %w\n%v", err, string(body))
 				}
 
-				switch zz := row.(type) {
+				switch resultSetTypes := row.(type) {
 				case map[string]interface{}:
-					// It's a header row, so extract the data
-					// {"queryId":null,"columnNames":["WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"],"columnTypes":["STRING","STRING","STRING","BIGINT"]}
-					if _, ok := zz["queryId"].(string); ok {
-						header.QueryId = zz["queryId"].(string)
-					} /*else {
-						// api.logger.Debug("query id not found - this is expected for a pull query")
-					}*/
-
-					names, okn := zz["columnNames"].([]interface{})
-					types, okt := zz["columnTypes"].([]interface{})
-					if okn && okt {
-						for col := range names {
-							if n, ok := names[col].(string); n != "" && ok {
-								if t, ok := types[col].(string); t != "" && ok {
-									a := Column{Name: n, Type: t}
-									header.Columns = append(header.Columns, a)
-								} /*else {
-									// api.logger.Infof("nil type found for column %v", col)
-								}*/
-							} /*else {
-								// api.logger.Infof("Nil name found for column %v", col)
-							}*/
-						}
-					} /*else {
-						api.logger.Infof("Column names/types not found in header:\n%v", zz)
-					}*/
-					// api.logger.Debugf("Header: %v", header)
-					headerChannel <- header
+					headerChannel <- processHeader(resultSetTypes)
 
 				case []interface{}:
 					// It's a row of data
-					// api.logger.Debugf("Row: %v", zz)
-					rowChannel <- zz
+					rowChannel <- resultSetTypes
 				}
 			}
 		}
