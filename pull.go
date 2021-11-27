@@ -103,7 +103,6 @@ func (api *KsqldbClient) Pull(ctx context.Context, options QueryOptions) (header
 		case map[string]interface{}:
 			// It's the Header
 			header = processHeader(resultSetTypes)
-			break
 		case []interface{}:
 			// It's a row of data
 			payload = append(payload, resultSetTypes)
