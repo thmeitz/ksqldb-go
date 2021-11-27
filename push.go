@@ -112,7 +112,7 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 			defer close(headerChannel)
 			defer func() { doThis = false }()
 			// Try to close the query
-			payload := strings.NewReader(`{"queryId":"` + header.queryId + `"}`)
+			payload := strings.NewReader(`{"queryId":"` + header.QueryId + `"}`)
 			// cl.log("payload: %v", *payload)
 			req, err := newCloseQueryRequest(api.http, ctx, payload)
 
@@ -153,7 +153,7 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 					// It's a header row, so extract the data
 					// {"queryId":null,"columnNames":["WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"],"columnTypes":["STRING","STRING","STRING","BIGINT"]}
 					if _, ok := zz["queryId"].(string); ok {
-						header.queryId = zz["queryId"].(string)
+						header.QueryId = zz["queryId"].(string)
 					} /*else {
 						// api.logger.Debug("query id not found - this is expected for a pull query")
 					}*/
@@ -165,7 +165,7 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 							if n, ok := names[col].(string); n != "" && ok {
 								if t, ok := types[col].(string); t != "" && ok {
 									a := Column{Name: n, Type: t}
-									header.columns = append(header.columns, a)
+									header.Columns = append(header.Columns, a)
 								} /*else {
 									// api.logger.Infof("nil type found for column %v", col)
 								}*/

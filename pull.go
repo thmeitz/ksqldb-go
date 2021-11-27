@@ -140,57 +140,43 @@ func (api *KsqldbClient) Pull(ctx context.Context, options QueryOptions) (header
 	// Parse the output
 	if err := json.Unmarshal(body, &result); err != nil {
 		return header, payload, fmt.Errorf("could not parse the response:\n%w", err)
-
 	}
 
-	switch len(result) {
-	case 0:
-		return header, payload, fmt.Errorf("%w (not even a header row) returned from lookup. Maybe we got an error:%v", ErrNotFound, err)
-	case 1:
-		// len 1 means we just got a header, no rows
-		// Should we define our own error types here so we can return more clearly
-		// an indicator that no rows were found?
-		// ANSWER: no - maybe we have no data - its not an error
-		return header, payload, ErrNotFound
-	default:
-		for _, z := range result {
-			switch zz := z.(type) {
-			case map[string]interface{}:
-				// It's a header row, so extract the data
-				// {"queryId":null,"columnNames":["WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"],"columnTypes":["STRING","STRING","STRING","BIGINT"]}
-				if _, ok := zz["queryId"].(string); ok {
-					header.queryId = zz["queryId"].(string)
-				} //else {
-				// api.logger.Info("(query id not found - this is expected for a pull query)")
-				// why should we log this???? - check facts in java source code
-				//}
+	if len(result) == 0 {
+		return header, payload, fmt.Errorf("%w", ErrNotFound)
+	}
 
-				names, okn := zz["columnNames"].([]interface{})
-				types, okt := zz["columnTypes"].([]interface{})
-				if okn && okt {
-					for col := range names {
-						if n, ok := names[col].(string); n != "" && ok {
-							if t, ok := types[col].(string); t != "" && ok {
-								a := Column{Name: n, Type: t}
-								header.columns = append(header.columns, a)
+	for _, resultSet := range result {
+		switch resultSetTypes := resultSet.(type) {
+		case map[string]interface{}:
+			// It's the Header
+			header = processHeader(resultSetTypes)
+			break
+		case []interface{}:
+			// It's a row of data
+			payload = append(payload, resultSetTypes)
+		}
+	}
 
-							} /*else {
-								// api.logger.Infof("nil type found for column %v", col)
-							}*/
-						} /*else {
-							// api.logger.Infof("nil name found for column %v", col)
-						}*/
-					}
-				} /*else {
-					// api.logger.Infof("column names/types not found in header:\n%v", zz)
-				}*/
+	return header, payload, nil
+}
 
-			case []interface{}:
-				// It's a row of data
-				payload = append(payload, zz)
+func processHeader(data map[string]interface{}) (header Header) {
+	if _, ok := data["queryId"].(string); ok {
+		header.QueryId = data["queryId"].(string)
+	}
+
+	names, okNames := data["columnNames"].([]interface{})
+	types, okTypes := data["columnTypes"].([]interface{})
+	if okNames && okTypes {
+		for col := range names {
+			if colName, ok := names[col].(string); colName != "" && ok {
+				if colType, ok := types[col].(string); colType != "" && ok {
+					a := Column{Name: colName, Type: colType}
+					header.Columns = append(header.Columns, a)
+				}
 			}
 		}
-
-		return header, payload, nil
 	}
+	return
 }
