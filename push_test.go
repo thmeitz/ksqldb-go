@@ -18,8 +18,10 @@ package ksqldb_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/thmeitz/ksqldb-go"
 	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
@@ -44,4 +46,19 @@ func TestPush_ParseSQLError(t *testing.T) {
 	err := kcl.Push(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla"}, rowChannel, headerChannel)
 	require.NotNil(t, err)
 	require.Equal(t, "1 sql syntax error(s) found", err.Error())
+}
+
+func TestPush_RequestError(t *testing.T) {
+	rowChannel := make(chan ksqldb.Row)
+	headerChannel := make(chan ksqldb.Header, 1)
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(nil, errors.New("error"))
+
+	err := kcl.Push(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"}, rowChannel, headerChannel)
+	require.NotNil(t, err)
+	require.Equal(t, "error", err.Error())
 }
