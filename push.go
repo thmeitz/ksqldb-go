@@ -105,7 +105,7 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 			defer close(rowChannel)
 			defer close(headerChannel)
 			defer func() { doThis = false }()
-			if err := api.closeQuery(ctx, header.QueryId); err != nil {
+			if err := api.CloseQuery(ctx, header.QueryId); err != nil {
 				return fmt.Errorf("%w", err)
 			}
 		default:

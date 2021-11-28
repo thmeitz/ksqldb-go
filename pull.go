@@ -123,8 +123,7 @@ func processHeader(data map[string]interface{}) (header Header) {
 		for col := range names {
 			if colName, ok := names[col].(string); colName != "" && ok {
 				if colType, ok := types[col].(string); colType != "" && ok {
-					a := Column{Name: colName, Type: colType}
-					header.Columns = append(header.Columns, a)
+					header.Columns = append(header.Columns, Column{Name: colName, Type: colType})
 				}
 			}
 		}

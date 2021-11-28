@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (api *KsqldbClient) closeQuery(ctx context.Context, queryID string) error {
+func (api *KsqldbClient) CloseQuery(ctx context.Context, queryID string) error {
 	// Try to close the query
 	payload := strings.NewReader(`{"queryId":"` + queryID + `"}`)
 	req, err := newCloseQueryRequest(api.http, ctx, payload)
