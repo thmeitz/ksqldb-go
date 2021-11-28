@@ -17,8 +17,11 @@ limitations under the License.
 package ksqldb_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -61,4 +64,23 @@ func TestPush_RequestError(t *testing.T) {
 	err := kcl.Push(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"}, rowChannel, headerChannel)
 	require.NotNil(t, err)
 	require.Equal(t, "error", err.Error())
+}
+
+func TestPush_RequestStatusCode(t *testing.T) {
+	rowChannel := make(chan ksqldb.Row)
+	headerChannel := make(chan ksqldb.Header, 1)
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	json := `{"name":"Test Name"}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 400, Body: r}
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(&res, nil)
+
+	err := kcl.Push(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"}, rowChannel, headerChannel)
+	require.NotNil(t, err)
+	require.Equal(t, "", err.Error())
 }
