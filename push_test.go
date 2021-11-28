@@ -84,3 +84,30 @@ func TestPush_RequestStatusCode(t *testing.T) {
 	require.NotNil(t, err)
 	require.Equal(t, "", err.Error())
 }
+
+func TestPush_UnmarshalError(t *testing.T) {
+	rowChannel := make(chan ksqldb.Row)
+	headerChannel := make(chan ksqldb.Header, 1)
+	m := mocknet.HTTPClient{}
+	kcl, _ := ksqldb.NewClient(&m)
+	kcl.EnableParseSQL(true)
+
+	var json = `[{
+		"queryId":null,
+		"columnNames":[
+			"WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"
+		],
+		"columnTypes":[
+			"STRING","STRING","STRING","BIGINT"
+		]
+	}]`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+	res := http.Response{StatusCode: 200, Body: r}
+
+	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
+	m.On("Do", mock.Anything).Return(&res, nil)
+
+	err := kcl.Push(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"}, rowChannel, headerChannel)
+	require.NotNil(t, err)
+	require.Equal(t, "could not parse the response: unexpected end of JSON input\n[{\n", err.Error())
+}
