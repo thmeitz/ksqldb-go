@@ -33,6 +33,8 @@ import (
 	"github.com/thmeitz/ksqldb-go/parser"
 )
 
+type SessionVariablesMap map[string]interface{}
+
 type ExecOptions struct {
 	KSql                  string              `json:"ksql"`
 	StreamsProperties     PropertyMap         `json:"streamsProperties,omitempty"`

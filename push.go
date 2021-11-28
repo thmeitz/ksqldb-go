@@ -28,10 +28,6 @@ import (
 	"github.com/thmeitz/ksqldb-go/parser"
 )
 
-const (
-	HEARTBEAT_TRESHOLD = 9 // After 9 minutes the connection will be closed
-)
-
 // Push queries are continuous queries in which new events
 // or changes to a table's state are pushed to the client.
 // You can think of them as subscribing to a stream of changes.
@@ -105,7 +101,7 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 			defer close(rowChannel)
 			defer close(headerChannel)
 			defer func() { doThis = false }()
-			if err := api.CloseQuery(ctx, header.QueryId); err != nil {
+			if err := api.ClosePushQuery(ctx, header.QueryId); err != nil {
 				return fmt.Errorf("%w", err)
 			}
 		default:
