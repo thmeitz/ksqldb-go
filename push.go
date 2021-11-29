@@ -24,13 +24,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/thmeitz/ksqldb-go/parser"
-)
-
-const (
-	HEARTBEAT_TRESHOLD = 9 // After 9 minutes the connection will be closed
 )
 
 // Push queries are continuous queries in which new events
@@ -80,15 +75,10 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 		return fmt.Errorf("can't marshal input data")
 	}
 
-	// https://docs.confluent.io/5.0.4/ksql/docs/installation/server-config/config-reference.html#ksql-streams-auto-offset-reset
-
 	req, err := newQueryStreamRequest(api.http, ctx, bytes.NewReader(jsonData))
 	if err != nil {
-		return fmt.Errorf("error creating new request with context: %v", err)
+		return fmt.Errorf("error creating new request with context: %w", err)
 	}
-
-	// don't know if we are needing this stuff in the new client
-	// go cl.heartbeat(&cl.client, &ctx)
 
 	//  make the request
 	res, err := api.http.Do(req)
@@ -111,28 +101,10 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 			defer close(rowChannel)
 			defer close(headerChannel)
 			defer func() { doThis = false }()
-			// Try to close the query
-			payload := strings.NewReader(`{"queryId":"` + header.QueryId + `"}`)
-			// cl.log("payload: %v", *payload)
-			req, err := newCloseQueryRequest(api.http, ctx, payload)
-
-			// api.logger.Debugw("closing ksqlDB query", log.Fields{"queryId": header.queryId})
-			if err != nil {
-				return fmt.Errorf("failed to construct http request to cancel query\n%w", err)
+			if err := api.ClosePushQuery(ctx, header.QueryId); err != nil {
+				return fmt.Errorf("%w", err)
 			}
-
-			res, err := api.http.Do(req)
-			if err != nil {
-				return fmt.Errorf("failed to execute http request to cancel query\n%w", err)
-			}
-			defer res.Body.Close()
-
-			if res.StatusCode != http.StatusOK {
-				return fmt.Errorf("close query failed:\n%v", res)
-			}
-			// api.logger.Info("query closed.")
 		default:
-
 			// Read the next chunk
 			body, err := reader.ReadBytes('\n')
 			if err != nil {
@@ -148,107 +120,16 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 					return fmt.Errorf("could not parse the response: %w\n%v", err, string(body))
 				}
 
-				switch zz := row.(type) {
+				switch resultSetTypes := row.(type) {
 				case map[string]interface{}:
-					// It's a header row, so extract the data
-					// {"queryId":null,"columnNames":["WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"],"columnTypes":["STRING","STRING","STRING","BIGINT"]}
-					if _, ok := zz["queryId"].(string); ok {
-						header.QueryId = zz["queryId"].(string)
-					} /*else {
-						// api.logger.Debug("query id not found - this is expected for a pull query")
-					}*/
-
-					names, okn := zz["columnNames"].([]interface{})
-					types, okt := zz["columnTypes"].([]interface{})
-					if okn && okt {
-						for col := range names {
-							if n, ok := names[col].(string); n != "" && ok {
-								if t, ok := types[col].(string); t != "" && ok {
-									a := Column{Name: n, Type: t}
-									header.Columns = append(header.Columns, a)
-								} /*else {
-									// api.logger.Infof("nil type found for column %v", col)
-								}*/
-							} /*else {
-								// api.logger.Infof("Nil name found for column %v", col)
-							}*/
-						}
-					} /*else {
-						api.logger.Infof("Column names/types not found in header:\n%v", zz)
-					}*/
-					// api.logger.Debugf("Header: %v", header)
-					headerChannel <- header
+					headerChannel <- processHeader(resultSetTypes)
 
 				case []interface{}:
 					// It's a row of data
-					// api.logger.Debugf("Row: %v", zz)
-					rowChannel <- zz
+					rowChannel <- resultSetTypes
 				}
 			}
 		}
 	}
 	return nil
 }
-
-// heartbeat sends a heartbeat to the server
-//
-// The default for KSQL server is a 10 minute timeout, which is a problem on low volume connections.
-// `heartbeat` must be used on a go routine like this `go cl.heartbeat(*client, ctx)`
-//
-// This fixes issuue #17 by adding a gorountine which lists the streams every minute to keep the connection alive.
-// If we miss 9 heartbeats (9 minutes), then close the connection since KSQL Server only keeps it alive for 10 minutes by default.
-
-/**
-func (cl *Client) heartbeat(client *http.Client, ctx *context.Context) {
-	missedHeartbeat := 0
-	heartbeatThreshold := HEARTBEAT_TRESHOLD // Default for KSQL Server is close connection after 10 minutes of no activity
-	ticker := time.NewTicker(1 * time.Minute)
-
-	for range ticker.C {
-		cl.logger.Info("sending heartbeat...")
-
-		pingPayload := strings.NewReader(`{"ksql":"SHOW STREAMS;"}`)
-		pingReq, err := cl.newKsqlRequest(pingPayload)
-		cl.logger.Debugf("sending ksqlDB request:\n\t%v", pingPayload)
-		if err != nil {
-			missedHeartbeat += 1
-			cl.logger.Errorf("Couldn't create new HTTP request, %s", err)
-		} else {
-
-			res, err := client.Do(pingReq)
-			if err != nil {
-				missedHeartbeat += 1
-				cl.logger.Errorf("failed to send heartbeat: %v", res.StatusCode)
-			} else {
-
-				bodyBytes, err := ioutil.ReadAll(res.Body)
-				if err != nil {
-					missedHeartbeat += 1
-					cl.logger.Errorw("failed to read heartbeat body", log.Fields{"status": res.StatusCode})
-				} else {
-					// SA9001: defers in this range loop won't run unless the channel gets closed (staticcheck)
-					// defer res.Body.Close()
-					res.Body.Close()
-
-					body := string(bodyBytes)
-
-					if res.StatusCode != 200 {
-						missedHeartbeat += 1
-						cl.logger.Debugw("the heartbeat did not return a success code", log.Fields{"status": res.StatusCode, "body": string(body)})
-					} else {
-						missedHeartbeat = 0
-						cl.logger.Info("got heartbeat")
-					}
-				}
-			}
-		}
-
-		if missedHeartbeat == heartbeatThreshold {
-			(*ctx).Done()
-
-			cl.logger.Infof("missed %s heartbeats, close connection", heartbeatThreshold)
-			ticker.Stop()
-		}
-	}
-}
-*/

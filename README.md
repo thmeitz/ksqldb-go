@@ -29,6 +29,7 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 
 - [x] Execute a statement (/ksql endpoint)
 - [x] Run push and pull queries (/query-stream endpoint)
+- [x] Close push query (/close-query endpoint)
 - [x] Terminate a cluster (/ksql/terminate endpoint)
 - [x] Introspect query status (/status endpoint)
 - [x] Introspect server status (/info endpoint)

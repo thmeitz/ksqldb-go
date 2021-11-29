@@ -31,16 +31,6 @@ func TestHandleRequestError(t *testing.T) {
 
 }
 
-func TestNewCloseQueryRequest(t *testing.T) {
-	postFn := ksqldb.NewCloseQueryRequest
-	client, _ := net.NewHTTPClient(net.Options{}, nil)
-	r := ioutil.NopCloser(bytes.NewReader([]byte("hallo")))
-	req, err := postFn(&client, context.TODO(), r)
-	require.NotNil(t, req)
-	require.Nil(t, err)
-	require.Equal(t, "/close-query", req.URL.Path)
-}
-
 func TestNewKsqlRequest(t *testing.T) {
 	postFn := ksqldb.NewKsqlRequest
 	client, _ := net.NewHTTPClient(net.Options{}, nil)

@@ -30,25 +30,6 @@ import (
 	mocknet "github.com/thmeitz/ksqldb-go/mocks/net"
 )
 
-func TestQueryOptions_SanitizeQuery(t *testing.T) {
-	o := ksqldb.QueryOptions{Sql: `select * 
-	from bla`}
-	o.EnablePullQueryTableScan(true)
-	require.Equal(t, "true", o.Properties[ksqldb.KSQL_QUERY_PULL_TABLE_SCAN_ENABLED])
-	o.SanitizeQuery()
-	require.Equal(t, "select * from bla", o.Sql)
-}
-
-func TestQueryOptions_TestEmptyQuery(t *testing.T) {
-	o := ksqldb.QueryOptions{Sql: ""}
-	require.True(t, o.EmptyQuery())
-	m := mocknet.HTTPClient{}
-	kcl, _ := ksqldb.NewClient(&m)
-	_, _, err := kcl.Pull(context.TODO(), o)
-	require.NotNil(t, err)
-	require.Equal(t, "empty ksql query", err.Error())
-}
-
 func TestPull_ParseSQLError(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	kcl, _ := ksqldb.NewClient(&m)
@@ -153,15 +134,7 @@ func TestPull_HeaderWithData(t *testing.T) {
 		]
 	},
 	["2021-11-16 06:00:00","06:15:00","medium",23],
-	["2021-11-16 06:15:00","06:30:00","medium",250],
-	["2021-11-16 06:30:00","06:45:00","medium",234],
-	["2021-11-16 06:45:00","07:00:00","medium",242],
-	["2021-11-16 07:00:00","07:15:00","medium",228],
-	["2021-11-16 07:15:00","07:30:00","medium",242],
-	["2021-11-16 07:30:00","07:45:00","medium",226],
-	["2021-11-16 07:45:00","08:00:00","medium",222],
-	["2021-11-16 08:00:00","08:15:00","medium",216],
-	["2021-11-16 08:15:00","08:30:00","medium",219]
+	["2021-11-16 06:15:00","06:30:00","medium",250]
 ]
 `
 
@@ -175,7 +148,7 @@ func TestPull_HeaderWithData(t *testing.T) {
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
-	header, _, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
+	header, payload, err := kcl.Pull(context.TODO(), ksqldb.QueryOptions{Sql: "select * from bla;"})
 	require.Nil(t, err)
 	require.Equal(t, "0815", header.QueryId)
 	require.Equal(t, 4, len(header.Columns))
@@ -187,6 +160,11 @@ func TestPull_HeaderWithData(t *testing.T) {
 	require.Equal(t, "STRING", header.Columns[2].Type)
 	require.Equal(t, "DOGS_CT", header.Columns[3].Name)
 	require.Equal(t, "BIGINT", header.Columns[3].Type)
+	require.Equal(t, 2, len(payload))
+	require.Equal(t, "2021-11-16 06:00:00", payload[0][0])
+	require.Equal(t, "06:15:00", payload[0][1])
+	require.Equal(t, "medium", payload[0][2])
+	require.Equal(t, float64(23), payload[0][3])
 }
 
 func TestPull_NoData(t *testing.T) {
