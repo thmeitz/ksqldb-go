@@ -88,19 +88,14 @@ func TestPush_RequestStatusCode(t *testing.T) {
 func TestPush_UnmarshalError(t *testing.T) {
 	rowChannel := make(chan ksqldb.Row)
 	headerChannel := make(chan ksqldb.Header, 1)
+
 	m := mocknet.HTTPClient{}
 	kcl, _ := ksqldb.NewClient(&m)
 	kcl.EnableParseSQL(true)
 
+	// no `\n` allowed
 	var json = `[{
-		"queryId":null,
-		"columnNames":[
-			"WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"
-		],
-		"columnTypes":[
-			"STRING","STRING","STRING","BIGINT"
-		]
-	}]`
+		"queryId":null,"columnNames":["WINDOW_START","WINDOW_END","DOG_SIZE","DOGS_CT"],"columnTypes":["STRING","STRING","STRING","BIGINT"]}]`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
