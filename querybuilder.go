@@ -126,7 +126,7 @@ func getReplacement(param interface{}) (*string, error) {
 		n := "NULL"
 		return &n, nil
 	case string:
-		n := fmt.Sprintf("'%v'", param)
+		n := fmt.Sprintf("'%v'", strings.Replace(param, "'", "''", -1))
 		return &n, nil
 	case bool:
 		n := fmt.Sprintf("%v", param)

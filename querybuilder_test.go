@@ -35,6 +35,7 @@ var qbtests = []struct {
 	value   interface{}
 	message string
 }{
+	{"string", select1Param, "middle' OR 'a'='a", "select * from bla where column='middle'' OR ''a''=''a'"}, // SQL-Injection see https://github.com/thmeitz/ksqldb-go/issues/29
 	{"string", select1Param, "Lara", "select * from bla where column='Lara'"},
 	{"nil", select1Param, nil, "select * from bla where column=NULL"},
 	{"int", select1Param, 15235, "select * from bla where column=15235"},
