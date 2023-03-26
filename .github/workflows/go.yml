@@ -22,9 +22,14 @@ jobs:
           go test ./... -short -coverprofile=test.out -covermode=count -json > report.json
 
       - name: Run Gosec Security Scanner
-        run: |
-          go get github.com/securego/gosec/cmd/gosec
-          gosec -no-fail -fmt=sonarqube -out secreport.json ./...
+        uses: securego/gosec@master
+        with:
+          args: -no-fail -fmt=sonarqube -out secreport.json ./...
+
+      #- name: Run Gosec Security Scanner
+      #  run: |
+      #    go get github.com/securego/gosec/cmd/gosec
+      #    gosec -no-fail -fmt=sonarqube -out secreport.json ./...
 
       #- name: Codecov
       #  uses: codecov/codecov-action@v2.1.0
