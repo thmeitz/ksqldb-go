@@ -31,12 +31,24 @@ type RequestParams map[string]interface{}
 type Response map[string]interface{}
 
 func newKsqlRequest(api net.HTTPClient, payload io.Reader) (*http.Request, error) {
-	return http.NewRequest("POST", api.GetUrl(KSQL_ENDPOINT), payload)
+	req, err := http.NewRequest("POST", api.GetUrl(KSQL_ENDPOINT), payload)
+	if err != nil {
+		return req, err
+	}
+
+	if api.BasicAuth() != "" {
+		req.Header.Add("Authorization", "Basic "+api.BasicAuth())
+	}
+	return req, nil
 }
 
 func newQueryStreamRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error) {
 	req, err := newPostRequest(api, ctx, QUERY_STREAM_ENDPOINT, payload)
-	return req, err
+	if err != nil {
+		return req, err
+	}
+
+	return req, nil
 }
 
 // func newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error) {
@@ -76,5 +88,10 @@ func newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, pa
 	if err != nil {
 		return req, fmt.Errorf("can't create new request with context: %w", err)
 	}
+
+	if api.BasicAuth() != "" {
+		req.Header.Add("Authorization", "Basic "+api.BasicAuth())
+	}
+
 	return req, nil
 }

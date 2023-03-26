@@ -23,6 +23,7 @@ https://github.com/zalando/skipper/blob/master/LICENSE
 package net
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -49,6 +50,7 @@ type HTTPClient interface {
 	Do(*http.Request) (*http.Response, error)
 	Get(url string) (*http.Response, error)
 	Post(url, contentType string, body io.Reader) (*http.Response, error)
+	BasicAuth() string
 	Close()
 }
 
@@ -126,4 +128,13 @@ func (c *Client) Post(url, contentType string, body io.Reader) (*http.Response, 
 	req.Header.Set("Content-Type", contentType)
 
 	return c.Do(req)
+}
+
+func (c *Client) BasicAuth() string {
+	if c.options.Credentials.Username != "" && c.options.Credentials.Password != "" {
+		// Add the Authorization header to the request
+		auth := c.options.Credentials.Username + ":" + c.options.Credentials.Password
+		return base64.StdEncoding.EncodeToString([]byte(auth))
+	}
+	return ""
 }
