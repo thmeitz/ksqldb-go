@@ -44,6 +44,7 @@ func TestPull_RequestError(t *testing.T) {
 	kcl, _ := ksqldb.NewClient(&m)
 	kcl.EnableParseSQL(true)
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(nil, errors.New("error"))
 
@@ -61,6 +62,7 @@ func TestPull_RequestStatusCode(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 400, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
@@ -78,6 +80,7 @@ func TestPull_UnmarshallError(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
@@ -105,6 +108,7 @@ func TestPull_HeaderWithoutData(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(nodata)))
 	res := http.Response{StatusCode: 200, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
@@ -145,6 +149,7 @@ func TestPull_HeaderWithData(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(data)))
 	res := http.Response{StatusCode: 200, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
@@ -177,6 +182,7 @@ func TestPull_NoData(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(data)))
 	res := http.Response{StatusCode: 200, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 

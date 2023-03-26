@@ -58,6 +58,7 @@ func TestPush_RequestError(t *testing.T) {
 	kcl, _ := ksqldb.NewClient(&m)
 	kcl.EnableParseSQL(true)
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(nil, errors.New("error"))
 
@@ -77,6 +78,7 @@ func TestPush_RequestStatusCode(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 400, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
@@ -99,6 +101,7 @@ func TestPush_UnmarshalError(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/query-stream")
 	m.On("Do", mock.Anything).Return(&res, nil)
 

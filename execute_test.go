@@ -67,7 +67,9 @@ func TestExecute_ParseSQLError(t *testing.T) {
 
 func TestExecute_NewKsqlRequest_Error(t *testing.T) {
 	m := mocknet.HTTPClient{}
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql")
+
 	m.Mock.
 		On("Do", mock.Anything).
 		Return(nil, errors.New("error"))
@@ -85,6 +87,7 @@ func TestExecute_NewKsqlRequest_ResponseStatusError(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte("")))
 	res := http.Response{StatusCode: 400, Body: r}
 	m := mocknet.HTTPClient{}
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql")
 	m.Mock.
 		On("Do", mock.Anything).
@@ -102,6 +105,8 @@ func TestExecute_NewKsqlRequest_ResponseStatusOk_JsonError(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte("")))
 	res := http.Response{StatusCode: 200, Body: r}
 	m := mocknet.HTTPClient{}
+
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql")
 	m.Mock.
 		On("Do", mock.Anything).
@@ -119,6 +124,8 @@ func TestExecute_NewKsqlRequest_ResponseStatusOk(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(`[{"@type":"currentStatus","statementText":"CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE WITH (KAFKA_TOPIC='DOGS_BY_SIZE', PARTITIONS=1, REPLICAS=1) AS SELECT\n  DOGS.DOGSIZE DOG_SIZE,\n  COUNT(*) DOGS_CT\nFROM DOGS DOGS\nWINDOW TUMBLING ( SIZE 15 MINUTES ) \nGROUP BY DOGS.DOGSIZE\nEMIT CHANGES;","commandId":"table/DOGS_BY_SIZE/create","commandStatus":{"status":"SUCCESS","message":"Cannot add table DOGS_BY_SIZE: A table with the same name already exists.","queryId":null},"commandSequenceNumber":44,"warnings":[]}]`)))
 	res := http.Response{StatusCode: 200, Body: r}
 	m := mocknet.HTTPClient{}
+
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql")
 	m.Mock.
 		On("Do", mock.Anything).

@@ -39,6 +39,7 @@ func TestClosePushQuery(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(data)))
 	res := http.Response{StatusCode: 200, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/close-query")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
@@ -50,6 +51,7 @@ func TestClosePushQuery_FailedDoRequest(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	kcl, _ := ksqldb.NewClient(&m)
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/close-query")
 	m.On("Do", mock.Anything).Return(nil, errors.New("error"))
 
@@ -67,6 +69,7 @@ func TestClosePushQuery_RequestStatusCode(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 400, Body: r}
 
+	m.Mock.On("BasicAuth", mock.Anything).Return("")
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/close-query")
 	m.On("Do", mock.Anything).Return(&res, nil)
 
