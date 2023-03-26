@@ -3,7 +3,7 @@
 package parser
 
 import (
-	antlr "github.com/antlr/antlr4/runtime/Go/antlr"
+	antlr "github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	mock "github.com/stretchr/testify/mock"
 )
 

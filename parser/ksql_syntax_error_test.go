@@ -19,7 +19,7 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/stretchr/testify/require"
 	mocks "github.com/thmeitz/ksqldb-go/mocks/parser"
 	"github.com/thmeitz/ksqldb-go/parser"

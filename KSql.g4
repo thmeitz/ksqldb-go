@@ -1,379 +1,439 @@
 /*
  * Copyright 2018 Confluent Inc.
- * 
- * Licensed under the Confluent Community License (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ *
+ * Licensed under the Confluent Community License (the "License"); you may not use
+ * this file except in compliance with the License.  You may obtain a copy of the
+ * License at
+ *
  * http://www.confluent.io/confluent-community-license
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations under the
- * License.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OF ANY KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 grammar KSql;
 
 tokens {
-	DELIMITER
+    DELIMITER
 }
 
-// channel names aren't supported in combined lexer/parser grammars so we just generate this
-// constants into the SqlBaseLexer and use the corresponding numberliteral in this file
+// channel names aren't supported in combined lexer/parser grammars
+// so we just generate this constants into the SqlBaseLexer and use
+// the corresponding numberliteral in this file
 @lexer::members {
-    const ( 
-      COMMENTS = 2
-      WHITESPACE = 3
-      DIRECTIVES = 4
-    )
+    public static final int COMMENTS = 2;
+    public static final int WHITESPACE = 3;
+    public static final int DIRECTIVES = 4;
 }
 
-statements: (singleStatement)* EOF;
+statements
+    : (singleStatement)* EOF
+    ;
 
-testStatement: (
-		singleStatement
-		| assertStatement ';'
-		| runScript ';'
-	) EOF?;
+testStatement
+    : (singleStatement | assertStatement ';' | runScript ';') EOF?
+    ;
 
-singleStatement: statement ';';
+singleStatement
+    : statement ';'
+    ;
 
-singleExpression: expression EOF;
+singleExpression
+    : expression EOF
+    ;
 
-statement:
-	query										# queryStatement
-	| (LIST | SHOW) PROPERTIES					# listProperties
-	| (LIST | SHOW) ALL? TOPICS EXTENDED?		# listTopics
-	| (LIST | SHOW) STREAMS EXTENDED?			# listStreams
-	| (LIST | SHOW) TABLES EXTENDED?			# listTables
-	| (LIST | SHOW) FUNCTIONS					# listFunctions
-	| (LIST | SHOW) (SOURCE | SINK)? CONNECTORS	# listConnectors
-	| (LIST | SHOW) CONNECTOR PLUGINS			# listConnectorPlugins
-	| (LIST | SHOW) TYPES						# listTypes
-	| (LIST | SHOW) VARIABLES					# listVariables
-	| DESCRIBE sourceName EXTENDED?				# showColumns
-	| DESCRIBE STREAMS EXTENDED?				# describeStreams
-	| DESCRIBE FUNCTION identifier				# describeFunction
-	| DESCRIBE CONNECTOR identifier				# describeConnector
-	| PRINT (identifier | STRING) printClause	# printTopic
-	| (LIST | SHOW) QUERIES EXTENDED?			# listQueries
-	| TERMINATE identifier						# terminateQuery
-	| TERMINATE ALL								# terminateQuery
-	| SET STRING EQ STRING						# setProperty
-	| UNSET STRING								# unsetProperty
-	| DEFINE variableName EQ variableValue		# defineVariable
-	| UNDEFINE variableName						# undefineVariable
-	| CREATE (OR REPLACE)? (SOURCE)? STREAM (IF NOT EXISTS)? sourceName (
-		tableElements
-	)? (WITH tableProperties)? # createStream
-	| CREATE (OR REPLACE)? STREAM (IF NOT EXISTS)? sourceName (
-		WITH tableProperties
-	)? AS query # createStreamAs
-	| CREATE (OR REPLACE)? (SOURCE)? TABLE (IF NOT EXISTS)? sourceName (
-		tableElements
-	)? (WITH tableProperties)? # createTable
-	| CREATE (OR REPLACE)? TABLE (IF NOT EXISTS)? sourceName (
-		WITH tableProperties
-	)? AS query																			# createTableAs
-	| CREATE (SINK | SOURCE) CONNECTOR (IF NOT EXISTS)? identifier WITH tableProperties	#
-		createConnector
-	| INSERT INTO sourceName (WITH tableProperties)? query	# insertInto
-	| INSERT INTO sourceName (columns)? VALUES values		# insertValues
-	| DROP STREAM (IF EXISTS)? sourceName (DELETE TOPIC)?	# dropStream
-	| DROP TABLE (IF EXISTS)? sourceName (DELETE TOPIC)?	# dropTable
-	| DROP CONNECTOR (IF EXISTS)? identifier				# dropConnector
-	| EXPLAIN (statement | identifier)						# explain
-	| CREATE TYPE (IF NOT EXISTS)? identifier AS sqltype	# registerType
-	| DROP TYPE (IF EXISTS)? identifier						# dropType
-	| ALTER (STREAM | TABLE) sourceName alterOption (
-		',' alterOption
-	)* # alterSource;
+statement
+    : query                                                                 #queryStatement
+    | (LIST | SHOW) PROPERTIES                                              #listProperties
+    | (LIST | SHOW) ALL? TOPICS EXTENDED?                                   #listTopics
+    | (LIST | SHOW) STREAMS EXTENDED?                                       #listStreams
+    | (LIST | SHOW) TABLES EXTENDED?                                        #listTables
+    | (LIST | SHOW) FUNCTIONS                                               #listFunctions
+    | (LIST | SHOW) (SOURCE | SINK)? CONNECTORS                             #listConnectors
+    | (LIST | SHOW) CONNECTOR PLUGINS                                       #listConnectorPlugins
+    | (LIST | SHOW) TYPES                                                   #listTypes
+    | (LIST | SHOW) VARIABLES                                               #listVariables
+    | DESCRIBE sourceName EXTENDED?                                         #showColumns
+    | DESCRIBE STREAMS EXTENDED?                                            #describeStreams
+    | DESCRIBE FUNCTION identifier                                          #describeFunction
+    | DESCRIBE CONNECTOR identifier                                         #describeConnector
+    | PRINT resourceName printClause                                        #printTopic
+    | (LIST | SHOW) QUERIES EXTENDED?                                       #listQueries
+    | TERMINATE identifier                                                  #terminateQuery
+    | TERMINATE ALL                                                         #terminateQuery
+    | PAUSE identifier                                                      #pauseQuery
+    | PAUSE ALL                                                             #pauseQuery
+    | RESUME identifier                                                     #resumeQuery
+    | RESUME ALL                                                            #resumeQuery
+    | SET STRING EQ STRING                                                  #setProperty
+    | ALTER SYSTEM STRING EQ STRING                                         #alterSystemProperty
+    | UNSET STRING                                                          #unsetProperty
+    | DEFINE variableName EQ variableValue                                  #defineVariable
+    | UNDEFINE variableName                                                 #undefineVariable
+    | CREATE (OR REPLACE)? (SOURCE)? STREAM (IF NOT EXISTS)? sourceName
+                (tableElements)?
+                (WITH tableProperties)?                                     #createStream
+    | CREATE (OR REPLACE)? STREAM (IF NOT EXISTS)? sourceName
+            (WITH tableProperties)? AS query                                #createStreamAs
+    | CREATE (OR REPLACE)? (SOURCE)? TABLE (IF NOT EXISTS)? sourceName
+                    (tableElements)?
+                    (WITH tableProperties)?                                 #createTable
+    | CREATE (OR REPLACE)? TABLE (IF NOT EXISTS)? sourceName
+            (WITH tableProperties)? AS query                                #createTableAs
+    | CREATE (SINK | SOURCE) CONNECTOR (IF NOT EXISTS)? identifier
+             WITH tableProperties                                           #createConnector
+    | INSERT INTO sourceName (WITH tableProperties)? query                  #insertInto
+    | INSERT INTO sourceName (columns)? VALUES values                       #insertValues
+    | DROP STREAM (IF EXISTS)? sourceName (DELETE TOPIC)?                   #dropStream
+    | DROP TABLE (IF EXISTS)? sourceName (DELETE TOPIC)?                    #dropTable
+    | DROP CONNECTOR (IF EXISTS)? identifier                                #dropConnector
+    | EXPLAIN  (statement | identifier)                                     #explain
+    | CREATE TYPE (IF NOT EXISTS)? identifier AS type                       #registerType
+    | DROP TYPE (IF EXISTS)? identifier                                     #dropType
+    | ALTER (STREAM | TABLE) sourceName alterOption (',' alterOption)*      #alterSource
+    | ASSERT (NOT EXISTS)? TOPIC resourceName
+            (WITH tableProperties)? timeout?                                #assertTopic
+    | ASSERT (NOT EXISTS)? SCHEMA
+            (SUBJECT resourceName)? (ID literal)? timeout?                  #assertSchema
+    ;
 
-assertStatement:
-	ASSERT VALUES sourceName (columns)? VALUES values		# assertValues
-	| ASSERT NULL VALUES sourceName (columns)? KEY values	# assertTombstone
-	| ASSERT STREAM sourceName (tableElements)? (
-		WITH tableProperties
-	)? # assertStream
-	| ASSERT TABLE sourceName (tableElements)? (
-		WITH tableProperties
-	)? # assertTable;
+assertStatement
+    : ASSERT VALUES sourceName (columns)? VALUES values                     #assertValues
+    | ASSERT NULL VALUES sourceName (columns)? KEY values                   #assertTombstone
+    | ASSERT STREAM sourceName (tableElements)? (WITH tableProperties)?     #assertStream
+    | ASSERT TABLE sourceName (tableElements)? (WITH tableProperties)?      #assertTable
+    ;
 
-runScript: RUN SCRIPT STRING;
+runScript
+    : RUN SCRIPT STRING
+    ;
 
-query:
-	SELECT selectItem (',' selectItem)* FROM from = relation (
-		WINDOW windowExpression
-	)? (WHERE where = booleanExpression)? (GROUP BY groupBy)? (
-		PARTITION BY partitionBy
-	)? (HAVING having = booleanExpression)? (
-		EMIT resultMaterialization
-	)? limitClause?;
+resourceName
+    : identifier
+    | STRING
+    ;
 
-resultMaterialization: CHANGES | FINAL;
+query
+    : SELECT selectItem (',' selectItem)*
+      FROM from=relation
+      (WINDOW  windowExpression)?
+      (WHERE where=booleanExpression)?
+      (GROUP BY groupBy)?
+      (PARTITION BY partitionBy)?
+      (HAVING having=booleanExpression)?
+      (EMIT resultMaterialization)?
+      limitClause?
+    ;
 
-alterOption: ADD (COLUMN)? identifier sqltype;
+resultMaterialization
+    : CHANGES
+    | FINAL
+    ;
 
-tableElements: '(' tableElement (',' tableElement)* ')';
+timeout
+    : TIMEOUT number windowUnit
+    ;
 
-tableElement: identifier sqltype columnConstraints?;
-columnConstraints: ((PRIMARY)? KEY)
-	| HEADERS
-	| HEADER '(' STRING ')';
+alterOption
+    : ADD (COLUMN)? identifier type
+    ;
 
-tableProperties: '(' tableProperty (',' tableProperty)* ')';
+tableElements
+    : '(' tableElement (',' tableElement)* ')'
+    ;
 
-tableProperty: (identifier | STRING) EQ literal;
+tableElement
+    : identifier type columnConstraints?
+    ;
 
-printClause: (FROM BEGINNING)? intervalClause? limitClause?;
+columnConstraints
+    : ((PRIMARY)? KEY)
+    | HEADERS
+    | HEADER '(' STRING ')'
+    ;
 
-intervalClause: (INTERVAL | SAMPLE) number;
+tableProperties
+    : '(' tableProperty (',' tableProperty)* ')'
+    ;
 
-limitClause: LIMIT number;
+tableProperty
+    : (identifier | STRING) EQ literal
+    ;
 
-retentionClause: RETENTION number windowUnit;
+printClause
+      : (FROM BEGINNING)? intervalClause? limitClause?
+      ;
 
-gracePeriodClause: GRACE PERIOD number windowUnit;
+intervalClause
+    : (INTERVAL | SAMPLE) number
+    ;
 
-windowExpression: (IDENTIFIER)? (
-		tumblingWindowExpression
-		| hoppingWindowExpression
-		| sessionWindowExpression
-	);
+limitClause
+    : LIMIT number
+    ;
 
-tumblingWindowExpression:
-	TUMBLING '(' SIZE number windowUnit (',' retentionClause)? (
-		',' gracePeriodClause
-	)? ')';
+retentionClause
+    : RETENTION number windowUnit
+    ;
 
-hoppingWindowExpression:
-	HOPPING '(' SIZE number windowUnit ',' ADVANCE BY number windowUnit (
-		',' retentionClause
-	)? (',' gracePeriodClause)? ')';
+gracePeriodClause
+    : GRACE PERIOD number windowUnit
+    ;
 
-sessionWindowExpression:
-	SESSION '(' number windowUnit (',' retentionClause)? (
-		',' gracePeriodClause
-	)? ')';
+windowExpression
+    : (IDENTIFIER)?
+     ( tumblingWindowExpression | hoppingWindowExpression | sessionWindowExpression )
+    ;
 
-windowUnit:
-	DAY
-	| HOUR
-	| MINUTE
-	| SECOND
-	| MILLISECOND
-	| DAYS
-	| HOURS
-	| MINUTES
-	| SECONDS
-	| MILLISECONDS;
+tumblingWindowExpression
+    : TUMBLING '(' SIZE number windowUnit (',' retentionClause)? (',' gracePeriodClause)?')'
+    ;
 
-groupBy:
-	valueExpression (',' valueExpression)*
-	| '(' (valueExpression (',' valueExpression)*)? ')';
+hoppingWindowExpression
+    : HOPPING '(' SIZE number windowUnit ',' ADVANCE BY number windowUnit (',' retentionClause)? (',' gracePeriodClause)?')'
+    ;
 
-partitionBy:
-	valueExpression (',' valueExpression)*
-	| '(' (valueExpression (',' valueExpression)*)? ')';
+sessionWindowExpression
+    : SESSION '(' number windowUnit (',' retentionClause)? (',' gracePeriodClause)?')'
+    ;
 
-values: '(' (valueExpression (',' valueExpression)*)? ')';
+windowUnit
+    : DAY
+    | HOUR
+    | MINUTE
+    | SECOND
+    | MILLISECOND
+    | DAYS
+    | HOURS
+    | MINUTES
+    | SECONDS
+    | MILLISECONDS
+    ;
 
-selectItem:
-	expression (AS? identifier)?	# selectSingle
-	| identifier '.' ASTERISK		# selectAll
-	| ASTERISK						# selectAll;
+groupBy
+    : valueExpression (',' valueExpression)*
+    | '(' (valueExpression (',' valueExpression)*)? ')'
+    ;
 
-relation:
-	left = aliasedRelation joinedSource+	# joinRelation
-	| aliasedRelation						# relationDefault;
+partitionBy
+    : valueExpression (',' valueExpression)*
+    | '(' (valueExpression (',' valueExpression)*)? ')'
+    ;
 
-joinedSource:
-	joinType JOIN aliasedRelation joinWindow? joinCriteria;
+values
+    : '(' (valueExpression (',' valueExpression)*)? ')'
+    ;
 
-joinType:
-	INNER?			# innerJoin
-	| FULL OUTER?	# outerJoin
-	| LEFT OUTER?	# leftJoin;
+selectItem
+    : expression (AS? identifier)?                       #selectSingle
+    | base=primaryExpression STRUCT_FIELD_REF ASTERISK   #selectStructAll
+    | identifier '.' ASTERISK                            #selectAll
+    | ASTERISK                                           #selectAll
+    ;
 
-joinWindow: WITHIN withinExpression;
+relation
+    : left=aliasedRelation joinedSource+  #joinRelation
+    | aliasedRelation                     #relationDefault
+    ;
 
-withinExpression:
-	'(' joinWindowSize ',' joinWindowSize ')' (gracePeriodClause)?	# joinWindowWithBeforeAndAfter
-	| joinWindowSize (gracePeriodClause)?							# singleJoinWindow;
+joinedSource
+    : joinType JOIN aliasedRelation joinWindow? joinCriteria
+    ;
 
-joinWindowSize: number windowUnit;
+joinType
+    : INNER? #innerJoin
+    | FULL OUTER? #outerJoin
+    | LEFT OUTER? #leftJoin
+    | RIGHT OUTER? #rightJoin
+    ;
 
-joinCriteria: ON booleanExpression;
+joinWindow
+    : WITHIN withinExpression
+    ;
 
-aliasedRelation: relationPrimary (AS? sourceName)?;
+withinExpression
+    : '(' joinWindowSize ',' joinWindowSize ')' (gracePeriodClause)?  # joinWindowWithBeforeAndAfter
+    | joinWindowSize (gracePeriodClause)?                             # singleJoinWindow
+    ;
 
-columns: '(' identifier (',' identifier)* ')';
+joinWindowSize
+    : number windowUnit
+    ;
 
-relationPrimary: sourceName # tableName;
+joinCriteria
+    : ON booleanExpression
+    ;
 
-expression: booleanExpression;
+aliasedRelation
+    : relationPrimary (AS? sourceName)?
+    ;
 
-booleanExpression:
-	predicated															# booleanDefault
-	| NOT booleanExpression												# logicalNot
-	| left = booleanExpression operator = AND right = booleanExpression	# logicalBinary
-	| left = booleanExpression operator = OR right = booleanExpression	# logicalBinary;
+columns
+    : '(' identifier (',' identifier)* ')'
+    ;
 
-// workaround for: https://github.com/antlr/antlr4/issues/780
-// https://github.com/antlr/antlr4/issues/781
-predicated:
-	valueExpression predicate[$valueExpression.ctx]?;
+relationPrimary
+    : sourceName                                                  #tableName
+    ;
 
-predicate[ParserRuleContext value]:
-	comparisonOperator right = valueExpression							# comparison
-	| NOT? BETWEEN lower = valueExpression AND upper = valueExpression	# between
-	| NOT? IN '(' expression (',' expression)* ')'						# inList
-	| NOT? LIKE pattern = valueExpression (
-		ESCAPE escape = STRING
-	)?												# like
-	| IS NOT? NULL									# nullPredicate
-	| IS NOT? DISTINCT FROM right = valueExpression	# distinctFrom;
+expression
+    : booleanExpression
+    ;
 
-valueExpression:
-	primaryExpression							# valueExpressionDefault
-	| valueExpression AT timeZoneSpecifier		# atTimeZone
-	| operator = (MINUS | PLUS) valueExpression	# arithmeticUnary
-	| left = valueExpression operator = (
-		ASTERISK
-		| SLASH
-		| PERCENT
-	) right = valueExpression													# arithmeticBinary
-	| left = valueExpression operator = (PLUS | MINUS) right = valueExpression	# arithmeticBinary
-	| left = valueExpression CONCAT right = valueExpression						# concatenation;
+booleanExpression
+    : predicated                                                   #booleanDefault
+    | NOT booleanExpression                                        #logicalNot
+    | left=booleanExpression operator=AND right=booleanExpression  #logicalBinary
+    | left=booleanExpression operator=OR right=booleanExpression   #logicalBinary
+    ;
 
-primaryExpression:
-	literal				# literalExpression
-	| identifier STRING	# typeConstructor
-	| CASE valueExpression whenClause+ (
-		ELSE elseExpression = expression
-	)? END														# simpleCase
-	| CASE whenClause+ (ELSE elseExpression = expression)? END	# searchedCase
-	| CAST '(' expression AS sqltype ')'						# cast
-	| ARRAY '[' (expression (',' expression)*)? ']'				# arrayConstructor
-	| MAP '(' (
-		expression ASSIGN expression (
-			',' expression ASSIGN expression
-		)*
-	)? ')' # mapConstructor
-	| STRUCT '(' (
-		identifier ASSIGN expression (
-			',' identifier ASSIGN expression
-		)*
-	)? ')'							# structConstructor
-	| identifier '(' ASTERISK ')'	# functionCall
-	| identifier '(' (
-		functionArgument (',' functionArgument)* (
-			',' lambdaFunction
-		)*
-	)? ')'																# functionCall
-	| value = primaryExpression '[' index = valueExpression ']'			# subscript
-	| identifier														# columnReference
-	| identifier '.' identifier											# qualifiedColumnReference
-	| base = primaryExpression STRUCT_FIELD_REF fieldName = identifier	# dereference
-	| '(' expression ')'												# parenthesizedExpression;
+// workaround for:
+//  https://github.com/antlr/antlr4/issues/780
+//  https://github.com/antlr/antlr4/issues/781
+predicated
+    : valueExpression predicate[$valueExpression.ctx]?
+    ;
 
-functionArgument: expression | windowUnit;
+predicate[ParserRuleContext value]
+    : comparisonOperator right=valueExpression                            #comparison
+    | NOT? BETWEEN lower=valueExpression AND upper=valueExpression        #between
+    | NOT? IN '(' expression (',' expression)* ')'                        #inList
+    | NOT? LIKE pattern=valueExpression	(ESCAPE escape=STRING)?   		    #like
+    | IS NOT? NULL                                                        #nullPredicate
+    | IS NOT? DISTINCT FROM right=valueExpression                         #distinctFrom
+    ;
 
-timeZoneSpecifier: TIME ZONE STRING # timeZoneString;
+valueExpression
+    : primaryExpression                                                                 #valueExpressionDefault
+    | valueExpression AT timeZoneSpecifier                                              #atTimeZone
+    | operator=(MINUS | PLUS) valueExpression                                           #arithmeticUnary
+    | left=valueExpression operator=(ASTERISK | SLASH | PERCENT) right=valueExpression  #arithmeticBinary
+    | left=valueExpression operator=(PLUS | MINUS) right=valueExpression                #arithmeticBinary
+    | left=valueExpression CONCAT right=valueExpression                                 #concatenation
+    ;
 
-comparisonOperator: EQ | NEQ | LT | LTE | GT | GTE;
+primaryExpression
+    : literal                                                                             #literalExpression
+    | identifier STRING                                                                   #typeConstructor
+    | CASE valueExpression whenClause+ (ELSE elseExpression=expression)? END              #simpleCase
+    | CASE whenClause+ (ELSE elseExpression=expression)? END                              #searchedCase
+    | CAST '(' expression AS type ')'                                                     #cast
+    | ARRAY '[' (expression (',' expression)*)? ']'                                       #arrayConstructor
+    | MAP '(' (expression ASSIGN expression (',' expression ASSIGN expression)*)? ')'     #mapConstructor
+    | STRUCT '(' (identifier ASSIGN expression (',' identifier ASSIGN expression)*)? ')'  #structConstructor
+    | identifier '(' ASTERISK ')'                              		                        #functionCall
+    | identifier '(' (functionArgument (',' functionArgument)* (',' lambdaFunction)*)? ')' #functionCall
+    | value=primaryExpression '[' index=valueExpression ']'                               #subscript
+    | identifier                                                                          #columnReference
+    | identifier '.' identifier                                                           #qualifiedColumnReference
+    | base=primaryExpression STRUCT_FIELD_REF fieldName=identifier                        #dereference
+    | '(' expression ')'                                                                  #parenthesizedExpression
+    ;
 
-booleanValue: TRUE | FALSE;
+functionArgument
+    : expression
+    | windowUnit
+    ;
 
-sqltype:
-	sqltype ARRAY
-	| ARRAY '<' sqltype '>'
-	| MAP '<' sqltype ',' sqltype '>'
-	| STRUCT '<' (identifier sqltype (',' identifier sqltype)*)? '>'
-	| DECIMAL '(' number ',' number ')'
-	| baseType ('(' typeParameter (',' typeParameter)* ')')?;
+timeZoneSpecifier
+    : TIME ZONE STRING    #timeZoneString
+    ;
 
-typeParameter: INTEGER_VALUE | 'STRING';
+comparisonOperator
+    : EQ | NEQ | LT | LTE | GT | GTE
+    ;
 
-baseType: identifier;
+booleanValue
+    : TRUE | FALSE
+    ;
 
-whenClause:
-	WHEN condition = expression THEN result = expression;
+type
+    : type ARRAY
+    | ARRAY '<' type '>'
+    | MAP '<' type ',' type '>'
+    | STRUCT '<' (identifier type (',' identifier type)*)? '>'
+    | DECIMAL '(' number ',' number ')'
+    | baseType ('(' typeParameter (',' typeParameter)* ')')?
+    ;
 
-identifier:
-	VARIABLE				# variableIdentifier
-	| IDENTIFIER			# unquotedIdentifier
-	| QUOTED_IDENTIFIER		# quotedIdentifierAlternative
-	| nonReserved			# unquotedIdentifier
-	| BACKQUOTED_IDENTIFIER	# backQuotedIdentifier
-	| DIGIT_IDENTIFIER		# digitIdentifier;
+typeParameter
+    : INTEGER_VALUE | 'STRING'
+    ;
 
-lambdaFunction:
-	identifier '=>' expression								# lambda
-	| '(' identifier (',' identifier)* ')' '=>' expression	# lambda;
+baseType
+    : identifier
+    ;
 
-variableName: IDENTIFIER;
+whenClause
+    : WHEN condition=expression THEN result=expression
+    ;
 
-variableValue: STRING;
+identifier
+    : VARIABLE               #variableIdentifier
+    | IDENTIFIER             #unquotedIdentifier
+    | QUOTED_IDENTIFIER      #quotedIdentifierAlternative
+    | nonReserved            #unquotedIdentifier
+    | BACKQUOTED_IDENTIFIER  #backQuotedIdentifier
+    | DIGIT_IDENTIFIER       #digitIdentifier
+    ;
 
-sourceName: identifier;
+lambdaFunction
+    :  identifier '=>' expression                            #lambda
+    | '(' identifier (',' identifier)*  ')' '=>' expression  #lambda
+    ;
 
-number:
-	MINUS? DECIMAL_VALUE			# decimalLiteral
-	| MINUS? FLOATING_POINT_VALUE	# floatLiteral
-	| MINUS? INTEGER_VALUE			# integerLiteral;
+variableName
+    : IDENTIFIER
+    ;
 
-literal:
-	NULL			# nullLiteral
-	| number		# numericLiteral
-	| booleanValue	# booleanLiteral
-	| STRING		# stringLiteral
-	| VARIABLE		# variableLiteral;
+variableValue
+    : STRING
+    ;
 
-nonReserved:
-	SHOW
-	| TABLES
-	| COLUMNS
-	| COLUMN
-	| PARTITIONS
-	| FUNCTIONS
-	| FUNCTION
-	| SESSION
-	| STRUCT
-	| MAP
-	| ARRAY
-	| PARTITION
-	| INTEGER
-	| DATE
-	| TIME
-	| TIMESTAMP
-	| INTERVAL
-	| ZONE
-	| 'STRING'
-	| YEAR
-	| MONTH
-	| DAY
-	| HOUR
-	| MINUTE
-	| SECOND
-	| EXPLAIN
-	| ANALYZE
-	| TYPE
-	| TYPES
-	| SET
-	| RESET
-	| IF
-	| SOURCE
-	| SINK
-	| PRIMARY
-	| KEY
-	| EMIT
-	| CHANGES
-	| FINAL
-	| ESCAPE
-	| REPLACE
-	| ASSERT
-	| ALTER
-	| ADD;
+sourceName
+    : identifier
+    ;
+
+number
+    : MINUS? DECIMAL_VALUE         #decimalLiteral
+    | MINUS? FLOATING_POINT_VALUE  #floatLiteral
+    | MINUS? INTEGER_VALUE         #integerLiteral
+    ;
+
+literal
+    : NULL                                                                           #nullLiteral
+    | number                                                                         #numericLiteral
+    | booleanValue                                                                   #booleanLiteral
+    | STRING                                                                         #stringLiteral
+    | VARIABLE                                                                       #variableLiteral
+    ;
+
+nonReserved
+    : SHOW | TABLES | COLUMNS | COLUMN | PARTITIONS | FUNCTIONS | FUNCTION | SESSION
+    | STRUCT | MAP | ARRAY | PARTITION
+    | INTEGER | DATE | TIME | TIMESTAMP | INTERVAL | ZONE | 'STRING'
+    | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND
+    | EXPLAIN | ANALYZE | TYPE | TYPES
+    | SET | RESET
+    | IF
+    | SOURCE | SINK
+    | PRIMARY | KEY
+    | EMIT
+    | CHANGES
+    | FINAL
+    | ESCAPE
+    | REPLACE
+    | ASSERT
+    | ALTER
+    | ADD
+    | HEADER | HEADERS
+    | GRACE | PERIOD
+    | DEFINE | UNDEFINE | VARIABLES
+    | PLUGINS | SYSTEM
+    | TIMEOUT | SCHEMA| SUBJECT | ID
+    ;
 
 EMIT: 'EMIT';
 CHANGES: 'CHANGES';
@@ -469,6 +529,8 @@ TOPICS: 'TOPICS';
 QUERY: 'QUERY';
 QUERIES: 'QUERIES';
 TERMINATE: 'TERMINATE';
+PAUSE: 'PAUSE';
+RESUME: 'RESUME';
 LOAD: 'LOAD';
 COLUMNS: 'COLUMNS';
 COLUMN: 'COLUMN';
@@ -511,15 +573,20 @@ VARIABLES: 'VARIABLES';
 PLUGINS: 'PLUGINS';
 HEADERS: 'HEADERS';
 HEADER: 'HEADER';
+SYSTEM: 'SYSTEM';
+TIMEOUT: 'TIMEOUT';
+SCHEMA: 'SCHEMA';
+SUBJECT: 'SUBJECT';
+ID: 'ID';
 
 IF: 'IF';
 
-EQ: '=';
-NEQ: '<>' | '!=';
-LT: '<';
-LTE: '<=';
-GT: '>';
-GTE: '>=';
+EQ  : '=';
+NEQ : '<>' | '!=';
+LT  : '<';
+LTE : '<=';
+GT  : '>';
+GTE : '>=';
 
 PLUS: '+';
 MINUS: '-';
@@ -533,43 +600,75 @@ STRUCT_FIELD_REF: '->';
 
 LAMBDA_EXPRESSION: '=>';
 
-STRING: '\'' ( ~'\'' | '\'\'')* '\'';
+STRING
+    : '\'' ( ~'\'' | '\'\'' )* '\''
+    ;
 
-INTEGER_VALUE: DIGIT+;
+INTEGER_VALUE
+    : DIGIT+
+    ;
 
-DECIMAL_VALUE: DIGIT+ '.' DIGIT* | '.' DIGIT+;
+DECIMAL_VALUE
+    : DIGIT+ '.' DIGIT*
+    | '.' DIGIT+
+    ;
 
-FLOATING_POINT_VALUE:
-	DIGIT+ ('.' DIGIT*)? EXPONENT
-	| '.' DIGIT+ EXPONENT;
+FLOATING_POINT_VALUE
+    : DIGIT+ ('.' DIGIT*)? EXPONENT
+    | '.' DIGIT+ EXPONENT
+    ;
 
-IDENTIFIER: (LETTER | '_') (LETTER | DIGIT | '_' | '@')*;
+IDENTIFIER
+    : (LETTER | '_') (LETTER | DIGIT | '_' | '@' )*
+    ;
 
-DIGIT_IDENTIFIER: DIGIT (LETTER | DIGIT | '_' | '@')+;
+DIGIT_IDENTIFIER
+    : DIGIT (LETTER | DIGIT | '_' | '@' )+
+    ;
 
-QUOTED_IDENTIFIER: '"' ( ~'"' | '""')* '"';
+QUOTED_IDENTIFIER
+    : '"' ( ~'"' | '""' )* '"'
+    ;
 
-BACKQUOTED_IDENTIFIER: '`' ( ~'`' | '``')* '`';
+BACKQUOTED_IDENTIFIER
+    : '`' ( ~'`' | '``' )* '`'
+    ;
 
-VARIABLE: '${' IDENTIFIER '}';
+VARIABLE
+    : '${' IDENTIFIER '}'
+    ;
 
-fragment EXPONENT: 'E' [+-]? DIGIT+;
+fragment EXPONENT
+    : 'E' [+-]? DIGIT+
+    ;
 
-fragment DIGIT: [0-9];
+fragment DIGIT
+    : [0-9]
+    ;
 
-fragment LETTER: [A-Z];
+fragment LETTER
+    : [A-Z]
+    ;
 
-SIMPLE_COMMENT:
-	'--' ~'@' ~[\r\n]* '\r'? '\n'? -> channel(2); // channel(COMMENTS)
+SIMPLE_COMMENT
+    : '--' ~'@' ~[\r\n]* '\r'? '\n'? -> channel(2) // channel(COMMENTS)
+    ;
 
-DIRECTIVE_COMMENT:
-	'--@' ~[\r\n]* '\r'? '\n'? -> channel(4); // channel(DIRECTIVES)
+DIRECTIVE_COMMENT
+    : '--@' ~[\r\n]* '\r'? '\n'? -> channel(4) // channel(DIRECTIVES)
+    ;
 
-BRACKETED_COMMENT:
-	'/*' .*? '*/' -> channel(2); // channel(COMMENTS)
+BRACKETED_COMMENT
+    : '/*' .*? '*/' -> channel(2) // channel(COMMENTS)
+    ;
 
-WS: [ \r\n\t]+ -> channel(3); // channel(WHITESPACE)
+WS
+    : [ \r\n\t]+ -> channel(3) // channel(WHITESPACE)
+    ;
 
-// Catch-all for anything we can't recognize. We use this to be able to ignore and recover all the
-// text when splitting statements with DelimiterLexer
-UNRECOGNIZED: .;
+// Catch-all for anything we can't recognize.
+// We use this to be able to ignore and recover all the text
+// when splitting statements with DelimiterLexer
+UNRECOGNIZED
+    : .
+    ;

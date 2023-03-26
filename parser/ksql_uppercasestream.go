@@ -19,7 +19,7 @@ package parser
 import (
 	"unicode"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 )
 
 // UpperCaseStream wraps an existing CharStream, but upper cases

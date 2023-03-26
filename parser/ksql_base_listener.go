@@ -1,8 +1,8 @@
-// Code generated from KSql.g4 by ANTLR 4.7.1. DO NOT EDIT.
+// Code generated from KSql.g4 by ANTLR 4.12.0. DO NOT EDIT.
 
 package parser // KSql
 
-import "github.com/antlr/antlr4/runtime/Go/antlr"
+import "github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
 // BaseKSqlListener is a complete listener for a parse tree produced by KSqlParser.
 type BaseKSqlListener struct{}
