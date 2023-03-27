@@ -32,13 +32,9 @@ type ResponseError struct {
 	Message string `json:"message"`
 }
 
+// Error gets the error string without new lines from ResponseError
 func (e ResponseError) Error() string {
 	// I don't like error messages with new lines
 	e.Message = strings.ReplaceAll(e.Message, "\n", " ")
 	return fmt.Sprintf("%v", e.Message)
 }
-
-// func (e *ResponseError) Is(target error) bool {
-// 	_, ok := target.(*ResponseError)
-// 	return ok
-// }

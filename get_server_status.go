@@ -34,7 +34,7 @@ type ServerStatusResponse struct {
 	KsqlServiceID string `json:"ksqlServiceId"`
 }
 
-// ServerInfo provides information about your server
+// GetServerStatus provides provides information about your server
 func (api *KsqldbClient) GetServerStatus() (result *ServerStatusResponse, err error) {
 	info := ServerStatusResponse{}
 	url := api.http.GetUrl(HEALTHCHECK_ENDPOINT)

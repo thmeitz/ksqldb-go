@@ -43,27 +43,6 @@ func QueryBuilder(stmnt string, params ...interface{}) (*string, error) {
 	return result, nil
 }
 
-// ParseQueryBuilder parses the
-// func ParseQueryBuilder(stmnt string, parse bool, params ...interface{}) (*string, error) {
-// 	var result *string
-// 	var err error
-//
-// 	result, err = QueryBuilder(stmnt, params...)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	if !parse {
-// 		return result, err
-// 	}
-//
-// 	if ksqlErr := parser.ParseSql(*result); ksqlErr != nil {
-// 		return nil, ksqlErr
-// 	}
-//
-// 	return result, nil
-// }
-
 // bind parameters to QueryBuilder
 func bind(stmnt string, params ...interface{}) (*string, error) {
 	paramCount := len(params)

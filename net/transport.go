@@ -223,11 +223,6 @@ func (t *Transport) Close() {
 	}
 }
 
-// CloseIdleConnection closes idle connections
-// func (t *Transport) CloseIdleConnections() {
-// 	t.tr.CloseIdleConnections()
-// }
-
 // RoundTrip the request with tracing and add client
 // tracing: DNS, TCP/IP, TLS handshake, connection pool access. Client
 // traces are added as logs into the created span.

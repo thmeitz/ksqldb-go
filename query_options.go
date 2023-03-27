@@ -91,14 +91,20 @@ func (q *QueryOptions) SetIdleConnectionTimeout(seconds int64) *QueryOptions {
 	return q
 }
 
+// SanitizeQuery removes `\t` and `\n` from the query
 func (q *QueryOptions) SanitizeQuery() {
 	q.Sql = internal.SanitizeQuery(q.Sql)
 }
 
+// EmptyQuery returns true if the query is empty
 func (o *QueryOptions) EmptyQuery() bool {
 	return len(o.Sql) < 1
 }
 
+// NewDefaultPushQueryOptions returns default QueryOptions for push queries
+//
+// - IdleConnectionTimeout: 600 seconds
+// - AutoOffsetReset: "latest"
 func NewDefaultPushQueryOptions(sql string) (options QueryOptions) {
 	options = QueryOptions{Sql: sql}
 	options.
@@ -107,6 +113,9 @@ func NewDefaultPushQueryOptions(sql string) (options QueryOptions) {
 	return
 }
 
+// NewDefaultPullQueryOptions returns default QueryOptions for pull queries
+//
+// - EnablePullQueryTableScan: true
 func NewDefaultPullQueryOptions(sql string) (options QueryOptions) {
 	options = QueryOptions{Sql: sql}
 	options.EnablePullQueryTableScan(true)

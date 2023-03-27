@@ -39,8 +39,6 @@ const (
 	DefaultBaseUrl         = "http://localhost:8088"
 )
 
-// NewClient(Options, log.Logger) (*Client, error)
-
 type HTTPClientFactory interface {
 	NewHTTPClient(options Options, logger log.Logger) (*Client, error)
 }
@@ -69,6 +67,7 @@ type Credentials struct {
 	Password string `json:"password" mapstructure:"password"`
 }
 
+// NewHTTPClient creates a new http client
 func NewHTTPClient(options Options, logger log.Logger) (Client, error) {
 	var uri *url.URL
 	var err error
@@ -83,10 +82,6 @@ func NewHTTPClient(options Options, logger log.Logger) (Client, error) {
 	}
 
 	tr := NewTransport(options)
-
-	//if logger == nil {
-	//	logger = log.Default()
-	//}
 
 	return Client{
 		logger: logger,
@@ -108,6 +103,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	return c.client.Do(req)
 }
 
+// Get executes a http request and returns a response or error
 func (c *Client) Get(url string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -116,10 +112,12 @@ func (c *Client) Get(url string) (*http.Response, error) {
 	return c.Do(req)
 }
 
+// GetUrl returns the full url for the requested endpoint
 func (c *Client) GetUrl(endpoint string) string {
 	return c.options.BaseUrl + endpoint
 }
 
+// Post executes a post request and returns the response or error
 func (c *Client) Post(url, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
