@@ -393,7 +393,7 @@ This starts the interctive ksqldb console.
 
 ```
 OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
-
+                  
                   ===========================================
                   =       _              _ ____  ____       =
                   =      | | _____  __ _| |  _ \| __ )      =
@@ -405,14 +405,14 @@ OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in ve
                   =        for stream processing apps       =
                   ===========================================
 
-Copyright 2017-2021 Confluent Inc.
+Copyright 2017-2022 Confluent Inc.
 
-CLI v0.21.0, Server v0.21.0 located at http://ksqldb:8088
+CLI v0.28.2, Server v0.28.2 located at http://ksqldb:8088
 Server Status: RUNNING
 
 Having trouble? Type 'help' (case-insensitive) for a rundown of how things work!
 
-ksql>
+ksql> 
 ```
 
 ## [Kafdrop](https://github.com/obsidiandynamics/kafdrop)
