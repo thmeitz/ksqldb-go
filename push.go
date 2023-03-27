@@ -48,12 +48,13 @@ import (
 // The channel is populated with ksqldb.Row which represents
 // one row of data. You will need to define variables to hold
 // each column's value. You can adopt this pattern to do this:
-// 		var DATA_TS float64
-// 		var ID string
-// 		for row := range rc {
-// 			if row != nil {
-//				DATA_TS = row[0].(float64)
-// 				ID = row[1].(string)
+//
+//	var DATA_TS float64
+//	var ID string
+//	for row := range rc {
+//		if row != nil {
+//			DATA_TS = row[0].(float64)
+//			ID = row[1].(string)
 func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 	rowChannel chan<- Row, headerChannel chan<- Header) (err error) {
 	if options.EmptyQuery() {

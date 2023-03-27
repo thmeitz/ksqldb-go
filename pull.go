@@ -37,14 +37,15 @@ import (
 // which will hold one or more rows of data. You will need to
 // define variables to hold each column's value. You can adopt
 // this pattern to do this:
-// 		var col1 string
-// 		var col2 float64
-// 		for _, row := range r {
-// 			col1 = row[0].(string)
-// 			col2 = row[1].(float64)
-// 			// Do other stuff with the data here
-// 			}
-// 		}
+//
+//	var col1 string
+//	var col2 float64
+//	for _, row := range r {
+//		col1 = row[0].(string)
+//		col2 = row[1].(float64)
+//		// Do other stuff with the data here
+//		}
+//	}
 func (api *KsqldbClient) Pull(ctx context.Context, options QueryOptions) (header Header, payload Payload, err error) {
 
 	if options.EmptyQuery() {

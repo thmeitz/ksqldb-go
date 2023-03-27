@@ -24,7 +24,7 @@ import (
 )
 
 // Close Query terminates push query explicitly
-func (api *KsqldbClient) ClosePushQuery(ctx context.Context, queryID string) error {
+func (api *KsqldbClient) ClosePushQuery(ctx context.Context, queryID string) (err error) {
 	payload := strings.NewReader(`{"queryId":"` + queryID + `"}`)
 	req, err := newPostRequest(api.http, ctx, CLOSE_QUERY_ENDPOINT, payload)
 
@@ -36,7 +36,12 @@ func (api *KsqldbClient) ClosePushQuery(ctx context.Context, queryID string) err
 	if err != nil {
 		return fmt.Errorf("failed to execute post request to terminate query: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
 
 	body, err := api.readBody(res.Body)
 	if err != nil {

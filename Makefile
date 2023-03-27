@@ -12,7 +12,7 @@ all: ## run format, vet, lint and test
 
 .PHONY: dev
 dev: ## install golangci-lint
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.1
 
 .PHONY: build
 build: ## build cobra-test 

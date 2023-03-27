@@ -30,11 +30,11 @@ type QueryStatus struct {
 // CREATE, DROP, and TERMINATE statements returns an object that indicates the current state of statement execution.
 // A statement can be in one of the following states:
 //
-//    QUEUED, PARSING, EXECUTING: The statement was accepted by the server and is being processed.
+//	QUEUED, PARSING, EXECUTING: The statement was accepted by the server and is being processed.
 //
-//    SUCCESS: The statement was successfully processed.
+//	SUCCESS: The statement was successfully processed.
 //
-//    ERROR: There was an error processing the statement. The statement was not executed.
+//	ERROR: There was an error processing the statement. The statement was not executed.
 //
 // TERMINATED: The query started by the statement was terminated. Only returned for CREATE STREAM|TABLE AS SELECT.
 //
