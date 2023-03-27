@@ -48,7 +48,11 @@ This is a Go client for [ksqlDB](https://ksqldb.io/).
 
 #### Supported ksqlDB versions
 
-- tested with ksqldb: v0.22.0, v0.21.0
+It seems that mdrogalis-voluble is no longer provided on confluent-hub.
+
+For that reason I built it locally and put it in the docker compose volume for the Kafka Connectors.
+
+- tested with ksqldb: v0.28.2, v0.22.0, v0.21.0
 
 ## Installation
 
