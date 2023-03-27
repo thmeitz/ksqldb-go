@@ -366,11 +366,11 @@ The parser is used to check the `KSql syntax`. If there are syntax errors, the e
 
 It contains the latest versions of all products.
 
-- zookeeper (6.2.1)
-- schema-registry (6.2.1)
-- ksqldb server (0.21.0)
-- kafka-connect (6.2.1)
-- ksqldb-cli (0.21.0)
+- zookeeper (7.3.2)
+- schema-registry (7.3.2)
+- ksqldb server (0.28.2)
+- kafka-connect (7.3.2)
+- ksqldb-cli (0.28.2)
 - kafdrop (latest)
 
 ### ksqldb
