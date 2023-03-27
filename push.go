@@ -87,7 +87,13 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 	if err != nil {
 		return fmt.Errorf("%v", err)
 	}
-	defer res.Body.Close()
+
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
 
 	reader := bufio.NewReader(res.Body)
 
@@ -132,5 +138,5 @@ func (api *KsqldbClient) Push(ctx context.Context, options QueryOptions,
 			}
 		}
 	}
-	return nil
+	return
 }

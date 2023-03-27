@@ -35,7 +35,7 @@ type ServerStatusResponse struct {
 }
 
 // ServerInfo provides information about your server
-func (api *KsqldbClient) GetServerStatus() (*ServerStatusResponse, error) {
+func (api *KsqldbClient) GetServerStatus() (result *ServerStatusResponse, err error) {
 	info := ServerStatusResponse{}
 	url := api.http.GetUrl(HEALTHCHECK_ENDPOINT)
 
@@ -43,7 +43,13 @@ func (api *KsqldbClient) GetServerStatus() (*ServerStatusResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't get healthcheck informations: %v", err)
 	}
-	defer res.Body.Close()
+
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
 
 	body, readErr := api.readBody(res.Body)
 	if readErr != nil {
@@ -54,5 +60,7 @@ func (api *KsqldbClient) GetServerStatus() (*ServerStatusResponse, error) {
 		return nil, fmt.Errorf("could not parse the response: %w", err)
 	}
 
-	return &info, nil
+	result = &info
+
+	return
 }

@@ -65,22 +65,32 @@ func handleRequestError(code int, buf []byte) error {
 	return ksqlError
 }
 
-func handleGetRequest(httpClient net.HTTPClient, url string) (*[]byte, error) {
+func handleGetRequest(httpClient net.HTTPClient, url string) (result *[]byte, err error) {
+	var body []byte
 	res, err := httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("ksqldb get request failed: %v", err)
 	}
-	defer res.Body.Close()
 
-	body, readErr := ioutil.ReadAll(res.Body)
-	if readErr != nil {
-		return nil, fmt.Errorf("could not read response body: %v", readErr)
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
+
+	body, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read response body: %v", err)
 	}
 
 	if res.StatusCode != http.StatusOK {
 		return nil, handleRequestError(res.StatusCode, body)
 	}
-	return &body, nil
+
+	result = &body
+
+	return
 }
 
 func newPostRequest(api net.HTTPClient, ctx context.Context, endpoint string, payload io.Reader) (*http.Request, error) {

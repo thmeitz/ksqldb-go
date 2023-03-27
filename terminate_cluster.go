@@ -47,11 +47,10 @@ func (tct *TerminateClusterTopics) Size() int {
 // INFO The KSQL server was terminated. (io.confluent.ksql.rest.server.computation.CommandRunner:380)
 // INFO Closing command store (io.confluent.ksql.rest.server.computation.CommandRunner:479)
 
-func (api *KsqldbClient) TerminateCluster(topics ...string) (*KsqlResponseSlice, error) {
-	result := new(KsqlResponseSlice)
+func (api *KsqldbClient) TerminateCluster(topics ...string) (result *KsqlResponseSlice, err error) {
+	result = new(KsqlResponseSlice)
 	tpc := TerminateClusterTopics{}
 	var b []byte
-	var err error
 
 	url := api.http.GetUrl(TERMINATE_CLUSTER_ENDPOINT)
 	if len(topics) > 0 {
@@ -66,7 +65,13 @@ func (api *KsqldbClient) TerminateCluster(topics ...string) (*KsqlResponseSlice,
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
-	defer res.Body.Close()
+
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
 
 	body, readErr := api.readBody(res.Body)
 	if readErr != nil {
@@ -81,5 +86,5 @@ func (api *KsqldbClient) TerminateCluster(topics ...string) (*KsqlResponseSlice,
 		return nil, fmt.Errorf("could not parse the response:%w", err)
 	}
 
-	return result, nil
+	return
 }

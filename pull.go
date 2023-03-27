@@ -43,7 +43,7 @@ import (
 //	for _, row := range r {
 //		col1 = row[0].(string)
 //		col2 = row[1].(float64)
-//		// Do other stuff with the data here
+//		... Do other stuff with the data here
 //		}
 //	}
 func (api *KsqldbClient) Pull(ctx context.Context, options QueryOptions) (header Header, payload Payload, err error) {
@@ -78,7 +78,12 @@ func (api *KsqldbClient) Pull(ctx context.Context, options QueryOptions) (header
 	if err != nil {
 		return header, payload, fmt.Errorf("can't do request: %+w", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
 
 	body, err := api.readBody(res.Body)
 	if err != nil {
@@ -110,7 +115,7 @@ func (api *KsqldbClient) Pull(ctx context.Context, options QueryOptions) (header
 		}
 	}
 
-	return header, payload, nil
+	return
 }
 
 func processHeader(data map[string]interface{}) (header Header) {

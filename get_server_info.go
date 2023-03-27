@@ -35,23 +35,30 @@ type KsqlServerInfoResponse struct {
 
 // ServerInfo gets the info for your server
 // api net.KsqlHTTPClient
-func (api *KsqldbClient) GetServerInfo() (*KsqlServerInfo, error) {
-	info := KsqlServerInfoResponse{}
+func (api *KsqldbClient) GetServerInfo() (info *KsqlServerInfo, err error) {
+	response := KsqlServerInfoResponse{}
 	res, err := api.http.Get(api.http.GetUrl(INFO_ENDPOINT))
 
 	if err != nil {
 		return nil, fmt.Errorf("can't get server info: %v", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
 
 	body, readErr := api.readBody(res.Body)
 	if readErr != nil {
 		return nil, fmt.Errorf("could not read response body: %v", readErr)
 	}
 
-	if err := api.unMarshalResp(body, &info); err != nil {
+	if err := api.unMarshalResp(body, &response); err != nil {
 		return nil, fmt.Errorf("could not parse the response: %w", err)
 	}
 
-	return &info.KsqlServerInfo, nil
+	info = &response.KsqlServerInfo
+
+	return
 }
