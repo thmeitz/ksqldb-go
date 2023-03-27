@@ -58,9 +58,8 @@ func (o *ExecOptions) EmptyQuery() bool {
 // To use this function pass in the @ExecOptions.
 //
 // Ref: https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint/
-func (api *KsqldbClient) Execute(options ExecOptions) (*KsqlResponseSlice, error) {
-	var err error
-	var response = new(KsqlResponseSlice)
+func (api *KsqldbClient) Execute(options ExecOptions) (response *KsqlResponseSlice, err error) {
+	response = new(KsqlResponseSlice)
 
 	if options.EmptyQuery() {
 		return nil, fmt.Errorf("empty ksql query")
@@ -91,7 +90,12 @@ func (api *KsqldbClient) Execute(options ExecOptions) (*KsqlResponseSlice, error
 	if err != nil {
 		return nil, fmt.Errorf("can't do request: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		berr := res.Body.Close()
+		if err == nil {
+			err = berr
+		}
+	}()
 
 	body, err := api.readBody(res.Body)
 	if err != nil {
@@ -107,5 +111,5 @@ func (api *KsqldbClient) Execute(options ExecOptions) (*KsqlResponseSlice, error
 		return nil, fmt.Errorf("could not parse the response: %w\n%v", err, string(body))
 	}
 
-	return response, nil
+	return
 }
