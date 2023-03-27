@@ -51,10 +51,6 @@ func newQueryStreamRequest(api net.HTTPClient, ctx context.Context, payload io.R
 	return req, nil
 }
 
-// func newCloseQueryRequest(api net.HTTPClient, ctx context.Context, payload io.Reader) (*http.Request, error) {
-// 	return newPostRequest(api, ctx, CLOSE_QUERY_ENDPOINT, payload)
-// }
-
 func handleRequestError(code int, buf []byte) error {
 	ksqlError := ResponseError{}
 	if err := json.Unmarshal(buf, &ksqlError); err != nil {

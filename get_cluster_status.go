@@ -79,7 +79,7 @@ type Partition struct {
 	OffsetLag             uint64
 }
 
-// GetClusterStatus
+// GetClusterStatus returns the status of the cluster
 // @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/cluster-status-endpoint/
 func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 	var csr ClusterStatusResponse
