@@ -26,18 +26,6 @@ jobs:
         with:
           args: -no-fail -fmt=sonarqube -out secreport.json ./...
 
-      #- name: Run Gosec Security Scanner
-      #  run: |
-      #    go get github.com/securego/gosec/cmd/gosec
-      #    gosec -no-fail -fmt=sonarqube -out secreport.json ./...
-
-      #- name: Codecov
-      #  uses: codecov/codecov-action@v2.1.0
-      #- name: lint
-      #  run: |
-      #    go get github.com/golangci/golangci-lint/cmd/golangci-lint
-      #    golangci-lint run ./... --verbose --no-config --out-format checkstyle > golangci-lint.out
-
       - name: Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -48,7 +36,7 @@ jobs:
             -Dsonar.organization=thmeitz
             -Dsonar.projectKey=thmeitz_ksqldb-go
             -Dsonar.projectName=ksqldb-go
-            -Dsonar.projectVersion=v0.0.4
+            -Dsonar.projectVersion=v0.0.5
             -Dsonar.sources=.
             -Dsonar.exclusions=**/mocks/**,**/examples/**,**/parser/ksql_base_listener.go,**/parser/ksql_lexer.go,**/parser/ksql_listener.go,**/parser/ksql_parser.go,**/report.json
             -Dsonar.tests=.
@@ -56,7 +44,4 @@ jobs:
             -Dsonar.go.coverage.reportPaths=test.out
             -Dsonar.go.tests.reportPaths=report.json
             -Dsonar.externalIssuesReportPaths=secreport.json
-            -Dsonar.verbose=true
-
-#            -Dsonar.test.exclusions=**/**_test**
-#            -Dsonar.go.golangci-lint.reportPaths=golangci-lint.out
+            -Dsonar.verbose=false
