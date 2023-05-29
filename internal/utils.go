@@ -43,6 +43,8 @@ func GetUrl(path string) (*url.URL, error) {
 // eventually we can use the KSqlParser to rewrite the query
 func SanitizeQuery(content string) string {
 	content = strings.ReplaceAll(content, "\t", "")
-	content = strings.ReplaceAll(content, "\n", "")
+	content = strings.ReplaceAll(content, "\n", " ")
+	content = strings.ReplaceAll(content, "  ", " ")
+	content = strings.TrimSpace(content)
 	return content
 }

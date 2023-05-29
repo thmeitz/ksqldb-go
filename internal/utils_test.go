@@ -17,6 +17,7 @@ limitations under the License.
 package internal_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -57,4 +58,25 @@ func TestClientSanitizeQuery(t *testing.T) {
 	
 	`)
 	require.Equal(t, "This is the house of Nicolas", sanitizedString)
+}
+
+func TestClientSanitizeQuery_Issue36(t *testing.T) {
+	a := `CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY,
+		NAME STRING,
+		DOGSIZE STRING,
+		AGE STRING)
+	WITH (KAFKA_TOPIC='dogs',
+	VALUE_FORMAT='JSON', PARTITIONS=1);	
+	`
+	b := `CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
+		NAME STRING, 
+		DOGSIZE STRING, 
+		AGE STRING) 
+	WITH (KAFKA_TOPIC='dogs', 
+	VALUE_FORMAT='JSON', PARTITIONS=1);
+	`
+	sanitizedStringA := internal.SanitizeQuery(a)
+	sanitizedStringB := internal.SanitizeQuery(b)
+	require.Equal(t, sanitizedStringA, sanitizedStringB)
+	fmt.Printf("TestClientSanitizeQuery_Issue36: %v\n", sanitizedStringA)
 }
