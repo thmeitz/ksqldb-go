@@ -46,10 +46,20 @@ type QueryDescription struct {
 	Topology      string
 }
 
+type QueryInfo struct {
+	QueryString     string
+	Sinks           []string
+	SinkKafkaTopics []string
+	Id              string
+	StatusCount     map[string]int
+	QueryType       string
+	State           string
+}
+
 type SourceDescription struct {
 	Name         string
-	ReadQueries  []Query
-	WriteQueries []Query
+	ReadQueries  []QueryInfo
+	WriteQueries []QueryInfo
 	Fields       []Field
 	Type         string
 	Key          string
