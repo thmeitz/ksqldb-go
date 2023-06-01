@@ -46,6 +46,34 @@ type QueryDescription struct {
 	Topology      string
 }
 
+type QueryInfo struct {
+	QueryString     string
+	Sinks           []string
+	SinkKafkaTopics []string
+	Id              string
+	StatusCount     map[string]int
+	QueryType       string
+	State           string
+}
+
+type SourceDescription struct {
+	Name         string
+	ReadQueries  []QueryInfo
+	WriteQueries []QueryInfo
+	Fields       []Field
+	Type         string
+	Key          string
+	Timestamp    string
+	Format       string
+	Topic        string
+	Extended     bool
+	// Extended only
+	Statistics  string
+	ErrorStats  string
+	Replication int
+	Partitions  int
+}
+
 type KsqlResponseSlice []KsqlResponse
 type StreamSlice []Stream
 type TableSlice []Table
@@ -54,12 +82,13 @@ type QuerySlice []Query
 type KsqlResponse struct {
 	StatementText         string
 	Warnings              []string
-	Type                  string            `json:"@type"`
-	CommandId             string            `json:"commandId,omitempty"`
-	CommandSequenceNumber int64             `json:"commandSequenceNumber,omitempty"` // -1 if the operation was unsuccessful
-	CommandStatus         CommandStatus     `json:"commandStatus,omitempty"`
-	Stream                *StreamSlice      `json:"streams,omitempty"`
-	Tables                *TableSlice       `json:"tables,omitempty"`
-	Queries               *QuerySlice       `json:"queries,omitempty"`
-	QueryDescription      *QueryDescription `json:"queryDescription,omitempty"`
+	Type                  string             `json:"@type"`
+	CommandId             string             `json:"commandId,omitempty"`
+	CommandSequenceNumber int64              `json:"commandSequenceNumber,omitempty"` // -1 if the operation was unsuccessful
+	CommandStatus         CommandStatus      `json:"commandStatus,omitempty"`
+	Stream                *StreamSlice       `json:"streams,omitempty"`
+	Tables                *TableSlice        `json:"tables,omitempty"`
+	Queries               *QuerySlice        `json:"queries,omitempty"`
+	QueryDescription      *QueryDescription  `json:"queryDescription,omitempty"`
+	SourceDescription     *SourceDescription `json:"sourceDescription,omitempty"`
 }
