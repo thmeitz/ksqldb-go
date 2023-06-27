@@ -1,4 +1,21 @@
 
+<a name="v0.0.7"></a>
+## [v0.0.7](https://github.com/thmeitz/ksqldb-go/compare/v0.0.6...v0.0.7) (2023-06-27)
+
+### Chore
+
+* changelog
+
+### Feat
+
+* **response:** fix query info
+* **response:** define sourceDescription
+
+### Pull Requests
+
+* Merge pull request [#37](https://github.com/thmeitz/ksqldb-go/issues/37) from hekike/feat/response-sourceDescription
+
+
 <a name="v0.0.6"></a>
 ## [v0.0.6](https://github.com/thmeitz/ksqldb-go/compare/v0.0.5...v0.0.6) (2023-05-30)
 
@@ -6,17 +23,22 @@
 
 * Merge pull request [#35](https://github.com/thmeitz/ksqldb-go/issues/35) from thmeitz/feature/docs
 
+
 <a name="v0.0.5"></a>
 ## [v0.0.5](https://github.com/thmeitz/ksqldb-go/compare/v0.0.4...v0.0.5) (2023-03-27)
 
 ### Chore
 
-* updated readme
+* update readme
+* update readme
 * updated codeql-action to v2 (v1 is deprecated)
-* updated push example
+* push test
+* readme updated
+* update push example
 
 ### Close_push_query
 
+* implemented + tests
 * implemented + tests
 
 ### Docker
@@ -68,6 +90,10 @@
 ### Chore
 
 * updated readme
+* readme updated
+* updated readme
+* updated readme
+* updated readme
 * format validate.go
 * updated json unmarshal errors
 
@@ -81,6 +107,7 @@
 
 ### Parser
 
+* added casechangingstream to the parser
 * added casechangingstream to the parser
 
 ### Querybuilder
