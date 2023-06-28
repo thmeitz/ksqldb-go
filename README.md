@@ -19,6 +19,27 @@ This client is `not production ready` and the interfaces can be changed without 
 
 ⚠️ Disclaimer #1: This is a personal project and not supported or endorsed by Confluent.
 
+### Breaking Change v0.1.0
+
+All API calls must now contain a context object.
+
+#### KsqldbClient Changes
+
+- `Execute(ctx context.Context, options ExecOptions)`
+- `GetClusterStatus(ctx context.Context)`
+- `GetQueryStatus(ctx context.Context, commandId string)`
+- `GetServerInfo(ctx context.Context)`
+- `GetServerStatus(ctx context.Context)`
+- `TerminateCluster(ctx context.Context, topics ...string)`
+- `ValidateProperty(ctx context.Context, property string)`
+
+#### HTTPClient Interface Changes
+
+- `Get(ctx context.Context, url string)`
+- `Post(ctx context.Context, url, contentType string, body io.Reader)`
+
+*Please update your code!*
+
 ## Migration?
 
 Checkout [ksqldb-migrate](https://github.com/thmeitz/ksqldb-migrate), a tool to run your ksqlDB migrations.
