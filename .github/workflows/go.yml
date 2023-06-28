@@ -36,7 +36,7 @@ jobs:
             -Dsonar.organization=thmeitz
             -Dsonar.projectKey=thmeitz_ksqldb-go
             -Dsonar.projectName=ksqldb-go
-            -Dsonar.projectVersion=v0.0.5
+            -Dsonar.projectVersion=v0.1.0
             -Dsonar.sources=.
             -Dsonar.exclusions=**/mocks/**,**/examples/**,**/parser/ksql_base_listener.go,**/parser/ksql_lexer.go,**/parser/ksql_listener.go,**/parser/ksql_parser.go,**/report.json
             -Dsonar.tests=.
