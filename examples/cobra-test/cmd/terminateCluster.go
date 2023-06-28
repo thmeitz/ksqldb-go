@@ -16,6 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
+
 	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -58,7 +60,7 @@ func terminateCluster(cmd *cobra.Command, args []string) {
 	}
 	defer kcl.Close()
 
-	if result, err = kcl.TerminateCluster("DOGS_BY_SIZE", "dogs"); err != nil {
+	if result, err = kcl.TerminateCluster(context.Background(), "DOGS_BY_SIZE", "dogs"); err != nil {
 		log.Fatal(err)
 	}
 

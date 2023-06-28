@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Masterminds/log-go"
@@ -57,7 +58,7 @@ func health(cmd *cobra.Command, args []string) {
 	}
 	defer kcl.Close()
 
-	health, err := kcl.GetServerStatus()
+	health, err := kcl.GetServerStatus(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
