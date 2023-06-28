@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"os"
 	"time"
 
@@ -56,7 +57,7 @@ func setup(cmd *cobra.Command, args []string) {
 	}
 	defer kcl.Close()
 
-	resp, err := kcl.Execute(ksqldb.ExecOptions{KSql: `
+	resp, err := kcl.Execute(context.Background(), ksqldb.ExecOptions{KSql: `
 		CREATE SOURCE CONNECTOR DOGS WITH (
 		'connector.class'                = 'io.mdrogalis.voluble.VolubleSourceConnector',
 		'key.converter'                  = 'org.apache.kafka.connect.storage.StringConverter',
@@ -81,7 +82,7 @@ func setup(cmd *cobra.Command, args []string) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS stream
-	resp, err = kcl.Execute(ksqldb.ExecOptions{KSql: `
+	resp, err = kcl.Execute(context.Background(), ksqldb.ExecOptions{KSql: `
 		CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
 			NAME STRING, 
 			DOGSIZE STRING, 
@@ -100,7 +101,7 @@ func setup(cmd *cobra.Command, args []string) {
 	time.Sleep(5 * time.Second)
 
 	// create the DOGS_BY_SIZE table
-	resp, err = kcl.Execute(ksqldb.ExecOptions{KSql: `
+	resp, err = kcl.Execute(context.Background(), ksqldb.ExecOptions{KSql: `
 		CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
 			SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
 			FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 

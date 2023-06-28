@@ -16,6 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
+
 	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -55,7 +57,7 @@ func validate(cmd *cobra.Command, args []string) {
 	// ksql.query.pull.metrics.enabled => true
 	// ksql.service.id => error
 	metrics := "ksql.query.pull.metrics.enabled"
-	value, err := kcl.ValidateProperty(metrics)
+	value, err := kcl.ValidateProperty(context.Background(), metrics)
 	if err != nil {
 		log.Fatal(err)
 	}
