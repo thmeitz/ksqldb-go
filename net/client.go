@@ -23,6 +23,7 @@ https://github.com/zalando/skipper/blob/master/LICENSE
 package net
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -46,8 +47,8 @@ type HTTPClientFactory interface {
 type HTTPClient interface {
 	GetUrl(endpoint string) string
 	Do(*http.Request) (*http.Response, error)
-	Get(url string) (*http.Response, error)
-	Post(url, contentType string, body io.Reader) (*http.Response, error)
+	Get(ctx context.Context, url string) (*http.Response, error)
+	Post(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error)
 	BasicAuth() string
 	Close()
 }
@@ -71,7 +72,7 @@ type Credentials struct {
 func NewHTTPClient(options Options, logger log.Logger) (Client, error) {
 	var uri *url.URL
 	var err error
-	var cl = Client{}
+	var cl Client
 
 	if options.BaseUrl == "" {
 		options.BaseUrl = DefaultBaseUrl
@@ -104,8 +105,8 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 }
 
 // Get executes a http request and returns a response or error
-func (c *Client) Get(url string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func (c *Client) Get(ctx context.Context, url string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +119,8 @@ func (c *Client) GetUrl(endpoint string) string {
 }
 
 // Post executes a post request and returns the response or error
-func (c *Client) Post(url, contentType string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest("POST", url, body)
+func (c *Client) Post(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "POST", url, body)
 	if err != nil {
 		return nil, err
 	}

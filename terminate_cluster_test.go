@@ -18,6 +18,7 @@ package ksqldb_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -39,21 +40,23 @@ func TestTerminateClusterTopics_Add(t *testing.T) {
 }
 
 func TestTerminateCluster_WithoutTopicsPostError(t *testing.T) {
+	ctx := context.Background()
 	tpc := ksqldb.TerminateClusterTopics{}
 	b, _ := json.Marshal(&tpc)
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", ctx, mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(nil, errors.New("error"))
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.TerminateCluster()
+	val, err := kcl.TerminateCluster(ctx)
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "error", err.Error())
 }
 
 func TestTerminateCluster_WithTopicsUnmarshalError(t *testing.T) {
+	ctx := context.Background()
 	tpc := ksqldb.TerminateClusterTopics{}
 	tpc.Add("test", "test2")
 	b, _ := json.Marshal(&tpc)
@@ -65,16 +68,17 @@ func TestTerminateCluster_WithTopicsUnmarshalError(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", ctx, mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.TerminateCluster("test", "test2")
+	val, err := kcl.TerminateCluster(ctx, "test", "test2")
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "could not parse the response:json: cannot unmarshal object into Go value of type ksqldb.KsqlResponseSlice", err.Error())
 }
 
 func TestTerminateCluster_HttpStatusNotOk(t *testing.T) {
+	ctx := context.Background()
 	tpc := ksqldb.TerminateClusterTopics{}
 	tpc.Add("test", "test2")
 	b, _ := json.Marshal(&tpc)
@@ -86,16 +90,17 @@ func TestTerminateCluster_HttpStatusNotOk(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", ctx, mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.TerminateCluster("test", "test2")
+	val, err := kcl.TerminateCluster(ctx, "test", "test2")
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "some message", err.Error())
 }
 
 func TestTerminateCluster_EmptyResponseBody(t *testing.T) {
+	ctx := context.Background()
 	tpc := ksqldb.TerminateClusterTopics{}
 	tpc.Add("test", "test2")
 	b, _ := json.Marshal(&tpc)
@@ -106,16 +111,17 @@ func TestTerminateCluster_EmptyResponseBody(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", ctx, mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.TerminateCluster("test", "test2")
+	val, err := kcl.TerminateCluster(ctx, "test", "test2")
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "ksqldb error: unexpected end of JSON input", err.Error())
 }
 
 func TestTerminateCluster_TerminatedCluster(t *testing.T) {
+	ctx := context.Background()
 	tpc := ksqldb.TerminateClusterTopics{}
 	tpc.Add("test", "test2")
 	b, _ := json.Marshal(&tpc)
@@ -127,10 +133,10 @@ func TestTerminateCluster_TerminatedCluster(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/ksql/terminate")
 	m.Mock.
-		On("Post", mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
+		On("Post", ctx, mock.Anything, "application/vnd.ksql.v1+json", bytes.NewBuffer(b)).
 		Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.TerminateCluster("test", "test2")
+	val, err := kcl.TerminateCluster(ctx, "test", "test2")
 	require.NotNil(t, val)
 	require.Nil(t, err)
 }

@@ -18,6 +18,7 @@ package ksqldb_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -31,54 +32,58 @@ import (
 )
 
 func TestValidateProperty_EmptyProperty(t *testing.T) {
-	var options = net.Options{
+	ctx := context.Background()
+	options := net.Options{
 		BaseUrl:   "http://localhost:8088",
 		AllowHTTP: true,
 	}
 	kcl, err := ksqldb.NewClientWithOptions(options)
 	require.Nil(t, err)
 	require.NotNil(t, kcl)
-	val, err := kcl.ValidateProperty("")
+	val, err := kcl.ValidateProperty(ctx, "")
 	require.Equal(t, "property must not empty", err.Error())
 	require.Nil(t, val)
 }
 
 func TestValidateProperty_RequestError(t *testing.T) {
+	ctx := context.Background()
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/is_valid_property/test")
-	m.Mock.On("Get", mock.Anything).Return(nil, errors.New("error"))
+	m.Mock.On("Get", ctx, mock.Anything).Return(nil, errors.New("error"))
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.ValidateProperty("test")
+	val, err := kcl.ValidateProperty(ctx, "test")
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "ksqldb get request failed: error", err.Error())
 }
 
 func TestValidateProperty_UnmarshalError(t *testing.T) {
+	ctx := context.Background()
 	json := `{"name":"Test Name"}`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/is_valid_property/test")
-	m.Mock.On("Get", mock.Anything).Return(&res, nil)
+	m.Mock.On("Get", ctx, mock.Anything).Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.ValidateProperty("test")
+	val, err := kcl.ValidateProperty(ctx, "test")
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "could not parse the response:json: cannot unmarshal object into Go value of type bool", err.Error())
 }
 
 func TestValidateProperty_Successfull(t *testing.T) {
+	ctx := context.Background()
 	json := `true`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/is_valid_property/test")
-	m.Mock.On("Get", mock.Anything).Return(&res, nil)
+	m.Mock.On("Get", ctx, mock.Anything).Return(&res, nil)
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.ValidateProperty("test")
+	val, err := kcl.ValidateProperty(ctx, "test")
 	require.NotNil(t, val)
 	require.Nil(t, err)
 	require.True(t, *val)

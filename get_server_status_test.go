@@ -18,6 +18,7 @@ package ksqldb_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -30,20 +31,22 @@ import (
 )
 
 func TestGetServerStatus_ResponseError(t *testing.T) {
+	ctx := context.Background()
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/healthcheck")
 	m.Mock.
-		On("Get", mock.Anything).
+		On("Get", ctx, mock.Anything).
 		Return(nil, errors.New("error"))
 
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.GetServerStatus()
+	val, err := kcl.GetServerStatus(ctx)
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "can't get healthcheck informations: error", err.Error())
 }
 
 func TestGetServerStatus_SuccessfullResponse(t *testing.T) {
+	ctx := context.Background()
 	json := `{"isHealthy":true,"details":{"metastore":{"isHealthy":true},"kafka":{"isHealthy":true},"commandRunner":{"isHealthy":true}}}`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
@@ -51,11 +54,11 @@ func TestGetServerStatus_SuccessfullResponse(t *testing.T) {
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/healthcheck")
 	m.Mock.
-		On("Get", mock.Anything).
+		On("Get", ctx, mock.Anything).
 		Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.GetServerStatus()
+	val, err := kcl.GetServerStatus(ctx)
 	require.Nil(t, err)
 	require.NotNil(t, val)
 	require.True(t, *val.IsHealthy)

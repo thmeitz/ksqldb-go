@@ -27,11 +27,13 @@ import (
 	"github.com/thmeitz/ksqldb-go/net"
 )
 
-type RequestParams map[string]interface{}
-type Response map[string]interface{}
+type (
+	RequestParams map[string]interface{}
+	Response      map[string]interface{}
+)
 
-func newKsqlRequest(api net.HTTPClient, payload io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest("POST", api.GetUrl(KSQL_ENDPOINT), payload)
+func newKsqlRequest(ctx context.Context, api net.HTTPClient, payload io.Reader) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, "POST", api.GetUrl(KSQL_ENDPOINT), payload)
 	if err != nil {
 		return req, err
 	}
@@ -61,9 +63,9 @@ func handleRequestError(code int, buf []byte) error {
 	return ksqlError
 }
 
-func handleGetRequest(httpClient net.HTTPClient, url string) (result *[]byte, err error) {
+func handleGetRequest(ctx context.Context, httpClient net.HTTPClient, url string) (result *[]byte, err error) {
 	var body []byte
-	res, err := httpClient.Get(url)
+	res, err := httpClient.Get(ctx, url)
 	if err != nil {
 		return nil, fmt.Errorf("ksqldb get request failed: %v", err)
 	}
