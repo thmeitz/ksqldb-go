@@ -18,6 +18,7 @@ package ksqldb_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -30,10 +31,11 @@ import (
 )
 
 func TestQueryStatus_EmptyCommandId(t *testing.T) {
+	ctx := context.Background()
 	m := mocknet.HTTPClient{}
 
 	kcl, _ := ksqldb.NewClient(&m)
-	result, err := kcl.GetQueryStatus("")
+	result, err := kcl.GetQueryStatus(ctx, "")
 
 	require.Nil(t, result)
 	require.NotNil(t, err)
@@ -41,14 +43,15 @@ func TestQueryStatus_EmptyCommandId(t *testing.T) {
 }
 
 func TestQueryStatus_GetError(t *testing.T) {
+	ctx := context.Background()
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/status/stream/PAGEVIEWS/create")
-	m.Mock.On("Get", mock.Anything).Return(nil, errors.New("error"))
+	m.Mock.On("Get", ctx, mock.Anything).Return(nil, errors.New("error"))
 	m.Mock.On("Close").Return()
 
 	kcl, _ := ksqldb.NewClient(&m)
 	kcl.Close()
-	_, err := kcl.GetQueryStatus("/stream/PAGEVIEWS/create")
+	_, err := kcl.GetQueryStatus(ctx, "/stream/PAGEVIEWS/create")
 
 	require.NotNil(t, err)
 	require.Equal(t, "ksqldb get request failed: error", err.Error())
@@ -56,30 +59,32 @@ func TestQueryStatus_GetError(t *testing.T) {
 }
 
 func TestQueryStatus_UnmarshalError(t *testing.T) {
+	ctx := context.Background()
 	json := `true`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/status/stream/PAGEVIEWS/create")
-	m.Mock.On("Get", mock.Anything).Return(&res, nil)
+	m.Mock.On("Get", ctx, mock.Anything).Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.GetQueryStatus("/stream/PAGEVIEWS/create")
+	val, err := kcl.GetQueryStatus(ctx, "/stream/PAGEVIEWS/create")
 	require.Nil(t, val)
 	require.NotNil(t, err)
 	require.Equal(t, "could not parse the response:json: cannot unmarshal bool into Go value of type ksqldb.QueryStatus", err.Error())
 }
 
 func TestQueryStatus_Successful(t *testing.T) {
+	ctx := context.Background()
 	json := `{"status": "SUCCESS","message":"Stream created and running"}`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	res := http.Response{StatusCode: 200, Body: r}
 	m := mocknet.HTTPClient{}
 	m.Mock.On("GetUrl", mock.Anything).Return("http://localhost/status/stream/PAGEVIEWS/create")
-	m.Mock.On("Get", mock.Anything).Return(&res, nil)
+	m.Mock.On("Get", ctx, mock.Anything).Return(&res, nil)
 
 	kcl, _ := ksqldb.NewClient(&m)
-	val, err := kcl.GetQueryStatus("/stream/PAGEVIEWS/create")
+	val, err := kcl.GetQueryStatus(ctx, "/stream/PAGEVIEWS/create")
 	require.Nil(t, err)
 	require.NotNil(t, val)
 }

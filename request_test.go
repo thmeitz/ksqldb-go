@@ -15,27 +15,28 @@ import (
 )
 
 func TestHandleGetRequest_StatusCodeError(t *testing.T) {
+	ctx := context.Background()
 	fn := ksqldb.HandleGetRequest
 	r := ioutil.NopCloser(bytes.NewReader([]byte("")))
 	res := http.Response{StatusCode: 400, Body: r}
 
 	m := &mocknet.HTTPClient{}
-	m.On("Get", mock.Anything).Return(&res, nil)
+	m.On("Get", ctx, mock.Anything).Return(&res, nil)
 
-	_, err := fn(m, "/bla")
+	_, err := fn(ctx, m, "/bla")
 
 	require.NotNil(t, err)
 }
 
 func TestHandleRequestError(t *testing.T) {
-
 }
 
 func TestNewKsqlRequest(t *testing.T) {
+	ctx := context.Background()
 	postFn := ksqldb.NewKsqlRequest
 	client, _ := net.NewHTTPClient(net.Options{}, nil)
 	r := ioutil.NopCloser(bytes.NewReader([]byte("hallo")))
-	req, err := postFn(&client, r)
+	req, err := postFn(ctx, &client, r)
 	require.NotNil(t, req)
 	require.Nil(t, err)
 	require.Equal(t, "/ksql", req.URL.Path)
@@ -63,7 +64,6 @@ func TestNewPostRequest_Successful(t *testing.T) {
 }
 
 func TestNewQueryRequest(t *testing.T) {
-
 }
 
 func TestNewQueryStreamRequest(t *testing.T) {

@@ -17,6 +17,7 @@ limitations under the License.
 package ksqldb
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -35,10 +36,9 @@ type KsqlServerInfoResponse struct {
 
 // ServerInfo gets the info for your server
 // api net.KsqlHTTPClient
-func (api *KsqldbClient) GetServerInfo() (info *KsqlServerInfo, err error) {
+func (api *KsqldbClient) GetServerInfo(ctx context.Context) (info *KsqlServerInfo, err error) {
 	response := KsqlServerInfoResponse{}
-	res, err := api.http.Get(api.http.GetUrl(INFO_ENDPOINT))
-
+	res, err := api.http.Get(ctx, api.http.GetUrl(INFO_ENDPOINT))
 	if err != nil {
 		return nil, fmt.Errorf("can't get server info: %v", err)
 	}

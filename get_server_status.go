@@ -17,6 +17,7 @@ limitations under the License.
 package ksqldb
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -35,11 +36,11 @@ type ServerStatusResponse struct {
 }
 
 // GetServerStatus provides provides information about your server
-func (api *KsqldbClient) GetServerStatus() (result *ServerStatusResponse, err error) {
+func (api *KsqldbClient) GetServerStatus(ctx context.Context) (result *ServerStatusResponse, err error) {
 	info := ServerStatusResponse{}
 	url := api.http.GetUrl(HEALTHCHECK_ENDPOINT)
 
-	res, err := api.http.Get(url)
+	res, err := api.http.Get(ctx, url)
 	if err != nil {
 		return nil, fmt.Errorf("can't get healthcheck informations: %v", err)
 	}

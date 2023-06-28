@@ -17,13 +17,14 @@ limitations under the License.
 package ksqldb
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 )
 
 // ValidateProperty resource tells you whether a property is prohibited from setting.
 // If prohibited the ksqlDB server api returns a 400 error
-func (api *KsqldbClient) ValidateProperty(property string) (*bool, error) {
+func (api *KsqldbClient) ValidateProperty(ctx context.Context, property string) (*bool, error) {
 	var input bool
 	var body *[]byte
 	var err error
@@ -34,7 +35,7 @@ func (api *KsqldbClient) ValidateProperty(property string) (*bool, error) {
 
 	url := api.http.GetUrl(PROP_VALIDITY_ENPOINT + "/" + property)
 
-	if body, err = handleGetRequest(api.http, url); err != nil {
+	if body, err = handleGetRequest(ctx, api.http, url); err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 

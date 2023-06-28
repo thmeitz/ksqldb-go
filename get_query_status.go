@@ -17,6 +17,7 @@ limitations under the License.
 package ksqldb
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -41,7 +42,7 @@ type QueryStatus struct {
 // If a CREATE, DROP, or TERMINATE statement returns a command status with state
 // QUEUED, PARSING, or EXECUTING from the @Execute endpoint,
 // you can use the @GetQueryStatus endpoint to poll the status of the command.
-func (api *KsqldbClient) GetQueryStatus(commandId string) (*QueryStatus, error) {
+func (api *KsqldbClient) GetQueryStatus(ctx context.Context, commandId string) (*QueryStatus, error) {
 	var qs QueryStatus
 	var body *[]byte
 	var err error
@@ -52,7 +53,7 @@ func (api *KsqldbClient) GetQueryStatus(commandId string) (*QueryStatus, error) 
 
 	url := api.http.GetUrl(STATUS_ENDPOINT + commandId)
 
-	if body, err = handleGetRequest(api.http, url); err != nil {
+	if body, err = handleGetRequest(ctx, api.http, url); err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 

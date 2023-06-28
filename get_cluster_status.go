@@ -17,6 +17,7 @@ limitations under the License.
 package ksqldb
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mitchellh/mapstructure"
@@ -81,7 +82,7 @@ type Partition struct {
 
 // GetClusterStatus returns the status of the cluster
 // @see https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/cluster-status-endpoint/
-func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
+func (api *KsqldbClient) GetClusterStatus(ctx context.Context) (*ClusterStatusResponse, error) {
 	var csr ClusterStatusResponse
 	var input map[string]interface{}
 	var body *[]byte
@@ -89,7 +90,7 @@ func (api *KsqldbClient) GetClusterStatus() (*ClusterStatusResponse, error) {
 
 	url := api.http.GetUrl(CLUSTER_STATUS_ENDPOINT)
 
-	if body, err = handleGetRequest(api.http, url); err != nil {
+	if body, err = handleGetRequest(ctx, api.http, url); err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 

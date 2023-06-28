@@ -25,6 +25,7 @@ package ksqldb
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -58,7 +59,7 @@ func (o *ExecOptions) EmptyQuery() bool {
 // To use this function pass in the @ExecOptions.
 //
 // Ref: https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint/
-func (api *KsqldbClient) Execute(options ExecOptions) (response *KsqlResponseSlice, err error) {
+func (api *KsqldbClient) Execute(ctx context.Context, options ExecOptions) (response *KsqlResponseSlice, err error) {
 	response = new(KsqlResponseSlice)
 
 	if options.EmptyQuery() {
@@ -80,7 +81,7 @@ func (api *KsqldbClient) Execute(options ExecOptions) (response *KsqlResponseSli
 	}
 
 	// make the request
-	req, err := newKsqlRequest(api.http, bytes.NewReader(jsonData))
+	req, err := newKsqlRequest(ctx, api.http, bytes.NewReader(jsonData))
 	// api.logger.Debugf("sending ksqlDB request:%v", q)
 	if err != nil {
 		return nil, fmt.Errorf("can't create new request: %w", err)

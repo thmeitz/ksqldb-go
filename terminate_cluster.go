@@ -18,6 +18,7 @@ package ksqldb
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -46,7 +47,7 @@ func (tct *TerminateClusterTopics) Size() int {
 // INFO 172.18.0.1 - - "POST /ksql/terminate HTTP/2.0" 200 242 "-" "Go-http-client/2.0" 43 (io.confluent.ksql.api.server.LoggingHandler:113)
 // INFO The KSQL server was terminated. (io.confluent.ksql.rest.server.computation.CommandRunner:380)
 // INFO Closing command store (io.confluent.ksql.rest.server.computation.CommandRunner:479)
-func (api *KsqldbClient) TerminateCluster(topics ...string) (result *KsqlResponseSlice, err error) {
+func (api *KsqldbClient) TerminateCluster(ctx context.Context, topics ...string) (result *KsqlResponseSlice, err error) {
 	result = new(KsqlResponseSlice)
 	tpc := TerminateClusterTopics{}
 	var b []byte
@@ -60,7 +61,7 @@ func (api *KsqldbClient) TerminateCluster(topics ...string) (result *KsqlRespons
 		return nil, fmt.Errorf("can't marshal data %w", err)
 	}
 
-	res, err := api.http.Post(url, "application/vnd.ksql.v1+json", bytes.NewBuffer(b))
+	res, err := api.http.Post(ctx, url, "application/vnd.ksql.v1+json", bytes.NewBuffer(b))
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
