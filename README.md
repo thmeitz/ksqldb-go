@@ -103,10 +103,6 @@ go mod tidy
 
 ### Create a ksqlDB Client
 
-> #### Breaking Change v0.0.4
->
-> The HTTP client has now its own package
-
 ```golang
 import (
   "github.com/Masterminds/log-go"
@@ -126,11 +122,10 @@ func main {
     // defaults to http://localhost:8088
     BaseUrl:     "http://my-super-shiny-ksqldbserver:8082",
     // this is needed, because the ksql api communicates with http2 only
-    // default value in v0.0.4
     AllowHTTP:   true,
   }
 
-  // only log.Logger is allowed or nil (since v0.0.4)
+  // only log.Logger is allowed or nil
   // logrus is in maintenance mode, so I'll using zap in the future
   client, err := net.NewHTTPClient(options, nil)
   if err != nil {
@@ -145,10 +140,6 @@ func main {
 For no authentication remove `Credentials` from options.
 
 ### QueryBuilder
-
-> #### Breaking Change v0.0.4
->
-> The QueryBuilder was to complicated, so I've refactored it
 
 SQL strings should be build by a QueryBuilder. Otherwise the system is open for SQL injections (see [go-webapp-scp.pdf](https://github.com/OWASP/Go-SCP/blob/master/dist/go-webapp-scp.pdf) ).
 
@@ -297,7 +288,7 @@ if e != nil {
 	}
 	defer kcl.Close()
 
-	resp, err := kcl.Execute(ksqldb.ExecOptions{KSql: `
+	resp, err := kcl.Execute(context.Background(), ksqldb.ExecOptions{KSql: `
 		CREATE SOURCE CONNECTOR DOGS WITH (
 		'connector.class'                = 'io.mdrogalis.voluble.VolubleSourceConnector',
 		'key.converter'                  = 'org.apache.kafka.connect.storage.StringConverter',
