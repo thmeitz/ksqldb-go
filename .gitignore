@@ -18,5 +18,6 @@ secreport.json
 error.log
 CLAUDE.md
 Agents.md
+.claude/
 .claude-flow/
 .idea/
