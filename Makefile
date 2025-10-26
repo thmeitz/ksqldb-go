@@ -15,12 +15,12 @@ dev: ## install golangci-lint
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.1
 
 .PHONY: build
-build: ## build cobra-test 
-	@cd examples/cobra-test && go build . && mv cobra-test ../../bin
+build: ## build cobra-test
+	@cd examples/cobra-test && go build -o cobra-test . && mv cobra-test ../../bin
 
 .PHONY: build-ksqlgrammar
 build-ksqlgrammar: ## build ksqlgrammar
-	@cd examples/ksqlgrammar && go build . && mv ksqlgrammar ../../bin
+	@cd examples/ksqlgrammar && go build -o ksqlgrammar . && mv ksqlgrammar ../../bin
 
 .PHONY: mockery
 mockery: ## generate mockery http client

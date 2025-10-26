@@ -18,55 +18,51 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
-	"github.com/Masterminds/log-go"
-	lgrs "github.com/Masterminds/log-go/impl/logrus"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
-var (
-	lg = logrus.New()
-)
-
 func setLogger() {
-	setLogFormat()
-	setLogLevel()
-	log.Current = lgrs.New(lg)
+	level := parseLoglevel()
+	handler := createHandler(level)
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
 }
 
-func setLogLevel() {
+func parseLoglevel() slog.Level {
 	loglevel := viper.GetString("loglevel")
 	switch loglevel {
 	case "info":
-		lg.Level = logrus.InfoLevel
-		return
+		return slog.LevelInfo
 	case "debug":
-		lg.Level = logrus.DebugLevel
-		return
+		return slog.LevelDebug
 	case "trace":
-		lg.Level = logrus.TraceLevel
-		return
+		return slog.LevelDebug // slog doesn't have trace, use debug
 	case "error":
-		lg.Level = logrus.ErrorLevel
-		return
+		return slog.LevelError
+	default:
+		fmt.Println("unknown log level")
+		os.Exit(1)
+		return slog.LevelInfo // unreachable
 	}
-	fmt.Println("unknown log level")
-	os.Exit(1)
 }
 
-func setLogFormat() {
+func createHandler(level slog.Level) slog.Handler {
+	opts := &slog.HandlerOptions{
+		Level: level,
+	}
+
 	formatter := viper.GetString("logformat")
 	switch formatter {
 	case "text":
-		lg.Formatter = &logrus.TextFormatter{}
-		return
+		return slog.NewTextHandler(os.Stdout, opts)
 	case "json":
-		fmt.Println("json formatter")
-		lg.Formatter = &logrus.JSONFormatter{}
-		return
+		return slog.NewJSONHandler(os.Stdout, opts)
+	default:
+		fmt.Println("unknown formatter")
+		os.Exit(1)
+		return nil // unreachable
 	}
-	fmt.Println("unknown formatter")
-	os.Exit(1)
 }

@@ -3,7 +3,8 @@
 package net
 
 import (
-	log "github.com/Masterminds/log-go"
+	"log/slog"
+
 	mock "github.com/stretchr/testify/mock"
 
 	net "github.com/thmeitz/ksqldb-go/net"
@@ -15,11 +16,11 @@ type HTTPClientFactory struct {
 }
 
 // NewHTTPClient provides a mock function with given fields: options, logger
-func (_m *HTTPClientFactory) NewHTTPClient(options net.Options, logger log.Logger) (*net.Client, error) {
+func (_m *HTTPClientFactory) NewHTTPClient(options net.Options, logger *slog.Logger) (*net.Client, error) {
 	ret := _m.Called(options, logger)
 
 	var r0 *net.Client
-	if rf, ok := ret.Get(0).(func(net.Options, log.Logger) *net.Client); ok {
+	if rf, ok := ret.Get(0).(func(net.Options, *slog.Logger) *net.Client); ok {
 		r0 = rf(options, logger)
 	} else {
 		if ret.Get(0) != nil {
@@ -28,7 +29,7 @@ func (_m *HTTPClientFactory) NewHTTPClient(options net.Options, logger log.Logge
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(net.Options, log.Logger) error); ok {
+	if rf, ok := ret.Get(1).(func(net.Options, *slog.Logger) error); ok {
 		r1 = rf(options, logger)
 	} else {
 		r1 = ret.Error(1)

@@ -17,8 +17,10 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+	"os"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
@@ -56,13 +58,15 @@ func terminateCluster(cmd *cobra.Command, args []string) {
 
 	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 	defer kcl.Close()
 
 	if result, err = kcl.TerminateCluster(context.Background(), "DOGS_BY_SIZE", "dogs"); err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
-	log.Infof("%+v", result)
+	slog.Info("cluster terminated", "result", fmt.Sprintf("%+v", result))
 }

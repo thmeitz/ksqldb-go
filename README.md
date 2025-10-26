@@ -1,11 +1,7 @@
 # ksqlDB Go library
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/thmeitz/ksqldb-go.svg)](https://pkg.go.dev/github.com/thmeitz/ksqldb-go)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=coverage)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=thmeitz_ksqldb-go&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=thmeitz_ksqldb-go)
+
 
 This is a unconnected fork from [Robin Moffatt](https://github.com/rmoff/ksqldb-go) and will be developed on its own.
 
@@ -19,12 +15,28 @@ This client is `not production ready` and the interfaces can be changed without 
 
 ⚠️ Disclaimer #1: This is a personal project and not supported or endorsed by Confluent.
 
-### Breaking Change v0.1.0
+### Breaking Changes
+
+#### v0.2.0 - Logger Migration (logrus → slog)
+
+The library now uses Go's standard library `log/slog` instead of logrus/log-go. The `net.NewHTTPClient()` function now accepts `*slog.Logger`.
+
+**Quick Migration**:
+```go
+// Before (v0.1.x)
+import "github.com/Masterminds/log-go/impl/logrus"
+logger := logrus.NewStandard()
+
+// After (v0.2.0)
+import "log/slog"
+logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+```
+
+#### v0.1.0 - Context Support
 
 All API calls must now contain a context object.
 
-#### KsqldbClient Changes
-
+**KsqldbClient Changes:**
 - `Execute(ctx context.Context, options ExecOptions)`
 - `GetClusterStatus(ctx context.Context)`
 - `GetQueryStatus(ctx context.Context, commandId string)`
@@ -33,12 +45,9 @@ All API calls must now contain a context object.
 - `TerminateCluster(ctx context.Context, topics ...string)`
 - `ValidateProperty(ctx context.Context, property string)`
 
-#### HTTPClient Interface Changes
-
+**HTTPClient Interface Changes:**
 - `Get(ctx context.Context, url string)`
 - `Post(ctx context.Context, url, contentType string, body io.Reader)`
-
-*Please update your code!*
 
 ## Migration?
 
@@ -77,26 +86,36 @@ For that reason I built it locally and put it in the docker compose volume for t
 
 ## Installation
 
-Module install:
-
-This client is a Go module, therefore you can have it simply by adding the following import to your code:
-
-```golang
-import "github.com/thmeitz/ksqldb-go"
-```
-
-Then run a build to have this client automatically added to your go.mod file as a dependency.
-
-Manual install:
+### As a Library
 
 ```bash
 go get -u github.com/thmeitz/ksqldb-go
 ```
 
-or use the client and and run
+Or simply import in your code and run `go mod tidy`:
+
+```golang
+import "github.com/thmeitz/ksqldb-go"
+```
+
+### Running Examples
+
+Examples have their own modules to avoid cluttering library dependencies:
 
 ```bash
-go mod tidy
+# Clone repository
+git clone https://github.com/thmeitz/ksqldb-go
+cd ksqldb-go
+
+# Build cobra-test example
+make build
+
+# Build ksqlgrammar example
+make build-ksqlgrammar
+
+# Or build manually
+cd examples/cobra-test
+go build -o cobra-test .
 ```
 
 ## How to use the ksqldb-go package?
@@ -105,17 +124,18 @@ go mod tidy
 
 ```golang
 import (
-  "github.com/Masterminds/log-go"
-  "github.com/Masterminds/log-go/impl/logrus"
+  "log/slog"
+  "os"
   "github.com/thmeitz/ksqldb-go"
   "github.com/thmeitz/ksqldb-go/net"
 )
 
-var (
-	logger = logrus.NewStandard()
-)
-// than later in your code...
-func main {
+func main() {
+  // Create a logger using Go's standard library slog
+  logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+    Level: slog.LevelDebug,
+  }))
+
   options := net.Options{
     // if you need a login, do this; if not its not necessary
     Credentials: net.Credentials{Username: "myuser", Password: "mypassword"},
@@ -125,11 +145,11 @@ func main {
     AllowHTTP:   true,
   }
 
-  // only log.Logger is allowed or nil
-  // logrus is in maintenance mode, so I'll using zap in the future
-  client, err := net.NewHTTPClient(options, nil)
+  // Pass *slog.Logger or nil (nil will use a no-op logger)
+  client, err := net.NewHTTPClient(options, logger)
   if err != nil {
-     log.Fatal(err)
+    logger.Error("Failed to create HTTP client", "error", err)
+    os.Exit(1)
   }
   defer client.Close()
 
@@ -138,6 +158,11 @@ func main {
 ```
 
 For no authentication remove `Credentials` from options.
+
+**Logger Options**:
+- Pass `nil` for no logging
+- Use `slog.NewTextHandler()` for human-readable output (development)
+- Use `slog.NewJSONHandler()` for structured JSON output (production)
 
 ### QueryBuilder
 

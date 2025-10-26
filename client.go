@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log/slog"
 
 	"github.com/thmeitz/ksqldb-go/net"
 )
@@ -33,7 +34,7 @@ func NewClient(http net.HTTPClient) (KsqldbClient, error) {
 
 // NewClientWithOptions returns a new @KsqldbClient with Options
 func NewClientWithOptions(options net.Options) (KsqldbClient, error) {
-	http, err := net.NewHTTPClient(options, nil)
+	http, err := net.NewHTTPClient(options, slog.Default())
 	if err != nil {
 		return KsqldbClient{}, fmt.Errorf("%v", err)
 	}

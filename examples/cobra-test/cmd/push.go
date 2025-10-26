@@ -17,9 +17,10 @@ package cmd
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"time"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
@@ -51,7 +52,8 @@ func push(cmd *cobra.Command, args []string) {
 
 	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 	defer kcl.Close()
 
@@ -84,7 +86,7 @@ func push(cmd *cobra.Command, args []string) {
 				t := int64(dataTs)
 				ts := time.Unix(t/1000, 0).Format(time.RFC822)
 
-				log.Infof("🐾 New dog at %v: '%v' is %v and %v (id %v)\n", ts, name, dogSize, age, id)
+				slog.Info("🐾 New dog", "timestamp", ts, "name", name, "size", dogSize, "age", age, "id", id)
 			}
 		}
 
@@ -96,6 +98,7 @@ func push(cmd *cobra.Command, args []string) {
 	e := kcl.Push(ctx, ksqldb.QueryOptions{Sql: query}, rowChannel, headerChannel)
 
 	if e != nil {
-		log.Fatal(e)
+		slog.Error("fatal error", "error", e)
+		os.Exit(1)
 	}
 }

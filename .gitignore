@@ -16,3 +16,7 @@ text.out
 report.json
 secreport.json
 error.log
+CLAUDE.md
+Agents.md
+.claude-flow/
+.idea/

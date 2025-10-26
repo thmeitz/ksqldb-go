@@ -18,9 +18,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
 	"time"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
@@ -39,7 +40,8 @@ func init() {
 
 	pullCmd.Flags().StringP("dogsize", "d", "medium", "dogsizes are small|medium|large")
 	if err := viper.BindPFlag("dogsize", pullCmd.Flags().Lookup("dogsize")); err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 }
 
@@ -58,17 +60,19 @@ func dogstats(cmd *cobra.Command, args []string) {
 
 	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 	defer kcl.Close()
 
-	query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start, 
-	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, dog_size, dogs_ct 
+	query := `select timestamptostring(windowstart,'yyyy-MM-dd HH:mm:ss','Europe/London') as window_start,
+	timestamptostring(windowend,'HH:mm:ss','Europe/London') as window_end, dog_size, dogs_ct
 	from dogs_by_size where dog_size=?;`
 
 	stmnt, err := ksqldb.QueryBuilder(query, dogsize)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
 	fmt.Println(*stmnt)
@@ -78,11 +82,12 @@ func dogstats(cmd *cobra.Command, args []string) {
 
 	qOpts := (&ksqldb.QueryOptions{Sql: *stmnt}).EnablePullQueryTableScan(true)
 
-	log.Infof("%+v", qOpts)
+	slog.Info("query options", "options", fmt.Sprintf("%+v", qOpts))
 
 	_, r, err := kcl.Pull(ctx, *qOpts)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
 	var windowStart string
@@ -97,7 +102,7 @@ func dogstats(cmd *cobra.Command, args []string) {
 			windowEnd = row[1].(string)
 			dogSize = row[2].(string)
 			dogsCt = row[3].(float64)
-			log.Infof("🐶 There are %v dogs size %v between %v and %v", dogsCt, dogSize, windowStart, windowEnd)
+			slog.Info("🐶 There are dogs in window", "count", dogsCt, "size", dogSize, "window_start", windowStart, "window_end", windowEnd)
 		}
 	}
 }

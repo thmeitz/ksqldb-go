@@ -17,9 +17,9 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -61,7 +61,8 @@ func init() {
 	rootCmd.PersistentFlags().String("password", "", "set the ksqldb user password")
 
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 }
 

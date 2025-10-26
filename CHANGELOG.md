@@ -1,3 +1,33 @@
+<a name="v0.2.0"></a>
+## [v0.2.0] - 2025-10-24
+
+### Changed
+
+- **BREAKING**: Migrated from logrus to Go's standard library `log/slog`
+- **BREAKING**: `net.NewHTTPClient()` now accepts `*slog.Logger` instead of `log.Logger` interface
+- Removed unmaintained dependencies: `github.com/sirupsen/logrus v1.9.3` (maintenance mode)
+- Removed unmaintained dependencies: `github.com/Masterminds/log-go v1.0.0` (last commit 2020)
+- Updated all examples in `examples/cobra-test/` to use slog
+- Updated core library and mock implementations to use slog
+
+### Added
+
+- `internal/logging` package with slog helper utilities
+- Support for nil logger (graceful degradation with no-op logger)
+
+**Quick Migration**:
+```go
+// Before (v0.1.x)
+import "github.com/Masterminds/log-go/impl/logrus"
+logger := logrus.NewStandard()
+client, _ := net.NewHTTPClient(options, logger)
+
+// After (v0.2.0)
+import "log/slog"
+logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+client, _ := net.NewHTTPClient(options, logger)
+```
+
 
 <a name="v0.0.7"></a>
 ## [v0.0.7](https://github.com/thmeitz/ksqldb-go/compare/v0.0.6...v0.0.7) (2023-06-27)

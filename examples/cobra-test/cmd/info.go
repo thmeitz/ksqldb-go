@@ -18,8 +18,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
@@ -50,18 +51,21 @@ func info(cmd *cobra.Command, args []string) {
 
 	client, err := net.NewHTTPClient(options, nil)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
 	kcl, err := ksqldb.NewClient(&client)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 	defer kcl.Close()
 
 	info, err := kcl.GetServerInfo(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
 	fmt.Println("===== as console output")
@@ -70,5 +74,5 @@ func info(cmd *cobra.Command, args []string) {
 	fmt.Println(fmt.Sprintf("KafkaClusterID : %v", info.KafkaClusterID))
 	fmt.Println(fmt.Sprintf("ServerStatus   : %v", info.ServerStatus))
 	fmt.Println("===== as info log")
-	log.Current.Infow("server info", log.Fields{"version": info.Version, "ksqlServiceId": info.KsqlServiceID, "kafkaClusterId": info.KafkaClusterID, "serverStatus": info.ServerStatus})
+	slog.Info("server info", "version", info.Version, "ksqlServiceId", info.KsqlServiceID, "kafkaClusterId", info.KafkaClusterID, "serverStatus", info.ServerStatus)
 }

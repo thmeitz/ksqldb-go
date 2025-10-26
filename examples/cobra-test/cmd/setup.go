@@ -17,10 +17,11 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
@@ -53,7 +54,8 @@ func setup(cmd *cobra.Command, args []string) {
 
 	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 	defer kcl.Close()
 
@@ -67,15 +69,15 @@ func setup(cmd *cobra.Command, args []string) {
 		'genv.dogs.name.with'            = '#{Dog.name}',
 		'genv.dogs.dogsize.with'         = '#{Dog.size}',
 		'genv.dogs.age.with'             = '#{Dog.age}',
-		'topic.dogs.throttle.ms'         = 1000 
+		'topic.dogs.throttle.ms'         = 1000
 		);
 		`})
 	if err != nil {
-		log.Current.Errorf("create source connector dogs failed %w", err)
-		os.Exit(-1)
+		slog.Error("create source connector dogs failed", "error", err)
+		os.Exit(1)
 	}
 
-	log.Infof("%+v", resp)
+	slog.Info("connector created", "response", fmt.Sprintf("%+v", resp))
 
 	// this is a bit lame but without doing the cool stuff with CommandId etc
 	// it's the easiest way to make sure the topic exists before continuing
@@ -83,18 +85,18 @@ func setup(cmd *cobra.Command, args []string) {
 
 	// create the DOGS stream
 	resp, err = kcl.Execute(context.Background(), ksqldb.ExecOptions{KSql: `
-		CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY, 
-			NAME STRING, 
-			DOGSIZE STRING, 
-			AGE STRING) 
-		WITH (KAFKA_TOPIC='dogs', 
+		CREATE STREAM IF NOT EXISTS DOGS (ID STRING KEY,
+			NAME STRING,
+			DOGSIZE STRING,
+			AGE STRING)
+		WITH (KAFKA_TOPIC='dogs',
 		VALUE_FORMAT='JSON', PARTITIONS=1);
 	`})
 	if err != nil {
-		log.Current.Error(err)
-		os.Exit(-1)
+		slog.Error("create stream failed", "error", err)
+		os.Exit(1)
 	}
-	log.Infof("%+v", resp)
+	slog.Info("stream created", "response", fmt.Sprintf("%+v", resp))
 
 	// this is a bit lame but without doing the cool stuff with CommandId etc
 	// it's the easiest way to make sure the stream exists before continuing
@@ -102,15 +104,15 @@ func setup(cmd *cobra.Command, args []string) {
 
 	// create the DOGS_BY_SIZE table
 	resp, err = kcl.Execute(context.Background(), ksqldb.ExecOptions{KSql: `
-		CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS 
-			SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT 
-			FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE) 
+		CREATE TABLE IF NOT EXISTS DOGS_BY_SIZE AS
+			SELECT DOGSIZE AS DOG_SIZE, COUNT(*) AS DOGS_CT
+			FROM DOGS WINDOW TUMBLING (SIZE 15 MINUTE)
 			GROUP BY DOGSIZE;
 	`})
 
 	if err != nil {
-		log.Current.Error(err)
-		os.Exit(-1)
+		slog.Error("create table failed", "error", err)
+		os.Exit(1)
 	}
-	log.Infof("%+v", resp)
+	slog.Info("table created", "response", fmt.Sprintf("%+v", resp))
 }
