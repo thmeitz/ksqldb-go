@@ -27,11 +27,11 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/Masterminds/log-go"
 	"github.com/thmeitz/ksqldb-go/internal"
 )
 
@@ -41,7 +41,7 @@ const (
 )
 
 type HTTPClientFactory interface {
-	NewHTTPClient(options Options, logger log.Logger) (*Client, error)
+	NewHTTPClient(options Options, logger *slog.Logger) (*Client, error)
 }
 
 type HTTPClient interface {
@@ -59,7 +59,7 @@ type Client struct {
 	uri     *url.URL
 	client  http.Client
 	tr      *Transport
-	logger  log.Logger
+	logger  *slog.Logger
 }
 
 // Credentials holds the username and password
@@ -69,10 +69,14 @@ type Credentials struct {
 }
 
 // NewHTTPClient creates a new http client
-func NewHTTPClient(options Options, logger log.Logger) (Client, error) {
+func NewHTTPClient(options Options, logger *slog.Logger) (Client, error) {
 	var uri *url.URL
 	var err error
 	var cl Client
+
+	if logger == nil {
+		logger = slog.Default()
+	}
 
 	if options.BaseUrl == "" {
 		options.BaseUrl = DefaultBaseUrl

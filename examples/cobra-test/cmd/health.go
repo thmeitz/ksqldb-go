@@ -18,9 +18,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
 
-	"github.com/Masterminds/log-go"
-	"github.com/Masterminds/log-go/impl/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
@@ -45,8 +45,6 @@ func health(cmd *cobra.Command, args []string) {
 	user := viper.GetString("username")
 	password := viper.GetString("password")
 
-	log.Current = logrus.NewStandard()
-
 	options := net.Options{
 		Credentials: net.Credentials{Username: user, Password: password},
 		BaseUrl:     host,
@@ -54,13 +52,15 @@ func health(cmd *cobra.Command, args []string) {
 
 	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 	defer kcl.Close()
 
 	health, err := kcl.GetServerStatus(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
 	fmt.Println(fmt.Sprintf("Overall healthiness   : %v", GoodOrBad(*health.IsHealthy)))

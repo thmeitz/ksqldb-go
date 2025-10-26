@@ -17,8 +17,9 @@ package cmd
 
 import (
 	"context"
+	"log/slog"
+	"os"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go"
@@ -50,7 +51,8 @@ func validate(cmd *cobra.Command, args []string) {
 
 	kcl, err := ksqldb.NewClientWithOptions(options)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Failed to create client", "error", err)
+		os.Exit(1)
 	}
 	defer kcl.Close()
 
@@ -59,7 +61,8 @@ func validate(cmd *cobra.Command, args []string) {
 	metrics := "ksql.query.pull.metrics.enabled"
 	value, err := kcl.ValidateProperty(context.Background(), metrics)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Failed to validate property", "error", err)
+		os.Exit(1)
 	}
-	log.Infof("%v is writable: %v", metrics, *value)
+	slog.Info("Property validation result", "property", metrics, "writable", *value)
 }

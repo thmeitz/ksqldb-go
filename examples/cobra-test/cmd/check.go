@@ -17,9 +17,10 @@ package cmd
 
 import (
 	"io/ioutil"
+	"log/slog"
+	"os"
 	"path/filepath"
 
-	"github.com/Masterminds/log-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thmeitz/ksqldb-go/parser"
@@ -37,11 +38,13 @@ func init() {
 
 	checkCmd.Flags().StringP("file", "f", "", "filename to check sql syntax")
 	if err := viper.BindPFlag("file", checkCmd.Flags().Lookup("file")); err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
 	if err := checkCmd.MarkFlagRequired("file"); err != nil {
-		log.Fatal(err)
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
 	}
 
 }
@@ -53,16 +56,17 @@ func checksqlfile(cmd *cobra.Command, args []string) {
 
 	fbytes, err := ioutil.ReadFile(filepath.Clean(fname))
 	if err != nil {
-		log.Fatalf("%v %w", fname, err)
+		slog.Error("failed to read file", "filename", fname, "error", err)
+		os.Exit(1)
 	}
 
 	ksqlerr := parser.ParseSql(string(fbytes))
 	if ksqlerr != nil {
-		log.Errorw("sql parser error", log.Fields{"error": ksqlerr})
+		slog.Error("sql parser error", "error", ksqlerr)
 		for _, e := range *ksqlerr {
-			log.Errorw("sql parser error at", log.Fields{"line": e.Line, "col": e.Column, "message": e.Msg})
+			slog.Error("sql parser error at", "line", e.Line, "col", e.Column, "message", e.Msg)
 		}
 		return
 	}
-	log.Info("no errors found")
+	slog.Info("no errors found")
 }
